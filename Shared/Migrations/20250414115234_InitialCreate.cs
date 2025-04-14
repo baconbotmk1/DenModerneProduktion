@@ -696,6 +696,47 @@ namespace Shared.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "TimeLimitAssignment",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    TimeLimitId = table.Column<int>(type: "INTEGER", nullable: false),
+                    type = table.Column<string>(type: "TEXT", maxLength: 21, nullable: false),
+                    SecurityGroupDeviceId = table.Column<int>(type: "INTEGER", nullable: true),
+                    SecurityGroupRoomId = table.Column<int>(type: "INTEGER", nullable: true),
+                    SecurityGroupSectionId = table.Column<int>(type: "INTEGER", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TimeLimitAssignment", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_TimeLimitAssignment_SecurityGroupDevices_SecurityGroupDeviceId",
+                        column: x => x.SecurityGroupDeviceId,
+                        principalTable: "SecurityGroupDevices",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_TimeLimitAssignment_SecurityGroupRooms_SecurityGroupRoomId",
+                        column: x => x.SecurityGroupRoomId,
+                        principalTable: "SecurityGroupRooms",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_TimeLimitAssignment_SecurityGroupSections_SecurityGroupSectionId",
+                        column: x => x.SecurityGroupSectionId,
+                        principalTable: "SecurityGroupSections",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_TimeLimitAssignment_TimeLimits_TimeLimitId",
+                        column: x => x.TimeLimitId,
+                        principalTable: "TimeLimits",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_AccessCards_UserId",
                 table: "AccessCards",
@@ -832,6 +873,26 @@ namespace Shared.Migrations
                 column: "TimeLimitId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_TimeLimitAssignment_SecurityGroupDeviceId",
+                table: "TimeLimitAssignment",
+                column: "SecurityGroupDeviceId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TimeLimitAssignment_SecurityGroupRoomId",
+                table: "TimeLimitAssignment",
+                column: "SecurityGroupRoomId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TimeLimitAssignment_SecurityGroupSectionId",
+                table: "TimeLimitAssignment",
+                column: "SecurityGroupSectionId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TimeLimitAssignment_TimeLimitId",
+                table: "TimeLimitAssignment",
+                column: "TimeLimitId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_TimeLimitWeekDays_WeekId",
                 table: "TimeLimitWeekDays",
                 column: "WeekId");
@@ -926,16 +987,10 @@ namespace Shared.Migrations
                 name: "DeviceRecordings");
 
             migrationBuilder.DropTable(
-                name: "SecurityGroupDevices");
-
-            migrationBuilder.DropTable(
                 name: "SecurityGroupPermissions");
 
             migrationBuilder.DropTable(
-                name: "SecurityGroupRooms");
-
-            migrationBuilder.DropTable(
-                name: "SecurityGroupSections");
+                name: "TimeLimitAssignment");
 
             migrationBuilder.DropTable(
                 name: "TimeLimitWeekDayTimes");
@@ -965,7 +1020,22 @@ namespace Shared.Migrations
                 name: "Permissions");
 
             migrationBuilder.DropTable(
+                name: "SecurityGroupDevices");
+
+            migrationBuilder.DropTable(
+                name: "SecurityGroupRooms");
+
+            migrationBuilder.DropTable(
+                name: "SecurityGroupSections");
+
+            migrationBuilder.DropTable(
                 name: "TimeLimitWeekDays");
+
+            migrationBuilder.DropTable(
+                name: "Users");
+
+            migrationBuilder.DropTable(
+                name: "DeviceSharedCategories");
 
             migrationBuilder.DropTable(
                 name: "Devices");
@@ -975,12 +1045,6 @@ namespace Shared.Migrations
 
             migrationBuilder.DropTable(
                 name: "SecurityGroups");
-
-            migrationBuilder.DropTable(
-                name: "Users");
-
-            migrationBuilder.DropTable(
-                name: "DeviceSharedCategories");
 
             migrationBuilder.DropTable(
                 name: "TimeLimitWeeks");

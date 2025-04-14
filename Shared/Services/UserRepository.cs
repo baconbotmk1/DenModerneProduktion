@@ -17,12 +17,31 @@ namespace Shared.Services
 
         public void InsertUser( User user )
         {
-
+            context.Users.Add(user);
         }
 
         public User? GetUserById( int id )
         {
             return context.Users.Find(id);
+        }
+
+        public void UpdateUser(User user)
+        {
+            context.Entry(user).State = EntityState.Modified;
+        }
+
+        public bool DeleteUser( int id )
+        {
+            User? user = context.Users.Find(id);
+
+            if(user == null)
+            {
+                return false;
+            }
+
+            context.Users.Remove(user);
+
+            return true;
         }
     }
 }

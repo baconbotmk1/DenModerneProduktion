@@ -12,7 +12,10 @@ namespace Shared.Models
 		public int DeviceId { get; set; }
 		public Device Device { get; set; }
 
-		public SecurityGroupDevice()
+		public ICollection<Assignables.SecurityGroupDeviceTL> TimeLimits { get; set; } = new List<Assignables.SecurityGroupDeviceTL>();
+
+
+        public SecurityGroupDevice()
 		{
 		}
 	}

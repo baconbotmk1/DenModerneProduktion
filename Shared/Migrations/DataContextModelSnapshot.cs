@@ -41,6 +41,31 @@ namespace Shared.Migrations
                     b.ToTable("AccessCards");
                 });
 
+            modelBuilder.Entity("Shared.Models.Assignables.TimeLimitAssignment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("TimeLimitId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("type")
+                        .IsRequired()
+                        .HasMaxLength(21)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TimeLimitId");
+
+                    b.ToTable("TimeLimitAssignment");
+
+                    b.HasDiscriminator<string>("type").HasValue("TimeLimitAssignment");
+
+                    b.UseTphMappingStrategy();
+                });
+
             modelBuilder.Entity("Shared.Models.Building", b =>
                 {
                     b.Property<int>("Id")
@@ -702,6 +727,42 @@ namespace Shared.Migrations
                     b.ToTable("UserSecurityGroups");
                 });
 
+            modelBuilder.Entity("Shared.Models.Assignables.SecurityGroupDeviceTL", b =>
+                {
+                    b.HasBaseType("Shared.Models.Assignables.TimeLimitAssignment");
+
+                    b.Property<int>("SecurityGroupDeviceId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasIndex("SecurityGroupDeviceId");
+
+                    b.HasDiscriminator().HasValue("secgrp_device");
+                });
+
+            modelBuilder.Entity("Shared.Models.Assignables.SecurityGroupRoomTL", b =>
+                {
+                    b.HasBaseType("Shared.Models.Assignables.TimeLimitAssignment");
+
+                    b.Property<int>("SecurityGroupRoomId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasIndex("SecurityGroupRoomId");
+
+                    b.HasDiscriminator().HasValue("secgrp_room");
+                });
+
+            modelBuilder.Entity("Shared.Models.Assignables.SecurityGroupSectionTL", b =>
+                {
+                    b.HasBaseType("Shared.Models.Assignables.TimeLimitAssignment");
+
+                    b.Property<int>("SecurityGroupSectionId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasIndex("SecurityGroupSectionId");
+
+                    b.HasDiscriminator().HasValue("secgrp_section");
+                });
+
             modelBuilder.Entity("Shared.Models.AccessCard", b =>
                 {
                     b.HasOne("Shared.Models.User", "User")
@@ -709,6 +770,17 @@ namespace Shared.Migrations
                         .HasForeignKey("UserId");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Shared.Models.Assignables.TimeLimitAssignment", b =>
+                {
+                    b.HasOne("Shared.Models.TimeLimit", "TimeLimit")
+                        .WithMany("Assignments")
+                        .HasForeignKey("TimeLimitId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("TimeLimit");
                 });
 
             modelBuilder.Entity("Shared.Models.Building", b =>
@@ -1095,6 +1167,39 @@ namespace Shared.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Shared.Models.Assignables.SecurityGroupDeviceTL", b =>
+                {
+                    b.HasOne("Shared.Models.SecurityGroupDevice", "SecurityGroupDevice")
+                        .WithMany("TimeLimits")
+                        .HasForeignKey("SecurityGroupDeviceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("SecurityGroupDevice");
+                });
+
+            modelBuilder.Entity("Shared.Models.Assignables.SecurityGroupRoomTL", b =>
+                {
+                    b.HasOne("Shared.Models.SecurityGroupRoom", "SecurityGroupRoom")
+                        .WithMany()
+                        .HasForeignKey("SecurityGroupRoomId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("SecurityGroupRoom");
+                });
+
+            modelBuilder.Entity("Shared.Models.Assignables.SecurityGroupSectionTL", b =>
+                {
+                    b.HasOne("Shared.Models.SecurityGroupSection", "SecurityGroupSection")
+                        .WithMany()
+                        .HasForeignKey("SecurityGroupSectionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("SecurityGroupSection");
+                });
+
             modelBuilder.Entity("Shared.Models.Device", b =>
                 {
                     b.Navigation("Data");
@@ -1119,8 +1224,15 @@ namespace Shared.Migrations
                     b.Navigation("SecurityGroupPermissions");
                 });
 
+            modelBuilder.Entity("Shared.Models.SecurityGroupDevice", b =>
+                {
+                    b.Navigation("TimeLimits");
+                });
+
             modelBuilder.Entity("Shared.Models.TimeLimit", b =>
                 {
+                    b.Navigation("Assignments");
+
                     b.Navigation("Weeks");
                 });
 

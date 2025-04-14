@@ -11,7 +11,9 @@ namespace Shared.Models
 		public int DeviceId { get; set; }
 		public Device Device { get; set; }
 
-		public UserDevice()
+        public ICollection<Assignables.UserDeviceTL> TimeLimits { get; set; } = new List<Assignables.UserDeviceTL>();
+
+        public UserDevice()
 		{
 		}
 	}

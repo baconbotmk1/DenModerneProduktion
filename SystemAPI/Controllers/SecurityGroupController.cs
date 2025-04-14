@@ -9,34 +9,34 @@ using Shared.Services;
 namespace SystemAPI.Controllers
 {
     [ApiController]
-    [Route("api/users")]
-    public class UserController : Controller
+    [Route("api/security_group")]
+    public class SecurityGroupController : Controller
     {
-        private UserRepository userRepository;
+        private GenericRepository<SecurityGroup> repository;
 
-        public UserController(UserRepository? studentRepository = null)
+        public SecurityGroupController(GenericRepository<SecurityGroup>? securityGroupRepository = null)
         {
-            userRepository = studentRepository ?? new UserRepository(new Shared.DataContext());
+            repository = securityGroupRepository ?? new GenericRepository<SecurityGroup>(new Shared.DataContext());
         }
 
 
         [HttpGet]
-        public IEnumerable<User> Get()
+        public IEnumerable<SecurityGroup> Get()
         {
-            return userRepository.GetUsers();
+            return repository.GetAll();
         }
 
         [HttpGet("{id}")]
-        public ActionResult<User> GetUserById(int id)
+        public ActionResult<SecurityGroup> GetUserById(int id)
         {
-            User? user = userRepository.GetUserById(id);
+            SecurityGroup? securityGroup = repository.GetById(id);
 
-            if(user == null)
+            if(securityGroup == null)
             {
                 return NotFound();
             }
 
-            return Ok(user);
+            return Ok(securityGroup);
         }
 
 
@@ -45,25 +45,23 @@ namespace SystemAPI.Controllers
         {
         }
 
-        // PUT api/values/5
         [HttpPut("{id}")]
         public void Put(int id, [FromBody]string value)
         {
         }
 
-        // DELETE api/values/5
         [HttpDelete("{id}")]
         public ActionResult Delete(int id)
         {
-            User? user = userRepository.GetUserById(id);
+            SecurityGroup? securityGroup = repository.GetById(id);
 
-            if (user == null)
+            if (securityGroup == null)
             {
                 return NotFound();
             }
 
-            bool deleted = userRepository.DeleteUser(id);
-            userRepository.Save();
+            bool deleted = repository.Delete(id);
+            repository.Save();
 
             if (!deleted)
             {
@@ -75,7 +73,7 @@ namespace SystemAPI.Controllers
 
         protected override void Dispose(bool disposing)
         {
-            userRepository.Dispose();
+            repository.Dispose();
             base.Dispose(disposing);
         }
     }

@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
+using Shared.Models.Assignables;
+
 namespace Shared.Models
 {
 	public class TimeLimit : BaseModel
@@ -10,7 +13,9 @@ namespace Shared.Models
 
 		public ICollection<TimeLimitWeek> Weeks { get; } = new List<TimeLimitWeek>();
 
-		public TimeLimit()
+        public ICollection<TimeLimitAssignment> Assignments { get; set; } = new List<TimeLimitAssignment>();
+
+        public TimeLimit()
 		{
 		}
 	}

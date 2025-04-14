@@ -11,6 +11,8 @@ namespace Shared.Models
 		[InverseProperty("SecurityGroup")]
         public ICollection<SecurityGroupPermission> SecurityGroupPermissions { get; } = new List<SecurityGroupPermission>();
 
+		public IEnumerable<Permission> Permissions => SecurityGroupPermissions.Select(e => e.Permission);
+
 
         public SecurityGroup()
 		{

@@ -8,7 +8,9 @@ namespace Shared.Models
 		public int SectionId { get; set; }
 		public Section Section { get; set; }
 
-		public SecurityGroupSection()
+        public ICollection<Assignables.SecurityGroupSectionTL> TimeLimits { get; set; } = new List<Assignables.SecurityGroupSectionTL>();
+
+        public SecurityGroupSection()
 		{
 		}
 	}

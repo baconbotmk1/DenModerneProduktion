@@ -8,7 +8,9 @@ namespace Shared.Models
 		public int RoomId { get; set; }
 		public Room Room { get; set; }
 
-		public UserRoom()
+        public ICollection<Assignables.UserRoomTL> TimeLimits { get; set; } = new List<Assignables.UserRoomTL>();
+
+        public UserRoom()
 		{
 		}
 	}

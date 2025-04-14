@@ -31,6 +31,12 @@ namespace Shared.Services
             Dispose(true);
             GC.SuppressFinalize(this);
         }
+
+
+        public void Save()
+        {
+            context.SaveChanges();
+        }
     }
 }
 

@@ -7,6 +7,8 @@ namespace Shared.Models
     {
 		public string Name { get; set; }
 
+		public bool IsActive { get; set; } = false;
+
 		public string? ReferenceId { get; set; }
 		public string? ReferenceType { get; set; }
 
