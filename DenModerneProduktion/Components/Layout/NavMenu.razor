@@ -1,4 +1,6 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
+﻿@inject NavigationManager Navigation
+
+<div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="">DenModerneProduktion</a>
     </div>
@@ -10,21 +12,74 @@
     <nav class="flex-column">
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
+                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Forside
             </NavLink>
         </div>
 
         <div class="nav-item px-3">
-            <NavLink class="nav-link" href="counter">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Counter
+            <NavLink class="nav-link" href="Lobby">
+                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Lobby
             </NavLink>
         </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="weather">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Weather
-            </NavLink>
-        </div>
+        @if (_ShowAdminMenu)
+        {   
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="admin">
+                    <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Admin
+                </NavLink>
+                @if(_ShowSubMenu)
+                {   
+                    <nav class="flex-column">
+                        <div class="nav-item px-3">
+                            <NavLink class="nav-link" href="admin/section">
+                                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Sektion
+                            </NavLink>
+                        </div>
+                        <div class="nav-item px-3">
+                            <NavLink class="nav-link" href="admin/room">
+                                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Lokale
+                            </NavLink>
+                        </div>
+                        <div class="nav-item px-3">
+                            <NavLink class="nav-link" href="admin/group">
+                                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Grupper
+                            </NavLink>
+                        </div>
+                        <div class="nav-item px-3">
+                            <NavLink class="nav-link" href="admin/user">
+                                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Bruger
+                            </NavLink>
+                        </div>
+                    </nav>
+                }
+            </div>
+        }
     </nav>
 </div>
 
+@code {
+    [CascadingParameter]
+    public HttpContext? httpContext { get; set; }
+
+    private bool _ShowSubMenu { get; set; }
+    private bool _ShowAdminMenu { get; set; } = true;
+
+    private void ShowAdminMenu() => _ShowAdminMenu = true;
+
+
+    protected override void OnInitialized()
+    {
+        //TODO: Create check if logged in, to hide admin if not admin.
+
+        if (httpContext is not null)
+        {
+            var test = Navigation.ToAbsoluteUri(Navigation.Uri);
+            var test2 = test.AbsolutePath;
+            var test3 = test2.Split("/");
+            var test4 = test3.Contains("admin");
+            _ShowSubMenu = Navigation.ToAbsoluteUri(Navigation.Uri).AbsolutePath.Split("/").Contains("admin");
+            StateHasChanged();
+        }
+    }
+    
+}
