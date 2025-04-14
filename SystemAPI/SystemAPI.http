@@ -1,7 +1,18 @@
-﻿@SystemAPI_HostAddress = http://localhost:5011
+﻿#@SystemAPI_HostAddress = http://localhost:5011/api
+@SystemAPI_HostAddress = https://localhost:7265/api
 
-GET {{SystemAPI_HostAddress}}/weatherforecast/
-Accept: application/json
-
+POST {{SystemAPI_HostAddress}}/security_groups
+Content-Type: application/json
+{
+  "name": "string",
+  "desc": "string"
+}
 ###
 
+POST {{SystemAPI_HostAddress}}/security_groups
+Content-Type: application/json
+{
+  "name": "string",
+  "desc": "string"
+}
+###

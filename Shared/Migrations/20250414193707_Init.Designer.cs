@@ -11,14 +11,44 @@ using Shared;
 namespace Shared.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20250414115234_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20250414193707_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.4");
+
+            modelBuilder.Entity("PermissionSecurityGroup", b =>
+                {
+                    b.Property<int>("PermissionsId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("SecurityGroupsId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("PermissionsId", "SecurityGroupsId");
+
+                    b.HasIndex("SecurityGroupsId");
+
+                    b.ToTable("PermissionSecurityGroup");
+                });
+
+            modelBuilder.Entity("SecurityGroupUser", b =>
+                {
+                    b.Property<int>("SecurityGroupsId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("UsersId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("SecurityGroupsId", "UsersId");
+
+                    b.HasIndex("UsersId");
+
+                    b.ToTable("SecurityGroupUser");
+                });
 
             modelBuilder.Entity("Shared.Models.AccessCard", b =>
                 {
@@ -400,19 +430,13 @@ namespace Shared.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Desc")
-                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<int?>("TimeLimitId")
-                        .HasColumnType("INTEGER");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("TimeLimitId");
 
                     b.ToTable("SecurityGroups");
                 });
@@ -429,16 +453,11 @@ namespace Shared.Migrations
                     b.Property<int>("SecurityGroupId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int?>("TimeLimitId")
-                        .HasColumnType("INTEGER");
-
                     b.HasKey("Id");
 
                     b.HasIndex("DeviceId");
 
                     b.HasIndex("SecurityGroupId");
-
-                    b.HasIndex("TimeLimitId");
 
                     b.ToTable("SecurityGroupDevices");
                 });
@@ -476,16 +495,11 @@ namespace Shared.Migrations
                     b.Property<int>("SecurityGroupId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int?>("TimeLimitId")
-                        .HasColumnType("INTEGER");
-
                     b.HasKey("Id");
 
                     b.HasIndex("RoomId");
 
                     b.HasIndex("SecurityGroupId");
-
-                    b.HasIndex("TimeLimitId");
 
                     b.ToTable("SecurityGroupRooms");
                 });
@@ -502,16 +516,11 @@ namespace Shared.Migrations
                     b.Property<int>("SecurityGroupId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int?>("TimeLimitId")
-                        .HasColumnType("INTEGER");
-
                     b.HasKey("Id");
 
                     b.HasIndex("SectionId");
 
                     b.HasIndex("SecurityGroupId");
-
-                    b.HasIndex("TimeLimitId");
 
                     b.ToTable("SecurityGroupSections");
                 });
@@ -611,6 +620,9 @@ namespace Shared.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -621,12 +633,7 @@ namespace Shared.Migrations
                     b.Property<string>("ReferenceType")
                         .HasColumnType("TEXT");
 
-                    b.Property<int?>("TimeLimitId")
-                        .HasColumnType("INTEGER");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("TimeLimitId");
 
                     b.ToTable("Users");
                 });
@@ -640,17 +647,12 @@ namespace Shared.Migrations
                     b.Property<int>("DeviceId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int?>("TimeLimitId")
-                        .HasColumnType("INTEGER");
-
                     b.Property<int>("UserId")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 
                     b.HasIndex("DeviceId");
-
-                    b.HasIndex("TimeLimitId");
 
                     b.HasIndex("UserId");
 
@@ -666,17 +668,12 @@ namespace Shared.Migrations
                     b.Property<int>("RoomId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int?>("TimeLimitId")
-                        .HasColumnType("INTEGER");
-
                     b.Property<int>("UserId")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 
                     b.HasIndex("RoomId");
-
-                    b.HasIndex("TimeLimitId");
 
                     b.HasIndex("UserId");
 
@@ -692,17 +689,12 @@ namespace Shared.Migrations
                     b.Property<int>("SectionId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int?>("TimeLimitId")
-                        .HasColumnType("INTEGER");
-
                     b.Property<int>("UserId")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 
                     b.HasIndex("SectionId");
-
-                    b.HasIndex("TimeLimitId");
 
                     b.HasIndex("UserId");
 
@@ -766,10 +758,76 @@ namespace Shared.Migrations
                     b.HasDiscriminator().HasValue("secgrp_section");
                 });
 
+            modelBuilder.Entity("Shared.Models.Assignables.UserDeviceTL", b =>
+                {
+                    b.HasBaseType("Shared.Models.Assignables.TimeLimitAssignment");
+
+                    b.Property<int>("UserDeviceId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasIndex("UserDeviceId");
+
+                    b.HasDiscriminator().HasValue("user_device");
+                });
+
+            modelBuilder.Entity("Shared.Models.Assignables.UserRoomTL", b =>
+                {
+                    b.HasBaseType("Shared.Models.Assignables.TimeLimitAssignment");
+
+                    b.Property<int>("UserRoomId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasIndex("UserRoomId");
+
+                    b.HasDiscriminator().HasValue("user_room");
+                });
+
+            modelBuilder.Entity("Shared.Models.Assignables.UserSectionTL", b =>
+                {
+                    b.HasBaseType("Shared.Models.Assignables.TimeLimitAssignment");
+
+                    b.Property<int>("UserSectionId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasIndex("UserSectionId");
+
+                    b.HasDiscriminator().HasValue("user_section");
+                });
+
+            modelBuilder.Entity("PermissionSecurityGroup", b =>
+                {
+                    b.HasOne("Shared.Models.Permission", null)
+                        .WithMany()
+                        .HasForeignKey("PermissionsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Shared.Models.SecurityGroup", null)
+                        .WithMany()
+                        .HasForeignKey("SecurityGroupsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("SecurityGroupUser", b =>
+                {
+                    b.HasOne("Shared.Models.SecurityGroup", null)
+                        .WithMany()
+                        .HasForeignKey("SecurityGroupsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Shared.Models.User", null)
+                        .WithMany()
+                        .HasForeignKey("UsersId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Shared.Models.AccessCard", b =>
                 {
                     b.HasOne("Shared.Models.User", "User")
-                        .WithMany()
+                        .WithMany("AccessCards")
                         .HasForeignKey("UserId");
 
                     b.Navigation("User");
@@ -931,15 +989,6 @@ namespace Shared.Migrations
                     b.Navigation("Building");
                 });
 
-            modelBuilder.Entity("Shared.Models.SecurityGroup", b =>
-                {
-                    b.HasOne("Shared.Models.TimeLimit", "TimeLimit")
-                        .WithMany()
-                        .HasForeignKey("TimeLimitId");
-
-                    b.Navigation("TimeLimit");
-                });
-
             modelBuilder.Entity("Shared.Models.SecurityGroupDevice", b =>
                 {
                     b.HasOne("Shared.Models.Device", "Device")
@@ -954,15 +1003,9 @@ namespace Shared.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Shared.Models.TimeLimit", "TimeLimit")
-                        .WithMany()
-                        .HasForeignKey("TimeLimitId");
-
                     b.Navigation("Device");
 
                     b.Navigation("SecurityGroup");
-
-                    b.Navigation("TimeLimit");
                 });
 
             modelBuilder.Entity("Shared.Models.SecurityGroupPermission", b =>
@@ -998,15 +1041,9 @@ namespace Shared.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Shared.Models.TimeLimit", "TimeLimit")
-                        .WithMany()
-                        .HasForeignKey("TimeLimitId");
-
                     b.Navigation("Room");
 
                     b.Navigation("SecurityGroup");
-
-                    b.Navigation("TimeLimit");
                 });
 
             modelBuilder.Entity("Shared.Models.SecurityGroupSection", b =>
@@ -1023,15 +1060,9 @@ namespace Shared.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Shared.Models.TimeLimit", "TimeLimit")
-                        .WithMany()
-                        .HasForeignKey("TimeLimitId");
-
                     b.Navigation("Section");
 
                     b.Navigation("SecurityGroup");
-
-                    b.Navigation("TimeLimit");
                 });
 
             modelBuilder.Entity("Shared.Models.TimeLimitWeek", b =>
@@ -1067,15 +1098,6 @@ namespace Shared.Migrations
                     b.Navigation("WeekDay");
                 });
 
-            modelBuilder.Entity("Shared.Models.User", b =>
-                {
-                    b.HasOne("Shared.Models.TimeLimit", "TimeLimit")
-                        .WithMany()
-                        .HasForeignKey("TimeLimitId");
-
-                    b.Navigation("TimeLimit");
-                });
-
             modelBuilder.Entity("Shared.Models.UserDevice", b =>
                 {
                     b.HasOne("Shared.Models.Device", "Device")
@@ -1084,10 +1106,6 @@ namespace Shared.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Shared.Models.TimeLimit", "TimeLimit")
-                        .WithMany()
-                        .HasForeignKey("TimeLimitId");
-
                     b.HasOne("Shared.Models.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
@@ -1095,8 +1113,6 @@ namespace Shared.Migrations
                         .IsRequired();
 
                     b.Navigation("Device");
-
-                    b.Navigation("TimeLimit");
 
                     b.Navigation("User");
                 });
@@ -1109,10 +1125,6 @@ namespace Shared.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Shared.Models.TimeLimit", "TimeLimit")
-                        .WithMany()
-                        .HasForeignKey("TimeLimitId");
-
                     b.HasOne("Shared.Models.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
@@ -1120,8 +1132,6 @@ namespace Shared.Migrations
                         .IsRequired();
 
                     b.Navigation("Room");
-
-                    b.Navigation("TimeLimit");
 
                     b.Navigation("User");
                 });
@@ -1134,10 +1144,6 @@ namespace Shared.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Shared.Models.TimeLimit", "TimeLimit")
-                        .WithMany()
-                        .HasForeignKey("TimeLimitId");
-
                     b.HasOne("Shared.Models.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
@@ -1146,15 +1152,13 @@ namespace Shared.Migrations
 
                     b.Navigation("Section");
 
-                    b.Navigation("TimeLimit");
-
                     b.Navigation("User");
                 });
 
             modelBuilder.Entity("Shared.Models.UserSecurityGroup", b =>
                 {
                     b.HasOne("Shared.Models.SecurityGroup", "SecurityGroup")
-                        .WithMany()
+                        .WithMany("UserSecurityGroups")
                         .HasForeignKey("SecurityGroupId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1184,7 +1188,7 @@ namespace Shared.Migrations
             modelBuilder.Entity("Shared.Models.Assignables.SecurityGroupRoomTL", b =>
                 {
                     b.HasOne("Shared.Models.SecurityGroupRoom", "SecurityGroupRoom")
-                        .WithMany()
+                        .WithMany("TimeLimits")
                         .HasForeignKey("SecurityGroupRoomId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1195,12 +1199,45 @@ namespace Shared.Migrations
             modelBuilder.Entity("Shared.Models.Assignables.SecurityGroupSectionTL", b =>
                 {
                     b.HasOne("Shared.Models.SecurityGroupSection", "SecurityGroupSection")
-                        .WithMany()
+                        .WithMany("TimeLimits")
                         .HasForeignKey("SecurityGroupSectionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("SecurityGroupSection");
+                });
+
+            modelBuilder.Entity("Shared.Models.Assignables.UserDeviceTL", b =>
+                {
+                    b.HasOne("Shared.Models.UserDevice", "UserDevice")
+                        .WithMany("TimeLimits")
+                        .HasForeignKey("UserDeviceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("UserDevice");
+                });
+
+            modelBuilder.Entity("Shared.Models.Assignables.UserRoomTL", b =>
+                {
+                    b.HasOne("Shared.Models.UserRoom", "UserRoom")
+                        .WithMany("TimeLimits")
+                        .HasForeignKey("UserRoomId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("UserRoom");
+                });
+
+            modelBuilder.Entity("Shared.Models.Assignables.UserSectionTL", b =>
+                {
+                    b.HasOne("Shared.Models.UserSection", "UserSection")
+                        .WithMany("TimeLimits")
+                        .HasForeignKey("UserSectionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("UserSection");
                 });
 
             modelBuilder.Entity("Shared.Models.Device", b =>
@@ -1225,9 +1262,21 @@ namespace Shared.Migrations
             modelBuilder.Entity("Shared.Models.SecurityGroup", b =>
                 {
                     b.Navigation("SecurityGroupPermissions");
+
+                    b.Navigation("UserSecurityGroups");
                 });
 
             modelBuilder.Entity("Shared.Models.SecurityGroupDevice", b =>
+                {
+                    b.Navigation("TimeLimits");
+                });
+
+            modelBuilder.Entity("Shared.Models.SecurityGroupRoom", b =>
+                {
+                    b.Navigation("TimeLimits");
+                });
+
+            modelBuilder.Entity("Shared.Models.SecurityGroupSection", b =>
                 {
                     b.Navigation("TimeLimits");
                 });
@@ -1251,7 +1300,24 @@ namespace Shared.Migrations
 
             modelBuilder.Entity("Shared.Models.User", b =>
                 {
+                    b.Navigation("AccessCards");
+
                     b.Navigation("UserSecurityGroups");
+                });
+
+            modelBuilder.Entity("Shared.Models.UserDevice", b =>
+                {
+                    b.Navigation("TimeLimits");
+                });
+
+            modelBuilder.Entity("Shared.Models.UserRoom", b =>
+                {
+                    b.Navigation("TimeLimits");
+                });
+
+            modelBuilder.Entity("Shared.Models.UserSection", b =>
+                {
+                    b.Navigation("TimeLimits");
                 });
 #pragma warning restore 612, 618
         }

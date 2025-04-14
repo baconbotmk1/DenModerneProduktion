@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Shared.Services
 {
-    public class GenericRepository<T> : RepositoryBase where T : class
+    public class GenericRepository<T> : RepositoryBase, IRepository<T> where T : class
     {
         protected DbSet<T> dbSet;
 
@@ -12,28 +12,28 @@ namespace Shared.Services
             dbSet = context.Set<T>();
         }
 
-        public IEnumerable<T> GetAll()
+        public virtual IEnumerable<T> Get()
         {
             return dbSet.ToList();
         }
 
-        public void Insert( T item )
+        public virtual void Insert( T item )
         {
             dbSet.Add(item);
         }
 
-        public T? GetById( int id )
+        public virtual T? GetById( int id )
         {
             return dbSet.Find(id);
         }
 
-        public void Update(T item)
+        public virtual void Update(T item)
         {
             dbSet.Attach(item);
             context.Entry(item).State = EntityState.Modified;
         }
 
-        public bool Delete( int id )
+        public virtual bool Delete( int id )
         {
             T? entityToDelete = dbSet.Find(id);
 

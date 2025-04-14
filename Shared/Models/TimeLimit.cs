@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using Shared.Models.Assignables;
 
 namespace Shared.Models
 {
 	public class TimeLimit : BaseModel
     {
-		public string Name { get; set; }
+        [Required]
+        public string Name { get; set; }
 
 		public DateTime? FromDate { get; set; }
 		public DateTime? ToDate { get; set; }

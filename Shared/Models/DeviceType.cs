@@ -1,9 +1,11 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 namespace Shared.Models
 {
 	public class DeviceType : BaseModel
     {
-		public string Name { get; set; }
+        [Required]
+        public string Name { get; set; }
         public string Desc { get; set; }
 
         public DeviceType()

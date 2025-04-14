@@ -1,13 +1,16 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Shared.Models
 {
 	public class Device : BaseModel
     {
-		public string Name { get; set; }
+        [Required]
+        public string Name { get; set; }
 
-		public int TypeId { get; set; }
+        [Required]
+        public int TypeId { get; set; }
 		public DeviceType Type { get; set; }
 
 		[InverseProperty("Device")]

@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using AutoMapper;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using Shared;
 using Shared.DTOs;
 using Shared.Models;
 using Shared.Services;
@@ -12,9 +8,9 @@ namespace SystemAPI.Controllers
 {
     [ApiController]
     [Route("api/permissions")]
-    public class PermissionsController : GenericCRUDController<Permission,PermissionDTO>
+    public class PermissionsController : GenericCRUDController<Permission, CreatePermissionDTO>
     {
-        public PermissionsController(IMapper mapper) : base(mapper)
+        public PermissionsController(DataContext Context, GenericRepository<Permission>? DIrepository = null) : base(Context, DIrepository)
         {
         }
     }

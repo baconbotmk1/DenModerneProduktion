@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Shared.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class Init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -66,6 +66,20 @@ namespace Shared.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "SecurityGroups",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Name = table.Column<string>(type: "TEXT", nullable: false),
+                    Desc = table.Column<string>(type: "TEXT", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_SecurityGroups", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "TimeLimits",
                 columns: table => new
                 {
@@ -78,6 +92,22 @@ namespace Shared.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_TimeLimits", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Users",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Name = table.Column<string>(type: "TEXT", nullable: false),
+                    IsActive = table.Column<bool>(type: "INTEGER", nullable: false),
+                    ReferenceId = table.Column<string>(type: "TEXT", nullable: true),
+                    ReferenceType = table.Column<string>(type: "TEXT", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Users", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -182,23 +212,53 @@ namespace Shared.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "SecurityGroups",
+                name: "PermissionSecurityGroup",
+                columns: table => new
+                {
+                    PermissionsId = table.Column<int>(type: "INTEGER", nullable: false),
+                    SecurityGroupsId = table.Column<int>(type: "INTEGER", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PermissionSecurityGroup", x => new { x.PermissionsId, x.SecurityGroupsId });
+                    table.ForeignKey(
+                        name: "FK_PermissionSecurityGroup_Permissions_PermissionsId",
+                        column: x => x.PermissionsId,
+                        principalTable: "Permissions",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_PermissionSecurityGroup_SecurityGroups_SecurityGroupsId",
+                        column: x => x.SecurityGroupsId,
+                        principalTable: "SecurityGroups",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "SecurityGroupPermissions",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    Name = table.Column<string>(type: "TEXT", nullable: false),
-                    Desc = table.Column<string>(type: "TEXT", nullable: false),
-                    TimeLimitId = table.Column<int>(type: "INTEGER", nullable: true)
+                    SecurityGroupId = table.Column<int>(type: "INTEGER", nullable: false),
+                    PermissionId = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_SecurityGroups", x => x.Id);
+                    table.PrimaryKey("PK_SecurityGroupPermissions", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_SecurityGroups_TimeLimits_TimeLimitId",
-                        column: x => x.TimeLimitId,
-                        principalTable: "TimeLimits",
-                        principalColumn: "Id");
+                        name: "FK_SecurityGroupPermissions_Permissions_PermissionId",
+                        column: x => x.PermissionId,
+                        principalTable: "Permissions",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_SecurityGroupPermissions_SecurityGroups_SecurityGroupId",
+                        column: x => x.SecurityGroupId,
+                        principalTable: "SecurityGroups",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -223,24 +283,73 @@ namespace Shared.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Users",
+                name: "AccessCards",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     Name = table.Column<string>(type: "TEXT", nullable: false),
-                    ReferenceId = table.Column<string>(type: "TEXT", nullable: true),
-                    ReferenceType = table.Column<string>(type: "TEXT", nullable: true),
-                    TimeLimitId = table.Column<int>(type: "INTEGER", nullable: true)
+                    UniqueCode = table.Column<string>(type: "TEXT", nullable: false),
+                    UserId = table.Column<int>(type: "INTEGER", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Users", x => x.Id);
+                    table.PrimaryKey("PK_AccessCards", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Users_TimeLimits_TimeLimitId",
-                        column: x => x.TimeLimitId,
-                        principalTable: "TimeLimits",
+                        name: "FK_AccessCards_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
                         principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "SecurityGroupUser",
+                columns: table => new
+                {
+                    SecurityGroupsId = table.Column<int>(type: "INTEGER", nullable: false),
+                    UsersId = table.Column<int>(type: "INTEGER", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_SecurityGroupUser", x => new { x.SecurityGroupsId, x.UsersId });
+                    table.ForeignKey(
+                        name: "FK_SecurityGroupUser_SecurityGroups_SecurityGroupsId",
+                        column: x => x.SecurityGroupsId,
+                        principalTable: "SecurityGroups",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_SecurityGroupUser_Users_UsersId",
+                        column: x => x.UsersId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "UserSecurityGroups",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    UserId = table.Column<int>(type: "INTEGER", nullable: false),
+                    SecurityGroupId = table.Column<int>(type: "INTEGER", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserSecurityGroups", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_UserSecurityGroups_SecurityGroups_SecurityGroupId",
+                        column: x => x.SecurityGroupId,
+                        principalTable: "SecurityGroups",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_UserSecurityGroups_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -377,8 +486,7 @@ namespace Shared.Migrations
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     SecurityGroupId = table.Column<int>(type: "INTEGER", nullable: false),
-                    DeviceId = table.Column<int>(type: "INTEGER", nullable: false),
-                    TimeLimitId = table.Column<int>(type: "INTEGER", nullable: true)
+                    DeviceId = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -395,35 +503,30 @@ namespace Shared.Migrations
                         principalTable: "SecurityGroups",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_SecurityGroupDevices_TimeLimits_TimeLimitId",
-                        column: x => x.TimeLimitId,
-                        principalTable: "TimeLimits",
-                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
-                name: "SecurityGroupPermissions",
+                name: "UserDevices",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    SecurityGroupId = table.Column<int>(type: "INTEGER", nullable: false),
-                    PermissionId = table.Column<int>(type: "INTEGER", nullable: false)
+                    UserId = table.Column<int>(type: "INTEGER", nullable: false),
+                    DeviceId = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_SecurityGroupPermissions", x => x.Id);
+                    table.PrimaryKey("PK_UserDevices", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_SecurityGroupPermissions_Permissions_PermissionId",
-                        column: x => x.PermissionId,
-                        principalTable: "Permissions",
+                        name: "FK_UserDevices_Devices_DeviceId",
+                        column: x => x.DeviceId,
+                        principalTable: "Devices",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_SecurityGroupPermissions_SecurityGroups_SecurityGroupId",
-                        column: x => x.SecurityGroupId,
-                        principalTable: "SecurityGroups",
+                        name: "FK_UserDevices_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -445,84 +548,6 @@ namespace Shared.Migrations
                         name: "FK_TimeLimitWeekDays_TimeLimitWeeks_WeekId",
                         column: x => x.WeekId,
                         principalTable: "TimeLimitWeeks",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "AccessCards",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Name = table.Column<string>(type: "TEXT", nullable: false),
-                    UniqueCode = table.Column<string>(type: "TEXT", nullable: false),
-                    UserId = table.Column<int>(type: "INTEGER", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_AccessCards", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_AccessCards_Users_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Users",
-                        principalColumn: "Id");
-                });
-
-            migrationBuilder.CreateTable(
-                name: "UserDevices",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    UserId = table.Column<int>(type: "INTEGER", nullable: false),
-                    DeviceId = table.Column<int>(type: "INTEGER", nullable: false),
-                    TimeLimitId = table.Column<int>(type: "INTEGER", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_UserDevices", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_UserDevices_Devices_DeviceId",
-                        column: x => x.DeviceId,
-                        principalTable: "Devices",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_UserDevices_TimeLimits_TimeLimitId",
-                        column: x => x.TimeLimitId,
-                        principalTable: "TimeLimits",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_UserDevices_Users_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "UserSecurityGroups",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    UserId = table.Column<int>(type: "INTEGER", nullable: false),
-                    SecurityGroupId = table.Column<int>(type: "INTEGER", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_UserSecurityGroups", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_UserSecurityGroups_SecurityGroups_SecurityGroupId",
-                        column: x => x.SecurityGroupId,
-                        principalTable: "SecurityGroups",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_UserSecurityGroups_Users_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -554,8 +579,7 @@ namespace Shared.Migrations
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     SecurityGroupId = table.Column<int>(type: "INTEGER", nullable: false),
-                    SectionId = table.Column<int>(type: "INTEGER", nullable: false),
-                    TimeLimitId = table.Column<int>(type: "INTEGER", nullable: true)
+                    SectionId = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -572,11 +596,6 @@ namespace Shared.Migrations
                         principalTable: "SecurityGroups",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_SecurityGroupSections_TimeLimits_TimeLimitId",
-                        column: x => x.TimeLimitId,
-                        principalTable: "TimeLimits",
-                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -586,8 +605,7 @@ namespace Shared.Migrations
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     UserId = table.Column<int>(type: "INTEGER", nullable: false),
-                    SectionId = table.Column<int>(type: "INTEGER", nullable: false),
-                    TimeLimitId = table.Column<int>(type: "INTEGER", nullable: true)
+                    SectionId = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -598,11 +616,6 @@ namespace Shared.Migrations
                         principalTable: "Sections",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_UserSections_TimeLimits_TimeLimitId",
-                        column: x => x.TimeLimitId,
-                        principalTable: "TimeLimits",
-                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_UserSections_Users_UserId",
                         column: x => x.UserId,
@@ -639,8 +652,7 @@ namespace Shared.Migrations
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     SecurityGroupId = table.Column<int>(type: "INTEGER", nullable: false),
-                    RoomId = table.Column<int>(type: "INTEGER", nullable: false),
-                    TimeLimitId = table.Column<int>(type: "INTEGER", nullable: true)
+                    RoomId = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -657,11 +669,6 @@ namespace Shared.Migrations
                         principalTable: "SecurityGroups",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_SecurityGroupRooms_TimeLimits_TimeLimitId",
-                        column: x => x.TimeLimitId,
-                        principalTable: "TimeLimits",
-                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -671,8 +678,7 @@ namespace Shared.Migrations
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     UserId = table.Column<int>(type: "INTEGER", nullable: false),
-                    RoomId = table.Column<int>(type: "INTEGER", nullable: false),
-                    TimeLimitId = table.Column<int>(type: "INTEGER", nullable: true)
+                    RoomId = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -683,11 +689,6 @@ namespace Shared.Migrations
                         principalTable: "Rooms",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_UserRooms_TimeLimits_TimeLimitId",
-                        column: x => x.TimeLimitId,
-                        principalTable: "TimeLimits",
-                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_UserRooms_Users_UserId",
                         column: x => x.UserId,
@@ -706,7 +707,10 @@ namespace Shared.Migrations
                     type = table.Column<string>(type: "TEXT", maxLength: 21, nullable: false),
                     SecurityGroupDeviceId = table.Column<int>(type: "INTEGER", nullable: true),
                     SecurityGroupRoomId = table.Column<int>(type: "INTEGER", nullable: true),
-                    SecurityGroupSectionId = table.Column<int>(type: "INTEGER", nullable: true)
+                    SecurityGroupSectionId = table.Column<int>(type: "INTEGER", nullable: true),
+                    UserDeviceId = table.Column<int>(type: "INTEGER", nullable: true),
+                    UserRoomId = table.Column<int>(type: "INTEGER", nullable: true),
+                    UserSectionId = table.Column<int>(type: "INTEGER", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -733,6 +737,24 @@ namespace Shared.Migrations
                         name: "FK_TimeLimitAssignment_TimeLimits_TimeLimitId",
                         column: x => x.TimeLimitId,
                         principalTable: "TimeLimits",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_TimeLimitAssignment_UserDevices_UserDeviceId",
+                        column: x => x.UserDeviceId,
+                        principalTable: "UserDevices",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_TimeLimitAssignment_UserRooms_UserRoomId",
+                        column: x => x.UserRoomId,
+                        principalTable: "UserRooms",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_TimeLimitAssignment_UserSections_UserSectionId",
+                        column: x => x.UserSectionId,
+                        principalTable: "UserSections",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -803,6 +825,11 @@ namespace Shared.Migrations
                 column: "TypeId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_PermissionSecurityGroup_SecurityGroupsId",
+                table: "PermissionSecurityGroup",
+                column: "SecurityGroupsId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Rooms_SectionId",
                 table: "Rooms",
                 column: "SectionId");
@@ -821,11 +848,6 @@ namespace Shared.Migrations
                 name: "IX_SecurityGroupDevices_SecurityGroupId",
                 table: "SecurityGroupDevices",
                 column: "SecurityGroupId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_SecurityGroupDevices_TimeLimitId",
-                table: "SecurityGroupDevices",
-                column: "TimeLimitId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_SecurityGroupPermissions_PermissionId",
@@ -848,16 +870,6 @@ namespace Shared.Migrations
                 column: "SecurityGroupId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_SecurityGroupRooms_TimeLimitId",
-                table: "SecurityGroupRooms",
-                column: "TimeLimitId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_SecurityGroups_TimeLimitId",
-                table: "SecurityGroups",
-                column: "TimeLimitId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_SecurityGroupSections_SectionId",
                 table: "SecurityGroupSections",
                 column: "SectionId");
@@ -868,9 +880,9 @@ namespace Shared.Migrations
                 column: "SecurityGroupId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_SecurityGroupSections_TimeLimitId",
-                table: "SecurityGroupSections",
-                column: "TimeLimitId");
+                name: "IX_SecurityGroupUser_UsersId",
+                table: "SecurityGroupUser",
+                column: "UsersId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_TimeLimitAssignment_SecurityGroupDeviceId",
@@ -893,6 +905,21 @@ namespace Shared.Migrations
                 column: "TimeLimitId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_TimeLimitAssignment_UserDeviceId",
+                table: "TimeLimitAssignment",
+                column: "UserDeviceId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TimeLimitAssignment_UserRoomId",
+                table: "TimeLimitAssignment",
+                column: "UserRoomId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TimeLimitAssignment_UserSectionId",
+                table: "TimeLimitAssignment",
+                column: "UserSectionId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_TimeLimitWeekDays_WeekId",
                 table: "TimeLimitWeekDays",
                 column: "WeekId");
@@ -913,11 +940,6 @@ namespace Shared.Migrations
                 column: "DeviceId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_UserDevices_TimeLimitId",
-                table: "UserDevices",
-                column: "TimeLimitId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_UserDevices_UserId",
                 table: "UserDevices",
                 column: "UserId");
@@ -928,29 +950,14 @@ namespace Shared.Migrations
                 column: "RoomId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_UserRooms_TimeLimitId",
-                table: "UserRooms",
-                column: "TimeLimitId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_UserRooms_UserId",
                 table: "UserRooms",
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Users_TimeLimitId",
-                table: "Users",
-                column: "TimeLimitId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_UserSections_SectionId",
                 table: "UserSections",
                 column: "SectionId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_UserSections_TimeLimitId",
-                table: "UserSections",
-                column: "TimeLimitId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_UserSections_UserId",
@@ -987,22 +994,19 @@ namespace Shared.Migrations
                 name: "DeviceRecordings");
 
             migrationBuilder.DropTable(
+                name: "PermissionSecurityGroup");
+
+            migrationBuilder.DropTable(
                 name: "SecurityGroupPermissions");
+
+            migrationBuilder.DropTable(
+                name: "SecurityGroupUser");
 
             migrationBuilder.DropTable(
                 name: "TimeLimitAssignment");
 
             migrationBuilder.DropTable(
                 name: "TimeLimitWeekDayTimes");
-
-            migrationBuilder.DropTable(
-                name: "UserDevices");
-
-            migrationBuilder.DropTable(
-                name: "UserRooms");
-
-            migrationBuilder.DropTable(
-                name: "UserSections");
 
             migrationBuilder.DropTable(
                 name: "UserSecurityGroups");
@@ -1029,13 +1033,22 @@ namespace Shared.Migrations
                 name: "SecurityGroupSections");
 
             migrationBuilder.DropTable(
+                name: "UserDevices");
+
+            migrationBuilder.DropTable(
+                name: "UserRooms");
+
+            migrationBuilder.DropTable(
+                name: "UserSections");
+
+            migrationBuilder.DropTable(
                 name: "TimeLimitWeekDays");
 
             migrationBuilder.DropTable(
-                name: "Users");
+                name: "DeviceSharedCategories");
 
             migrationBuilder.DropTable(
-                name: "DeviceSharedCategories");
+                name: "SecurityGroups");
 
             migrationBuilder.DropTable(
                 name: "Devices");
@@ -1044,7 +1057,7 @@ namespace Shared.Migrations
                 name: "Rooms");
 
             migrationBuilder.DropTable(
-                name: "SecurityGroups");
+                name: "Users");
 
             migrationBuilder.DropTable(
                 name: "TimeLimitWeeks");

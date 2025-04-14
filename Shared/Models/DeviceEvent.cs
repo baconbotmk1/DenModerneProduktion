@@ -1,13 +1,17 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 namespace Shared.Models
 {
 	public class DeviceEvent : BaseModel
     {
-		public DateTime Timestamp { get; set; }
+        [Required]
+        public DateTime Timestamp { get; set; }
 		public string? Desc { get; set; }
 
+        [Required]
         public int DeviceId { get; set; }
         public Device Device { get; set; }
+        [Required]
         public int TypeId { get; set; }
 		public DeviceEventType Type { get; set; }
 

@@ -1,6 +1,8 @@
 ﻿
 using Shared;
+using Shared.Models;
 using Shared.Services;
+using System.Text.Json.Serialization;
 
 namespace SystemAPI;
 
@@ -12,15 +14,20 @@ public class Program
 
         // Add services to the container.
 
-        builder.Services.AddControllers();
+        builder.Services.AddControllers().AddJsonOptions(options =>
+        {
+            options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+            options.JsonSerializerOptions.WriteIndented = true;
+        });
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
 
-        builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
-
         builder.Services.AddDbContext<DataContext>();
-        builder.Services.AddScoped<UserRepository>();
+
+        builder.Services.AddScoped<IRepository<AccessCard>,AccessCardRepository>();
+        builder.Services.AddScoped<IRepository<User>, UserRepository>();
+        builder.Services.AddScoped<IRepository<SecurityGroup>, SecurityGroupRepository>();
 
         var app = builder.Build();
 
