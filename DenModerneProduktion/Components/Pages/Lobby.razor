@@ -1,7 +1,21 @@
 ﻿@page "/lobby"
 
 <h3>Lobby</h3>
-
+<div>
+    <div class="js-lobby-map">Map</div>
+    <div class="js-lobby-list">
+        @foreach (var room in AccessibleRooms)
+        {
+            <div class="js-lobby-list-item">
+                <p class="js-lobby-list-item-title">{RoomName}</p>
+                <p class="js-lobby-list-item-temperature">Temperatur: <span>{RoomTemperatureValue}</span></p>
+                <p class="js-lobby-list-item-humidity">Fugtighed: <span>{RoomHumidityValue}</span></p>
+                <div class="js-lobby-list-item-icon">{RoomIcon}</div>
+                <div class="js-lobby-list-item-accessible-timespan">{AccessibleTimeSpan}</div>
+            </div>
+        }
+    </div>
+</div>
 @code {
-
+    public List<string> AccessibleRooms { get; set; } = new() { "52.200", "52.201" };
 }

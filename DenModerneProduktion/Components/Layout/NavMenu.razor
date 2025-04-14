@@ -8,7 +8,7 @@
 
 <input type="checkbox" title="Navigation menu" class="navbar-toggler" />
 
-<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
+<div class="nav-scrollable js-nav" onclick="document.querySelector('.navbar-toggler').click()">
     <nav class="flex-column">
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
@@ -55,11 +55,28 @@
             </div>
         }
     </nav>
+    <div class="js-nav-rooms">
+        <h3>Lokaler</h3>
+        <div class="nav-scrollable">
+            <nav class="flex-column">
+                @foreach (var room in AccessibleRooms)
+                {
+                    <div class="nav-item px-3">
+                        <NavLink class="nav-link" href="@($"room?id={room}")" Match="NavLinkMatch.All">
+                            <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> @room
+                        </NavLink>
+                    </div>
+                }
+            </nav>
+        </div>
+    </div>
 </div>
 
 @code {
     [CascadingParameter]
     public HttpContext? httpContext { get; set; }
+    public List<string> AccessibleRooms { get; set; } = new() { "52.200", "52.201", "52.202" };
+    // public List<string> AccessibleRooms { get; set; } = new() { "52.200", "52.201", "52.202", "52.203", "52.204", "52.205", "52.206", "52.207", "52.208", "52.209", "52.210", "52.211", "52.212", "52.213", "52.214", "52.215", "52.216", "52.217", "52.218", "52.219", "52.220" };
 
     private bool _ShowSubMenu { get; set; }
     private bool _ShowAdminMenu { get; set; } = true;
