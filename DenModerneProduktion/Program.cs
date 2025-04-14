@@ -25,6 +25,8 @@ namespace DenModerneProduktion
 
             app.UseStaticFiles();
             app.UseAntiforgery();
+            
+            app.UseStatusCodePagesWithRedirects("/NotFound");
 
             app.MapRazorComponents<App>()
                 .AddInteractiveServerRenderMode();

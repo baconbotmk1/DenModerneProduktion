@@ -86,8 +86,6 @@
 
     protected override void OnInitialized()
     {
-        //TODO: Create check if logged in, to hide admin if not admin.
-
         if (httpContext is not null)
         {
             var test = Navigation.ToAbsoluteUri(Navigation.Uri);
