@@ -11,31 +11,28 @@ using Microsoft.EntityFrameworkCore;
 namespace SystemAPI.Controllers
 {
     [ApiController]
-    [Route("api/users")]
-    public class UsersController : BaseController<User>
+    [Route("api/sections")]
+    public class SectionsController : BaseController<Section>
     {
-        public UsersController(DataContext Context, IRepository<User> DIrepository) : base(Context, DIrepository)
+        public SectionsController(DataContext Context, IRepository<Section> DIrepository) : base(Context, DIrepository)
         {
         }
 
         [HttpGet]
-        public IEnumerable<User> Get()
+        public IEnumerable<Section> Get()
         {
-            return context.Users
+            return context.Sections
                 .AsNoTracking()
-                .Include(e => e.UserSecurityGroups)
-                    .ThenInclude(e => e.SecurityGroup)
-                        .ThenInclude(e => e.SecurityGroupPermissions)
-                            .ThenInclude(e => e.Permission)
-                .Include(e => e.AccessCards)
+                .Include(e => e.Rooms)
+                .Include(e => e.Building)
                 .ToList();
         }
 
         [HttpPost]
-        [SwaggerRequestExample(typeof(CreateUser), typeof(CreateUserExample))]
-        public ActionResult<User> Post([FromBody] CreateUser data)
+        [SwaggerRequestExample(typeof(CreateSection), typeof(CreateSectionExample))]
+        public ActionResult<Section> Post([FromBody] CreateSection data)
         {
-            User item = data.Adapt<User>();
+            Section item = data.Adapt<Section>();
 
             repository.Insert(item);
             repository.Save();
@@ -45,23 +42,23 @@ namespace SystemAPI.Controllers
 
 
         [HttpGet("{id}")]
-        public ActionResult<User> GetUserById(int id)
+        public ActionResult<Section> GetSectionById(int id)
         {
-            User? accessCard = repository.GetById(id);
+            Section? section = repository.GetById(id);
 
-            if (accessCard == null)
+            if (section == null)
             {
                 return NotFound();
             }
 
-            return Ok(accessCard);
+            return Ok(section);
         }
 
 
         [HttpPut("{id}")]
-        public ActionResult<User> Put(int id, [FromBody] CreateUser data)
+        public ActionResult<Section> Put(int id, [FromBody] CreateSection data)
         {
-            User? item = repository.GetById(id);
+            Section? item = repository.GetById(id);
 
             if (item == null)
             {
@@ -79,7 +76,7 @@ namespace SystemAPI.Controllers
         [HttpDelete("{id}")]
         public ActionResult Delete(int id)
         {
-            User? foundObject = repository.GetById(id);
+            Section? foundObject = repository.GetById(id);
 
             if (foundObject == null)
             {

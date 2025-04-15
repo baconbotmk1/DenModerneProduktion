@@ -15,12 +15,12 @@ namespace Shared.Models
 
         [InverseProperty("User")]
 		[JsonIgnore]
-		public ICollection<UserSecurityGroup> UserSecurityGroups { get; set; } = new List<UserSecurityGroup>();
+		public virtual ICollection<UserSecurityGroup> UserSecurityGroups { get; set; } = new List<UserSecurityGroup>();
 
-		public ICollection<AccessCard> AccessCards { get; set; } = new List<AccessCard>();
+		public virtual ICollection<AccessCard> AccessCards { get; set; } = new List<AccessCard>();
 
         [NotMapped]
-        public IEnumerable<SecurityGroup> SecurityGroups => UserSecurityGroups.Select(e => e.SecurityGroup);
+        public virtual IEnumerable<SecurityGroup> SecurityGroups => UserSecurityGroups.Select(e => e.SecurityGroup);
 
 
         public User()

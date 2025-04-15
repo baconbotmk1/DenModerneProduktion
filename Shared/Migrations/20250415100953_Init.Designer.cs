@@ -11,7 +11,7 @@ using Shared;
 namespace Shared.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20250414193707_Init")]
+    [Migration("20250415100953_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -19,36 +19,6 @@ namespace Shared.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.4");
-
-            modelBuilder.Entity("PermissionSecurityGroup", b =>
-                {
-                    b.Property<int>("PermissionsId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("SecurityGroupsId")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("PermissionsId", "SecurityGroupsId");
-
-                    b.HasIndex("SecurityGroupsId");
-
-                    b.ToTable("PermissionSecurityGroup");
-                });
-
-            modelBuilder.Entity("SecurityGroupUser", b =>
-                {
-                    b.Property<int>("SecurityGroupsId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("UsersId")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("SecurityGroupsId", "UsersId");
-
-                    b.HasIndex("UsersId");
-
-                    b.ToTable("SecurityGroupUser");
-                });
 
             modelBuilder.Entity("Shared.Models.AccessCard", b =>
                 {
@@ -389,6 +359,9 @@ namespace Shared.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<int?>("BuildingId")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -397,6 +370,8 @@ namespace Shared.Migrations
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BuildingId");
 
                     b.HasIndex("SectionId");
 
@@ -794,36 +769,6 @@ namespace Shared.Migrations
                     b.HasDiscriminator().HasValue("user_section");
                 });
 
-            modelBuilder.Entity("PermissionSecurityGroup", b =>
-                {
-                    b.HasOne("Shared.Models.Permission", null)
-                        .WithMany()
-                        .HasForeignKey("PermissionsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Shared.Models.SecurityGroup", null)
-                        .WithMany()
-                        .HasForeignKey("SecurityGroupsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("SecurityGroupUser", b =>
-                {
-                    b.HasOne("Shared.Models.SecurityGroup", null)
-                        .WithMany()
-                        .HasForeignKey("SecurityGroupsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Shared.Models.User", null)
-                        .WithMany()
-                        .HasForeignKey("UsersId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("Shared.Models.AccessCard", b =>
                 {
                     b.HasOne("Shared.Models.User", "User")
@@ -847,7 +792,7 @@ namespace Shared.Migrations
             modelBuilder.Entity("Shared.Models.Building", b =>
                 {
                     b.HasOne("Shared.Models.Cadastre", "Cadastre")
-                        .WithMany()
+                        .WithMany("Buildings")
                         .HasForeignKey("CadastreId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -969,6 +914,10 @@ namespace Shared.Migrations
 
             modelBuilder.Entity("Shared.Models.Room", b =>
                 {
+                    b.HasOne("Shared.Models.Building", null)
+                        .WithMany("Rooms")
+                        .HasForeignKey("BuildingId");
+
                     b.HasOne("Shared.Models.Section", "Section")
                         .WithMany("Rooms")
                         .HasForeignKey("SectionId")
@@ -981,7 +930,7 @@ namespace Shared.Migrations
             modelBuilder.Entity("Shared.Models.Section", b =>
                 {
                     b.HasOne("Shared.Models.Building", "Building")
-                        .WithMany()
+                        .WithMany("Sections")
                         .HasForeignKey("BuildingId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1238,6 +1187,18 @@ namespace Shared.Migrations
                         .IsRequired();
 
                     b.Navigation("UserSection");
+                });
+
+            modelBuilder.Entity("Shared.Models.Building", b =>
+                {
+                    b.Navigation("Rooms");
+
+                    b.Navigation("Sections");
+                });
+
+            modelBuilder.Entity("Shared.Models.Cadastre", b =>
+                {
+                    b.Navigation("Buildings");
                 });
 
             modelBuilder.Entity("Shared.Models.Device", b =>

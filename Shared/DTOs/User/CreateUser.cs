@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-namespace Shared.DTOs.User
+namespace Shared.DTOs
 {
 	public class CreateUser
 	{

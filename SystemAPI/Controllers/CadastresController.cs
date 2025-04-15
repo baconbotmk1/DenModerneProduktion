@@ -11,31 +11,27 @@ using Microsoft.EntityFrameworkCore;
 namespace SystemAPI.Controllers
 {
     [ApiController]
-    [Route("api/users")]
-    public class UsersController : BaseController<User>
+    [Route("api/cadastres")]
+    public class CadastresController : BaseController<Cadastre>
     {
-        public UsersController(DataContext Context, IRepository<User> DIrepository) : base(Context, DIrepository)
+        public CadastresController(DataContext Context, IRepository<Cadastre> DIrepository) : base(Context, DIrepository)
         {
         }
 
         [HttpGet]
-        public IEnumerable<User> Get()
+        public IEnumerable<Cadastre> Get()
         {
-            return context.Users
+            return context.Cadastres
                 .AsNoTracking()
-                .Include(e => e.UserSecurityGroups)
-                    .ThenInclude(e => e.SecurityGroup)
-                        .ThenInclude(e => e.SecurityGroupPermissions)
-                            .ThenInclude(e => e.Permission)
-                .Include(e => e.AccessCards)
+                .Include(e => e.Buildings)
                 .ToList();
         }
 
+        //[SwaggerRequestExample(typeof(CreateCadastre), typeof(CreateCadastreExample))]
         [HttpPost]
-        [SwaggerRequestExample(typeof(CreateUser), typeof(CreateUserExample))]
-        public ActionResult<User> Post([FromBody] CreateUser data)
+        public ActionResult<Cadastre> Post([FromBody] CreateCadastre data)
         {
-            User item = data.Adapt<User>();
+            Cadastre item = data.Adapt<Cadastre>();
 
             repository.Insert(item);
             repository.Save();
@@ -45,23 +41,23 @@ namespace SystemAPI.Controllers
 
 
         [HttpGet("{id}")]
-        public ActionResult<User> GetUserById(int id)
+        public ActionResult<Cadastre> GetCadastreById(int id)
         {
-            User? accessCard = repository.GetById(id);
+            Cadastre? Cadastre = repository.GetById(id);
 
-            if (accessCard == null)
+            if (Cadastre == null)
             {
                 return NotFound();
             }
 
-            return Ok(accessCard);
+            return Ok(Cadastre);
         }
 
 
         [HttpPut("{id}")]
-        public ActionResult<User> Put(int id, [FromBody] CreateUser data)
+        public ActionResult<Cadastre> Put(int id, [FromBody] CreateCadastre data)
         {
-            User? item = repository.GetById(id);
+            Cadastre? item = repository.GetById(id);
 
             if (item == null)
             {
@@ -79,7 +75,7 @@ namespace SystemAPI.Controllers
         [HttpDelete("{id}")]
         public ActionResult Delete(int id)
         {
-            User? foundObject = repository.GetById(id);
+            Cadastre? foundObject = repository.GetById(id);
 
             if (foundObject == null)
             {

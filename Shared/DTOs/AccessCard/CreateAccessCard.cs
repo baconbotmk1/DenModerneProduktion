@@ -2,7 +2,7 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace Shared.DTOs.AccessCard
+namespace Shared.DTOs
 {
 	public class CreateAccessCard
 	{

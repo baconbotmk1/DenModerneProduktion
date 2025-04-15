@@ -27,6 +27,11 @@ namespace Shared.Services
             return dbSet.Find(id);
         }
 
+        public virtual bool Exists(int id)
+        {
+            return dbSet.Find(id) != null;
+        }
+
         public virtual void Update(T item)
         {
             dbSet.Attach(item);

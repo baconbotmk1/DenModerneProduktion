@@ -12,16 +12,16 @@ namespace Shared.Models
 
         [InverseProperty("SecurityGroup")]
         [JsonIgnore]
-        public ICollection<SecurityGroupPermission> SecurityGroupPermissions { get; } = new List<SecurityGroupPermission>();
+        public virtual ICollection<SecurityGroupPermission> SecurityGroupPermissions { get; } = new List<SecurityGroupPermission>();
 
         [InverseProperty("SecurityGroup")]
         [JsonIgnore]
-        public ICollection<UserSecurityGroup> UserSecurityGroups { get; } = new List<UserSecurityGroup>();
+        public virtual ICollection<UserSecurityGroup> UserSecurityGroups { get; } = new List<UserSecurityGroup>();
 
         [NotMapped]
-        public IEnumerable<Permission> Permissions => SecurityGroupPermissions.Select(e => e.Permission);
+        public virtual IEnumerable<Permission> Permissions => SecurityGroupPermissions.Select(e => e.Permission);
         [NotMapped]
-        public IEnumerable<User> Users => UserSecurityGroups.Select(e => e.User);
+        public virtual IEnumerable<User> Users => UserSecurityGroups.Select(e => e.User);
 	}
 }
 
