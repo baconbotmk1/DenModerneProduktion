@@ -1,4 +1,6 @@
-﻿@inject NavigationManager Navigation
+﻿@using System.Diagnostics
+@inject NavigationManager Navigation
+@inject IHttpContextAccessor httpContextAccessor
 
 <div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
@@ -55,6 +57,11 @@
                                 <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Rettigheder
                             </NavLink>
                         </div>
+                        <div class="nav-item px-3">
+                            <NavLink class="nav-link" href="admin/security_groups">
+                                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Sikkerhedsgrupper
+                            </NavLink>
+                        </div>
                     </nav>
                 }
             </div>
@@ -78,8 +85,8 @@
 </div>
 
 @code {
-    [CascadingParameter]
-    public HttpContext? httpContext { get; set; }
+    public HttpContext? httpContext => httpContextAccessor.HttpContext;
+
     // public List<string> AccessibleRooms { get; set; } = new() { "52.200", "52.201", "52.202" };
     public List<string> AccessibleRooms { get; set; } = new() { "52.200", "52.201", "52.202", "52.203", "52.204", "52.205", "52.206", "52.207", "52.208", "52.209", "52.210", "52.211", "52.212", "52.213", "52.214", "52.215", "52.216", "52.217", "52.218", "52.219", "52.220" };
 
@@ -88,14 +95,24 @@
 
     private void ShowAdminMenu() => _ShowAdminMenu = true;
 
-
     protected override void OnInitialized()
+    {
+        OnLocationChanged();
+        Navigation.LocationChanged += (object? sender, LocationChangedEventArgs e) => OnLocationChanged();
+    }
+
+    private void OnLocationChanged()
     {
         if (httpContext is not null)
         {
             var test = Navigation.ToAbsoluteUri(Navigation.Uri);
+            Debug.WriteLine(test);
             var test2 = test.AbsolutePath;
             var test3 = test2.Split("/");
+            foreach(string str in test3)
+            {
+                Debug.WriteLine(str);
+            }
             var test4 = test3.Contains("admin");
             _ShowSubMenu = Navigation.ToAbsoluteUri(Navigation.Uri).AbsolutePath.Split("/").Contains("admin");
             StateHasChanged();

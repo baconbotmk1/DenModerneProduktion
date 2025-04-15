@@ -1,4 +1,4 @@
-﻿@page "/admin/permissions"
+﻿@page "/admin/security_groups"
 @using DenModerneProduktion.Components.Helpers
 @using DenModerneProduktion.Services
 @using Shared.Models
@@ -6,7 +6,7 @@
 @inject ApiRequester requester
 @inject ViewHelper viewHelper
 
-<GenericCRUDListView DeleteMessage="DeleteMessage" Link="admin/permissions" APIEndpoint="api/permissions" TType="Permission" Title="Rettigheder" Subtitle="Disse er de rettigheder som en sikkerhedsgruppe kan få tildelt og som kræves for at kunne få adgang til visse funktioner.">
+<GenericCRUDListView DeleteMessage="DeleteMessage" Link="admin/security_groups" APIEndpoint="api/security_groups" TType="SecurityGroup" Title="Sikkerhedsgrupper" Subtitle="Disse er sikkerhedsgrupper som brugere kan være del af. Det er også dem som får adgang til lokaler, sektioner og enheder.">
     <Headers>
         <th>ID</th>
         <th>Navn</th>
@@ -19,7 +19,6 @@
     </Rows>
 </GenericCRUDListView>
 
-
 @code {
-    public string DeleteMessage(Permission perm) => "Slet rettigheden '" + perm.Name + "'?";
+    public string DeleteMessage(SecurityGroup secGrp) => "Slet sikkerhedsgruppen '" + secGrp.Name +"'?";
 }
