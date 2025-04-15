@@ -1,6 +1,21 @@
 ﻿@page "/room"
 <h3>Room</h3>
+<div>
+    <div class="">
+        <h2>Temperature</h2>
+        <h3>{value}</h3>
+        <div>
+            <h3>Limit</h3>
+            <InputNumber @bind-Value="MinValue" placeholder="Minimum"></InputNumber>
+            <InputNumber @bind-Value="MaxValue" placeholder="Maximum"></InputNumber>
+        </div>
+    </div>
+</div>
+
+
 
 @code {
+    public double MinValue { get; set; } = 18.2;
+    public double MaxValue { get; set; } = 22.5;
 
 }

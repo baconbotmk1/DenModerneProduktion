@@ -109,7 +109,6 @@
 .js-nav-rooms .nav-scrollable {
     max-height: 500px;
     height:fit-content;
-    border: 5px dotted black;
 }
 .js-nav-rooms h3{
     color:white;
