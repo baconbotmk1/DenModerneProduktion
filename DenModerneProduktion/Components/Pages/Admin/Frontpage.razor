@@ -1,0 +1,59 @@
+﻿@page "/admin/"
+<h3>Admin frontpage</h3>
+
+<div class="js-alarm-list">
+    <div class="js-alarm-card">
+        <h2>Nærhedssensor</h2>
+        <h3>{TotalTriggeredMotionSensor}</h3>
+        <div class="js-alarm-card-list">
+            @foreach (var device in MotionDevices)
+            {
+                <p>{lokale}</p>
+            }
+        </div>
+    </div>
+    <div class="js-alarm-card">
+        <h2>Temperatur</h2>
+        <h3>{ValuesOutsideBoundary}</h3>
+        <div class="js-alarm-card-list">
+            @foreach (var device in TemperatureDevices)
+            {
+                <p>{lokale} - {value}</p>
+            }
+        </div>
+    </div>
+    <div class="js-alarm-card">
+        <h2>Fugtighed</h2>
+        <h3>{ValuesOutsideBoundary}</h3>
+        <div class="js-alarm-card-list">
+            @foreach (var device in HumidityDevices)
+            {
+                <p>{lokale} - {value}</p>
+            }
+        </div>
+    </div>
+</div>
+<div>
+    <div>
+        <h3>Temperature Limit</h3>
+        <InputNumber @bind-Value="MinimumTemperatureLimit" placeholder="Minimum"></InputNumber>
+        <InputNumber @bind-Value="MaxTemperatureLimit" placeholder="Maximum"></InputNumber>
+    </div>
+    <div>
+        <h3>Humidity Limit</h3>
+        <InputNumber @bind-Value="MinimumHumidityLimit" placeholder="Minimum"></InputNumber>
+        <InputNumber @bind-Value="MaximumHumidityLimit" placeholder="Maximum"></InputNumber>
+    </div>
+</div>
+
+@code {
+    public List<string> MotionDevices { get; set; } = new();
+    public List<string> TemperatureDevices { get; set; } = new() {"25","20","19"};
+    public List<string> HumidityDevices { get; set; } = new();
+
+    public double MinimumTemperatureLimit { get; set; } = 18.2;
+    public double MaxTemperatureLimit { get; set; } = 22.5;
+
+    public double MinimumHumidityLimit { get; set; } = 25;
+    public double MaximumHumidityLimit { get; set; } = 75;
+}

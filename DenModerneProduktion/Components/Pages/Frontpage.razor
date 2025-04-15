@@ -1,0 +1,81 @@
+﻿@page "/"
+<h3>Status dashboard</h3>
+<div>
+    <div class="js-status-card">
+        <div class="js-status-card-header">
+            <h4 class="js-status-card-header-title">Global temperatur</h4>
+            <span class="js-status-card-header-value">@GlobalTemperature</span>
+        </div>
+        <div class="js-status-card-info">
+            <h4 class="js-status-card-info-header">Uden for normalen</h4>
+            <div class="js-status-card-info-list">
+                @foreach (var device in TemperatureDevices)
+                {
+                    <p class="js-status-card-info-list-item">{Lokale navn} <span>{tempVærdi}</span></p>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="js-status-card">
+        <div class="js-status-card-header">
+            <h4 class="js-status-card-header-title">Global fugtighed</h4>
+            <span class="js-status-card-header-value">@GlobalHumidity</span>
+        </div>
+        <div class="js-status-card-info">
+            <h4 class="js-status-card-info-header">Uden for normalen</h4>
+            <div class="js-status-card-info-list">
+                @foreach (var device in HumidityDevices)
+                {
+                    <p class="js-status-card-info-list-item">{Lokale navn} <span>{fugtVærdi}</span></p>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="js-status-card">
+        <div class="js-status-card-header">
+            <h4 class="js-status-card-header-title">Åbne døre</h4>
+        </div>
+        <div class="js-status-card-info">
+            <div class="js-status-card-info-list">
+                @foreach (var device in DoorDevices)
+                {
+                    <p class="js-status-card-info-list-item">{Lokale navn}</p>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="js-status-card">
+        <div class="js-status-card-header">
+            <h4 class="js-status-card-header-title">Åbne vinduer</h4>
+        </div>
+        <div class="js-status-card-info">
+            <div class="js-status-card-info-list">
+                @foreach (var device in WindowDevices)
+                {
+                    <p class="js-status-card-info-list-item">{Lokale navn}</p>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+@code {
+    public List<string> Devices { get; set; }
+
+    public double GlobalTemperature { get; set; }
+    public List<string> TemperatureDevices { get; set; } = new() { "52.200", "52.201" };
+
+    public double GlobalHumidity { get; set; }
+    public List<string> HumidityDevices { get; set; } = new() { "52.203" };
+
+    public int DoorsUnlocked { get; set; }
+    public List<string> DoorDevices { get; set; } = new() { "52.200", "52.205" };
+
+    public int WindowsOpened { get; set; }
+    public List<string> WindowDevices { get; set; } = new() { "52.200", "52.201", "52.201", "52.202", "52.203", "52.203", };
+}
