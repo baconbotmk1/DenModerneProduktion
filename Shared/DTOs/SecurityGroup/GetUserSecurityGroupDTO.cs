@@ -3,13 +3,13 @@ using Shared.Models;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
-namespace Shared.DTOs
+namespace Shared.DTOs.SecurityGroup
 {
-	public class GetUserSecurityGroupDTO : SecurityGroup
+	public class GetUserSecurityGroupDTO : Models.SecurityGroup
 	{
         [JsonIgnore]
         [NotMapped]
-        public override IEnumerable<User> Users => new List<User>();
+        public override IEnumerable<Models.User> Users => new List<Models.User>();
 
         [JsonIgnore]
         [NotMapped]

@@ -1,11 +1,5 @@
 ﻿using System.Diagnostics;
-using Mapster;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Shared;
-using Shared.DTOs;
-using Shared.Models;
-using Shared.Services;
+using Shared.DTOs.SecurityGroup;
 
 namespace SystemAPI.Controllers
 {

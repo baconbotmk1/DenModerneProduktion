@@ -1,17 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using AutoMapper;
-using Mapster;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Shared;
-using Shared.Models;
-using Shared.Services;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-
-namespace SystemAPI.Controllers
+﻿namespace SystemAPI.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]

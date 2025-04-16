@@ -1,6 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
-namespace Shared.DTOs
+namespace Shared.DTOs.SecurityGroup
 {
 	public class CreateSecurityGroupDTO
 	{

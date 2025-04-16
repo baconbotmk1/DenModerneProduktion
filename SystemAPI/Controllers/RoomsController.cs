@@ -1,28 +1,28 @@
-﻿using Shared.DTOs.Cadastre;
+﻿using Shared.DTOs.Room;
+
 namespace SystemAPI.Controllers
 {
     [ApiController]
-    [Route("api/cadastres")]
-    public class CadastresController : BaseController<Cadastre>
+    [Route("api/rooms")]
+    public class RoomsController : BaseController<Room>
     {
-        public CadastresController(DataContext Context, IRepository<Cadastre> DIrepository) : base(Context, DIrepository)
+        public RoomsController(DataContext Context, IRepository<Room> DIrepository) : base(Context, DIrepository)
         {
         }
 
         [HttpGet]
-        public IEnumerable<Cadastre> Get()
+        public IEnumerable<Room> Get()
         {
-            return context.Cadastres
+            return context.Rooms
                 .AsNoTracking()
-                .Include(e => e.Buildings)
+                .Include(e => e.Section)
                 .ToList();
         }
 
-        //[SwaggerRequestExample(typeof(CreateCadastre), typeof(CreateCadastreExample))]
         [HttpPost]
-        public ActionResult<Cadastre> Post([FromBody] CreateCadastre data)
+        public ActionResult<Room> Post([FromBody] CreateRoom data)
         {
-            Cadastre item = data.Adapt<Cadastre>();
+            Room item = data.Adapt<Room>();
 
             repository.Insert(item);
             repository.Save();
@@ -32,23 +32,23 @@ namespace SystemAPI.Controllers
 
 
         [HttpGet("{id}")]
-        public ActionResult<Cadastre> GetCadastreById(int id)
+        public ActionResult<Room> GetSectionById(int id)
         {
-            Cadastre? Cadastre = repository.GetById(id);
+            Room? section = repository.GetById(id);
 
-            if (Cadastre == null)
+            if (section == null)
             {
                 return NotFound();
             }
 
-            return Ok(Cadastre);
+            return Ok(section);
         }
 
 
         [HttpPut("{id}")]
-        public ActionResult<Cadastre> Put(int id, [FromBody] CreateCadastre data)
+        public ActionResult<Room> Put(int id, [FromBody] CreateRoom data)
         {
-            Cadastre? item = repository.GetById(id);
+            Room? item = repository.GetById(id);
 
             if (item == null)
             {
@@ -66,7 +66,7 @@ namespace SystemAPI.Controllers
         [HttpDelete("{id}")]
         public ActionResult Delete(int id)
         {
-            Cadastre? foundObject = repository.GetById(id);
+            Room? foundObject = repository.GetById(id);
 
             if (foundObject == null)
             {

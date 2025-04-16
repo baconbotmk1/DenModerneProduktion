@@ -1,9 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Shared.Services;
-using Shared;
-using Shared.Models;
-using System.Diagnostics;
-using System.Text.Json;
+﻿using System.Diagnostics;
 
 namespace SystemAPI.Controllers
 {

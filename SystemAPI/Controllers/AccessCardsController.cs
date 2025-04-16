@@ -1,9 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Shared;
-using Shared.Models;
-using Shared.DTOs;
-using Shared.Services;
-using Mapster;
+﻿using Shared.DTOs.AccessCard;
 
 namespace SystemAPI.Controllers
 {

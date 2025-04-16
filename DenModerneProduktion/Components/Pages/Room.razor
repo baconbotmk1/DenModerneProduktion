@@ -1,4 +1,4 @@
-﻿@page "/room/{id}"
+﻿@page "/rooms/{id}"
 
 <h3>Room</h3>
 <div>
@@ -16,7 +16,7 @@
         @if (UserIsAdmin)
         {
             <div class="js-room-header-admin">
-                <a href="@($"/admin/room/{id}")"><Icon Name="IconName.Gear" Size="IconSize.x2" Color="IconColor.Primary" /></a>
+                <a href="@($"/admin/rooms/{id}")"><Icon Name="IconName.Gear" Size="IconSize.x2" Color="IconColor.Primary" /></a>
             </div>
         }
     </div>
@@ -47,7 +47,6 @@
     public double MinValue { get; set; } = 18.2;
     public double MaxValue { get; set; }
     public bool UserIsAdmin { get; set; }
-    public HttpContext? httpContext => httpContextAccessor.HttpContext;
 
     public void ChangePeriod(int index)
     {

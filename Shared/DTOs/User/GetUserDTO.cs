@@ -2,10 +2,11 @@
 using Shared.Models;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
+using Shared.DTOs.SecurityGroup;
 
-namespace Shared.DTOs
+namespace Shared.DTOs.User
 {
-	public class GetUserDTO : User
+	public class GetUserDTO : Models.User
 	{
         [JsonIgnore]
         public override ICollection<UserSecurityGroup> UserSecurityGroups { get; set; } = new List<UserSecurityGroup>();

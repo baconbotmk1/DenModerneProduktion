@@ -1,9 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Shared;
-using Shared.DTOs;
-using Shared.Models;
-using Shared.Services;
-
+﻿using Shared.DTOs.Permission;
 namespace SystemAPI.Controllers
 {
     [ApiController]

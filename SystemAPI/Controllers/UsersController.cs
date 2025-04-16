@@ -1,12 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Shared;
-using Shared.Models;
-using Shared.DTOs;
-using Shared.Services;
-using Mapster;
+﻿using Shared.DTOs.User;
 using Swashbuckle.AspNetCore.Filters;
 using SystemAPI.SwaggerExamples;
-using Microsoft.EntityFrameworkCore;
 
 namespace SystemAPI.Controllers
 {
