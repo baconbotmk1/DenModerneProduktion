@@ -1,7 +1,7 @@
 ﻿@page "/admin/rooms/{id}"
 @using System.Diagnostics
 @using DenModerneProduktion.Services
-@using Shared.DTOs
+@using Shared.DTOs.Room
 @using Shared.Models
 @inject ApiRequester requester
 @inject ViewHelper viewHelper
@@ -9,48 +9,48 @@
 
 <div class="card w-50">
     <div class="card-header">
-        <h3>@(SecurityGroupID == 0 ? "Ny Sikkerhedsgruppe" : "Sikkerhedsgruppe #" + SecurityGroupID)</h3>
+        <h3>@(RoomID == 0 ? "Nyt lokale" : "Lokale #" + RoomID)</h3>
 
     </div>
     <div class="card-body">
         <div class="mb-2">
             <span class="form-label">Navn</span>
-            <input @bind-value="name" required name="name" placeholder="Navn" type="text" class="form-control" />
+            <input @bind-value="Name" required name="name" placeholder="Navn" type="text" class="form-control" />
         </div>
         <div class="mb-2">
-            <span class="form-label">Beskrivelse</span>
-            <input @bind-value="desc" name="desc" placeholder="Beskrivelse" type="text" class="form-control" />
+            <span class="form-label">Sektion</span>
+            <input @bind-value="SectionID" name="section" placeholder="Sektion" type="text" class="form-control" />
         </div>
     </div>
     <div class="card-footer">
-        <button @onclick="() => Create()" class="@(SecurityGroupID == 0 ? "" : "d-none") float-end btn btn-sm btn-success">Opret</button>
-        <button @onclick="() => Update()" class="@(SecurityGroupID != 0 ? "" : "d-none") float-end btn btn-sm btn-primary">Gem</button>
+        <button @onclick="() => Create()" class="@(RoomID == 0 ? "" : "d-none") float-end btn btn-sm btn-success">Opret</button>
+        <button @onclick="() => Update()" class="@(RoomID != 0 ? "" : "d-none") float-end btn btn-sm btn-primary">Gem</button>
     </div>
 </div>
 
 @code {
     [Parameter]
-    public string id { get; set; }
+    public string ID { get; set; }
 
-    public string name { get; set; } = "";
-    public string desc { get; set; } = "";
+    public string Name { get; set; } = "";
+    public string SectionID { get; set; } = "";
 
-    public int SecurityGroupID => Int32.TryParse(id, out int res) ? res : 0;
+    public int RoomID => Int32.TryParse(ID, out int res) ? res : 0;
 
     protected override async Task OnInitializedAsync()
     {
-        if (SecurityGroupID != 0)
+        if (RoomID != 0)
         {
-            SecurityGroup? securityGroup = (await requester.Get<SecurityGroup>("api/security_groups/" + SecurityGroupID)).Data;
+            Room? room = (await requester.Get<Room>("api/rooms/" + RoomID)).Data;
 
-            if (securityGroup != null)
+            if (room != null)
             {
-                name = securityGroup.Name;
-                desc = securityGroup.Desc;
+                Name = room.Name;
+                SectionID = room.SectionId.ToString();
             }
             else
             {
-                navigationManager.NavigateTo("admin/security_groups");
+                navigationManager.NavigateTo("admin/rooms");
             }
         }
     }
@@ -58,39 +58,39 @@
 
     async public Task Create()
     {
-        viewHelper.ShowLoader("Opretter sikkerhedsgruppe...");
+        viewHelper.ShowLoader("Opretter lokale...");
 
-        SecurityGroup? newSecurityGroup = (await requester.Post<SecurityGroup>("api/security_groups", new CreateSecurityGroupDTO()
-        {
-            Name = name,
-            Desc = desc
-        })).Data;
+        Room? newSecurityGroup = (await requester.Post<Room>("api/rooms", new CreateRoom()
+            {
+                Name = Name,
+                SectionId = int.Parse(SectionID)
+            })).Data;
 
         viewHelper.HideLoader();
 
         if (newSecurityGroup != null && newSecurityGroup.Id != null)
         {
-            navigationManager.NavigateTo($"/admin/security_groups/{newSecurityGroup.Id}");
+            navigationManager.NavigateTo($"/admin/rooms/{newSecurityGroup.Id}");
             return;
         }
     }
 
     async public Task Update()
     {
-        viewHelper.ShowLoader("Opdatere sikkerhedsgruppe...");
+        viewHelper.ShowLoader("Opdatere lokale...");
 
-        SecurityGroup? updatedSecurityGroup = (await requester.Put<SecurityGroup>("api/security_groups/" + SecurityGroupID, new CreateSecurityGroupDTO()
-        {
-            Name = name,
-            Desc = desc
-        })).Data;
+        Room? updatedSecurityGroup = (await requester.Put<Room>("api/rooms/" + RoomID, new CreateRoom()
+            {
+                Name = Name,
+                SectionId = int.Parse(SectionID)
+            })).Data;
 
         viewHelper.HideLoader();
 
         if (updatedSecurityGroup != null)
         {
-            name = updatedSecurityGroup.Name;
-            desc = updatedSecurityGroup.Desc;
+            Name = updatedSecurityGroup.Name;
+            SectionID = updatedSecurityGroup.SectionId.ToString();
         }
     }
 }

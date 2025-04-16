@@ -1,7 +1,7 @@
 ﻿@page "/admin/permissions/{id}"
 @using System.Diagnostics
 @using DenModerneProduktion.Services
-@using Shared.DTOs
+@using Shared.DTOs.Permission
 @using Shared.Models
 @inject ApiRequester requester
 @inject ViewHelper viewHelper
@@ -15,11 +15,11 @@
     <div class="card-body">
         <div class="mb-2">
             <span class="form-label">Navn</span>
-            <input @bind-value="name" required name="name" placeholder="Navn" type="text" class="form-control" />
+            <input @bind-value="Name" required name="name" placeholder="Navn" type="text" class="form-control" />
         </div>
         <div class="mb-2">
             <span class="form-label">Beskrivelse</span>
-            <input @bind-value="desc" name="desc" placeholder="Beskrivelse" type="text" class="form-control" />
+            <input @bind-value="Desc" name="desc" placeholder="Beskrivelse" type="text" class="form-control" />
         </div>
     </div>
     <div class="card-footer">
@@ -30,12 +30,12 @@
 
 @code {
     [Parameter]
-    public string id { get; set; }
+    public string ID { get; set; }
 
-    public string name { get; set; } = "";
-    public string desc { get; set; } = "";
+    public string Name { get; set; } = "";
+    public string Desc { get; set; } = "";
 
-    public int PermissionID => Int32.TryParse(id, out int res) ? res : 0;
+    public int PermissionID => Int32.TryParse(ID, out int res) ? res : 0;
 
     protected override async Task OnInitializedAsync()
     {
@@ -45,8 +45,8 @@
 
             if (permission != null)
             {
-                name = permission.Name;
-                desc = permission.Desc;
+                Name = permission.Name;
+                Desc = permission.Desc;
             }
             else
             {
@@ -63,11 +63,11 @@
 
         Permission? newPermission = (await requester.Post<Permission>("api/permissions", new CreatePermissionDTO()
         {
-            Name = name,
-            Desc = desc
+            Name = Name,
+            Desc = Desc
         })).Data;
 
-        Debug.WriteLine($"Creating permission with name {name} and desc {desc}");
+        Debug.WriteLine($"Creating permission with name {Name} and desc {Desc}");
 
         viewHelper.HideLoader();
 
@@ -82,20 +82,20 @@
     {
         viewHelper.ShowLoader("Opdatere rettighed...");
 
-        Debug.WriteLine($"Updating permission {name} with id {PermissionID} and desc {desc}");
+        Debug.WriteLine($"Updating permission {Name} with id {PermissionID} and desc {Desc}");
 
         Permission? updatedPermission = (await requester.Put<Permission>("api/permissions/" + PermissionID, new CreatePermissionDTO()
         {
-            Name = name,
-            Desc = desc
+            Name = Name,
+            Desc = Desc
         })).Data;
 
         viewHelper.HideLoader();
 
         if (updatedPermission != null)
         {
-            name = updatedPermission.Name;
-            desc = updatedPermission.Desc;
+            Name = updatedPermission.Name;
+            Desc = updatedPermission.Desc;
         }
     }
 }

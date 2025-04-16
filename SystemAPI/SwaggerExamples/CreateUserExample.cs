@@ -1,5 +1,5 @@
 ﻿using System;
-using Shared.DTOs;
+using Shared.DTOs.User;
 using Swashbuckle.AspNetCore.Filters;
 
 namespace SystemAPI.SwaggerExamples
