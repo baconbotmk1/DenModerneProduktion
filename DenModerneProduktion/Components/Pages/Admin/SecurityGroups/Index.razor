@@ -1,0 +1,24 @@
+﻿@page "/admin/security_groups"
+@using DenModerneProduktion.Components.Helpers
+@using DenModerneProduktion.Services
+@using Shared.Models
+@using System.Diagnostics
+@inject ApiRequester requester
+@inject ViewHelper viewHelper
+
+<GenericCRUDListView DeleteMessage="DeleteMessage" Link="admin/security_groups" APIEndpoint="api/security_groups" TType="SecurityGroup" Title="Sikkerhedsgrupper" Subtitle="Disse er sikkerhedsgrupper som brugere kan være del af. Det er også dem som får adgang til lokaler, sektioner og enheder.">
+    <Headers>
+        <th>ID</th>
+        <th>Navn</th>
+        <th>Beskrivelse</th>
+    </Headers>
+    <Rows>
+        <td>@context.Id</td>
+        <td>@context.Name</td>
+        <td>@context.Desc</td>
+    </Rows>
+</GenericCRUDListView>
+
+@code {
+    public string DeleteMessage(SecurityGroup secGrp) => "Slet sikkerhedsgruppen '" + secGrp.Name +"'?";
+}

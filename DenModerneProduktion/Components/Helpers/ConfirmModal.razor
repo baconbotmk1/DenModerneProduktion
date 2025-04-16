@@ -1,0 +1,40 @@
+﻿@inject IJSRuntime JS
+<span>@Text</span>
+
+<div class="d-flex flex-row justify-content-around">
+    <Button class="mt-3 w-25 btn-sm" Color="ButtonColor.Success" Type="ButtonType.Button" @onclick="Confirm">
+        @AcceptText
+    </Button>
+
+    <Button class="mt-3 w-25" Color="ButtonColor.Danger" Type="ButtonType.Button" @onclick="Reject">
+        @RejectText
+    </Button>
+</div>
+
+@code {
+    [Parameter] public string Text { get; set; } = "Modal Titel";
+    [Parameter] public string AcceptText { get; set; } = "Ja";
+    [Parameter] public string RejectText { get; set; } = "Nej";
+
+    [Parameter] public EventCallback<MouseEventArgs> OnReject { get; set; } = new EventCallback<MouseEventArgs>();
+    [Parameter] public EventCallback<MouseEventArgs> OnConfirm { get; set; } = new EventCallback<MouseEventArgs>();
+
+    [Parameter] public Modal Modal { get; set; } = default!;
+
+    protected void Confirm()
+    {
+        OnConfirm.InvokeAsync();
+        Modal.HideAsync();
+    }
+
+    protected void Reject()
+    {
+        OnReject.InvokeAsync();
+        Modal.HideAsync();
+    }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+    }
+}

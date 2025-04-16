@@ -11,4 +11,13 @@
   <ItemGroup>
     <ProjectReference Include="..\Shared\Shared.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <None Remove="Components\Pages\Admin\Permissions\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Components\Pages\Admin\Permissions\" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Blazor.Bootstrap" Version="3.3.1" />
+  </ItemGroup>
 </Project>

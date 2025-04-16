@@ -5,7 +5,7 @@ VisualStudioVersion = 17.11.35327.3
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shared", "Shared\Shared.csproj", "{B4D440D0-5381-4351-9D68-5352A79D3EE5}"
 EndProject
-Project("{9344BDBB-3E7F-41FC-A0DD-8665D75EE146}") = "DenModerneProduktion", "DenModerneProduktion\DenModerneProduktion.csproj", "{8168BBB5-C34A-43DD-95F8-FE8A148E6EB7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DenModerneProduktion", "DenModerneProduktion\DenModerneProduktion.csproj", "{8168BBB5-C34A-43DD-95F8-FE8A148E6EB7}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SystemAPI", "SystemAPI\SystemAPI.csproj", "{05256796-150E-45F1-AA75-BC5F51796CA4}"
 EndProject
