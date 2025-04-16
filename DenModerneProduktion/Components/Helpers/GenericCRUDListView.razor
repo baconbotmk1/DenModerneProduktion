@@ -89,7 +89,7 @@
             viewHelper.Alert(response.Message);
         }
 
-        Items = response.Data;
+        Items = ((Shared.Responses.AcceptedResponse<List<TType>>)response).Data;
 
         if (Items == null)
         {

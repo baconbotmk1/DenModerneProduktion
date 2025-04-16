@@ -18,6 +18,7 @@
     <None Remove="DTOs\Building\" />
     <None Remove="DTOs\Cadastre\" />
     <None Remove="DTOs\Permission\" />
+    <None Remove="Responses\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Models\" />
@@ -28,6 +29,7 @@
     <Folder Include="DTOs\Building\" />
     <Folder Include="DTOs\Cadastre\" />
     <Folder Include="DTOs\Permission\" />
+    <Folder Include="Responses\" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />

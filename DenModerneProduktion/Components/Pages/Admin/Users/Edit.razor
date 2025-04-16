@@ -3,6 +3,7 @@
 @using DenModerneProduktion.Services
 @using Shared.DTOs
 @using Shared.Models
+@using System.Text.Json;
 @inject ApiRequester requester
 @inject ViewHelper viewHelper
 @inject NavigationManager navigationManager
@@ -36,7 +37,9 @@
     {
         if (UserID != 0)
         {
-            User? user = (await requester.Get<User>("api/users/" + UserID)).Data;
+            var response = await requester.Get<User>("api/users/" + UserID);
+
+            User? user = response is Shared.Responses.AcceptedResponse<User> ? ((Shared.Responses.AcceptedResponse<User>)response).Data : null;
 
             if (user != null)
             {
@@ -59,7 +62,7 @@
             Name = name,
         });
 
-        User? newUser = response.Data;
+        User? newUser = response is AcceptedResponse<User> ? ((AcceptedResponse<User>)response).Data : null;
 
         if (response.StatusCode > 200 || response.StatusCode < 200)
         {
@@ -88,16 +91,22 @@
             Name = name,
         });
 
-        if(response.StatusCode > 200 || response.StatusCode < 200)
+        if (!response.IsSuccessResponse)
         {
-            viewHelper.Alert(response.Message);
+            var errorContent = ((ErrorResponse)response).Title;
+            var validationError = JsonSerializer.Deserialize<Shared.Responses.ApiValidationError>(errorContent, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
 
-            viewHelper.HideLoader();
-
-            return;
+            // Now you can access validationError.Errors["Name"], etc.
+            foreach(var error in validationError.Errors)
+            {
+                viewHelper.Alert(error.Key + ": " + error.Value);
+            }
         }
 
-        User? updatedUser = response.Data;
+        User? updatedUser = ((Shared.Responses.AcceptedResponse<User>)response).Data;
 
         viewHelper.HideLoader();
 
