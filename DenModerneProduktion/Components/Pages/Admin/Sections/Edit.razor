@@ -41,7 +41,9 @@
     {
         if (SectionID != 0)
         {
-            Section? section = (await requester.Get<Section>("api/sections/" + SectionID)).Data;
+            var response = await requester.Get<Section>("api/sections/" + SectionID);
+
+            Section? section = response.TryGetData<Section>();
 
             if (section != null)
             {
@@ -60,11 +62,13 @@
     {
         viewHelper.ShowLoader("Opretter sektion...");
 
-        Section? newSection = (await requester.Post<Section>("api/sections", new CreateSection()
-            {
-                Name = Name,
-                BuildingId = int.Parse(BygningsID)
-            })).Data;
+        var response = await requester.Post<Section>("api/sections", new CreateSection()
+        {
+            Name = Name,
+            BuildingId = int.Parse(BygningsID)
+        });
+
+        Section? newSection = response.TryGetData<Section>();
 
         viewHelper.HideLoader();
 
@@ -79,11 +83,13 @@
     {
         viewHelper.ShowLoader("Opdatere lokale...");
 
-        Section? updatedSection = (await requester.Put<Section>("api/rooms/" + SectionID, new CreateSection()
-            {
-                Name = Name,
-                BuildingId = int.Parse(BygningsID)
-            })).Data;
+        var response = await requester.Put<Section>("api/rooms/" + SectionID, new CreateSection()
+        {
+            Name = Name,
+            BuildingId = int.Parse(BygningsID)
+        });
+
+        Section? updatedSection = response.TryGetData<Section>();
 
         viewHelper.HideLoader();
 

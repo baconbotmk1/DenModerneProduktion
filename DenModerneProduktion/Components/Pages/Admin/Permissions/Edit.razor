@@ -65,8 +65,8 @@
 
         var response = await requester.Post<Permission>("api/permissions", new CreatePermissionDTO()
         {
-            Name = name,
-            Desc = desc
+            Name = Name,
+            Desc = Desc
         });
 
         Permission? newPermission = response is AcceptedResponse<Permission> ? ((AcceptedResponse<Permission>)response).Data : null;
@@ -90,8 +90,8 @@
 
         var response = await requester.Put<Permission>("api/permissions/" + PermissionID, new CreatePermissionDTO()
         {
-            Name = name,
-            Desc = desc
+            Name = Name,
+            Desc = Desc
         });
 
         Permission? updatedPermission = response is AcceptedResponse<Permission> ? ((AcceptedResponse<Permission>)response).Data : null;

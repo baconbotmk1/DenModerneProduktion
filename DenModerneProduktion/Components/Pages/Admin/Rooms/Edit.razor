@@ -41,7 +41,9 @@
     {
         if (RoomID != 0)
         {
-            Room? room = (await requester.Get<Room>("api/rooms/" + RoomID)).Data;
+            var response = await requester.Get<Room>("api/rooms/" + RoomID);
+
+            Room? room = response is AcceptedResponse<Room> ? ((AcceptedResponse<Room>)response).Data : null;
 
             if (room != null)
             {
@@ -60,11 +62,13 @@
     {
         viewHelper.ShowLoader("Opretter lokale...");
 
-        Room? newRoom = (await requester.Post<Room>("api/rooms", new CreateRoom()
-            {
-                Name = Name,
-                SectionId = int.Parse(SectionID)
-            })).Data;
+        var response = await requester.Post<Room>("api/rooms", new CreateRoom()
+        {
+            Name = Name,
+            SectionId = int.Parse(SectionID)
+        });
+
+        Room? newRoom = response.TryGetData<Room>();
 
         viewHelper.HideLoader();
 
@@ -79,11 +83,13 @@
     {
         viewHelper.ShowLoader("Opdatere lokale...");
 
-        Room? updatedRoom = (await requester.Put<Room>("api/rooms/" + RoomID, new CreateRoom()
-            {
-                Name = Name,
-                SectionId = int.Parse(SectionID)
-            })).Data;
+        var response = await requester.Put<Room>("api/rooms/" + RoomID, new CreateRoom()
+        {
+            Name = Name,
+            SectionId = int.Parse(SectionID)
+        });
+
+        Room? updatedRoom = response.TryGetData<Room>();
 
         viewHelper.HideLoader();
 
