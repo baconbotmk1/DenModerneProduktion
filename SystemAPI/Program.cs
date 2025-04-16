@@ -40,6 +40,7 @@ public class Program
         builder.Services.AddScoped<IRepository<SecurityGroup>, SecurityGroupRepository>();
         builder.Services.AddScoped<IRepository<Building>, BuildingRepository>();
         builder.Services.AddScoped<IRepository<Room>, RoomRepository>();
+        builder.Services.AddScoped<IRepository<Section>, SectionRepository>();
 
         var app = builder.Build();
 

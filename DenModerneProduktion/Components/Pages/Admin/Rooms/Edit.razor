@@ -60,7 +60,7 @@
     {
         viewHelper.ShowLoader("Opretter lokale...");
 
-        Room? newSecurityGroup = (await requester.Post<Room>("api/rooms", new CreateRoom()
+        Room? newRoom = (await requester.Post<Room>("api/rooms", new CreateRoom()
             {
                 Name = Name,
                 SectionId = int.Parse(SectionID)
@@ -68,9 +68,9 @@
 
         viewHelper.HideLoader();
 
-        if (newSecurityGroup != null && newSecurityGroup.Id != null)
+        if (newRoom != null && newRoom.Id != null)
         {
-            navigationManager.NavigateTo($"/admin/rooms/{newSecurityGroup.Id}");
+            navigationManager.NavigateTo($"/admin/rooms/{newRoom.Id}");
             return;
         }
     }
@@ -79,7 +79,7 @@
     {
         viewHelper.ShowLoader("Opdatere lokale...");
 
-        Room? updatedSecurityGroup = (await requester.Put<Room>("api/rooms/" + RoomID, new CreateRoom()
+        Room? updatedRoom = (await requester.Put<Room>("api/rooms/" + RoomID, new CreateRoom()
             {
                 Name = Name,
                 SectionId = int.Parse(SectionID)
@@ -87,10 +87,10 @@
 
         viewHelper.HideLoader();
 
-        if (updatedSecurityGroup != null)
+        if (updatedRoom != null)
         {
-            Name = updatedSecurityGroup.Name;
-            SectionID = updatedSecurityGroup.SectionId.ToString();
+            Name = updatedRoom.Name;
+            SectionID = updatedRoom.SectionId.ToString();
         }
     }
 }
