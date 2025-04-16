@@ -41,7 +41,9 @@
     {
         if(PermissionID != 0)
         {
-            Permission? permission = (await requester.Get<Permission>("api/permissions/" + PermissionID)).Data;
+            var response = await requester.Get<Permission>("api/permissions/" + PermissionID);
+
+            Permission? permission = response is Shared.Responses.AcceptedResponse<Permission> ? ((Shared.Responses.AcceptedResponse<Permission>)response).Data : null;
 
             if (permission != null)
             {
@@ -61,11 +63,13 @@
         viewHelper.ShowLoader("Opretter rettighed...");
 
 
-        Permission? newPermission = (await requester.Post<Permission>("api/permissions", new CreatePermissionDTO()
+        var response = await requester.Post<Permission>("api/permissions", new CreatePermissionDTO()
         {
-            Name = Name,
-            Desc = Desc
-        })).Data;
+            Name = name,
+            Desc = desc
+        });
+
+        Permission? newPermission = response is AcceptedResponse<Permission> ? ((AcceptedResponse<Permission>)response).Data : null;
 
         Debug.WriteLine($"Creating permission with name {Name} and desc {Desc}");
 
@@ -84,11 +88,13 @@
 
         Debug.WriteLine($"Updating permission {Name} with id {PermissionID} and desc {Desc}");
 
-        Permission? updatedPermission = (await requester.Put<Permission>("api/permissions/" + PermissionID, new CreatePermissionDTO()
+        var response = await requester.Put<Permission>("api/permissions/" + PermissionID, new CreatePermissionDTO()
         {
-            Name = Name,
-            Desc = Desc
-        })).Data;
+            Name = name,
+            Desc = desc
+        });
+
+        Permission? updatedPermission = response is AcceptedResponse<Permission> ? ((AcceptedResponse<Permission>)response).Data : null;
 
         viewHelper.HideLoader();
 

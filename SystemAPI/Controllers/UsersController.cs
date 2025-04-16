@@ -66,7 +66,7 @@ namespace SystemAPI.Controllers
         [HttpPut("{id}")]
         public ActionResult<User> Put(int id, [FromBody] CreateUser data)
         {
-            return HandleExceptions(() =>
+            try
             {
                 User? item = repository.GetById(id);
 
@@ -81,7 +81,15 @@ namespace SystemAPI.Controllers
                 repository.Save();
 
                 return Ok(item);
-            });
+            }
+            catch(Exception ex)
+            {
+                Debug.WriteLine(ex.GetType().Name);
+                Debug.WriteLine(ex.GetType().Namespace);
+                Debug.WriteLine(ex.Message);
+            }
+
+            return BadRequest();
         }
 
         [HttpDelete("{id}")]
