@@ -1,12 +1,72 @@
-﻿@page "/room"
+﻿@page "/room/{id}"
+@inject NavigationManager Navigation
+@inject IHttpContextAccessor httpContextAccessor
+
 <h3>Room</h3>
 <div>
-    <div class="js-header"></div>
+    <div class="js-room-header">
+        <div class="js-room-header-type-selector">
+            <h4 @onclick="()=>ChangeType(0)">Temp.</h4>
+            <h4 @onclick="()=>ChangeType(1)">Hum.</h4>
+            <h4 @onclick="()=>ChangeType(2)">kWh.</h4>
+        </div>
+        <div class="js-room-header-period-selector">
+            <h4 @onclick="()=>ChangePeriod(0)">Day</h4>
+            <h4 @onclick="()=>ChangePeriod(1)">Week</h4>
+            <h4 @onclick="()=>ChangePeriod(2)">Month</h4>
+        </div>
+        @if (UserIsAdmin)
+        {
+            <div class="js-room-header-admin">
+                <a href="@($"/admin/room/{id}")"><Icon Name="IconName.Gear" Size="IconSize.x2" Color="IconColor.Primary" /></a>
+            </div>
+        }
+    </div>
+    <div class="js-room-data">
+        <div class="js-room-data-header">
+            <h4 class="js-room-data-current">{value}</h4>
+            <div class="js-room-data-limit">
+                <div class="js-room-data-limit-min">
+                    <label for="js-room-data-limit-min-value">Minimum</label>
+                    <InputNumber id="js-room-data-limit-min-value" @bind-Value="MinValue"></InputNumber>
+                </div>
+                <div class="js-room-data-limit-max">
+                    <label for="js-room-data-limit-max-value">Maximum</label>
+                    <InputNumber id="js-room-data-limit-max-value" @bind-Value="MaxValue"></InputNumber>
+                </div>
+            </div>
+        </div>
+        <div class="js-room-data-graph"></div>
+    </div>
 </div>
 
 
 
 @code {
+    [Parameter]
+    public string id { get; set; }
+
     public double MinValue { get; set; } = 18.2;
-    public double MaxValue { get; set; } = 22.5;
+    public double MaxValue { get; set; }
+    public bool UserIsAdmin { get; set; }
+    public HttpContext? httpContext => httpContextAccessor.HttpContext;
+
+    public void ChangePeriod(int index)
+    {
+
+    }
+    public void ChangeType(int index)
+    {
+
+    }
+
+    protected override void OnInitialized()
+    {
+        UserIsAdmin = CheckIfUserIsAdmin();
+    }
+
+    private bool CheckIfUserIsAdmin()
+    {
+        return true;
+    }
 }

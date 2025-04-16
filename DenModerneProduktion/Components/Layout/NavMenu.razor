@@ -14,52 +14,47 @@
     <nav class="flex-column">
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Forside
+                <Icon Name="IconName.HouseFill" Size="IconSize.x4" class="js-nav-icon"/> Forside
             </NavLink>
         </div>
 
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="Lobby">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Lobby
+                <Icon Name="IconName.LaptopFill" Size="IconSize.x4" class="js-nav-icon"/> Lobby
             </NavLink>
         </div>
         @if (_ShowAdminMenu)
-        {   
+        {
             <div class="nav-item px-3">
                 <NavLink class="nav-link" href="admin">
-                    <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Admin
+                    <Icon Name="IconName.PersonFillGear" Size="IconSize.x4" class="js-nav-icon"/> Admin
                 </NavLink>
-                @if(_ShowSubMenu)
-                {   
+                @if (_ShowSubMenu)
+                {
                     <nav class="flex-column">
                         <div class="nav-item px-3">
                             <NavLink class="nav-link" href="admin/section">
-                                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Sektion
+                                <Icon Name="IconName.MapFill" Size="IconSize.x4" class="js-nav-icon"/> Sektion
                             </NavLink>
                         </div>
                         <div class="nav-item px-3">
                             <NavLink class="nav-link" href="admin/room">
-                                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Lokale
-                            </NavLink>
-                        </div>
-                        <div class="nav-item px-3">
-                            <NavLink class="nav-link" href="admin/group">
-                                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Grupper
+                                <Icon Name="IconName.PinMapFill" Size="IconSize.x4" class="js-nav-icon"/> Lokale
                             </NavLink>
                         </div>
                         <div class="nav-item px-3">
                             <NavLink class="nav-link" href="admin/user">
-                                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Bruger
-                            </NavLink>
-                        </div>
-                        <div class="nav-item px-3">
-                            <NavLink class="nav-link" href="admin/permissions">
-                                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Rettigheder
+                                <Icon Name="IconName.PersonFill" Size="IconSize.x4" class="js-nav-icon"/> Bruger
                             </NavLink>
                         </div>
                         <div class="nav-item px-3">
                             <NavLink class="nav-link" href="admin/security_groups">
-                                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Sikkerhedsgrupper
+                                <Icon Name="IconName.PeopleFill" Size="IconSize.x4" class="js-nav-icon"/> Sikkerhedsgrupper
+                            </NavLink>
+                        </div>
+                        <div class="nav-item px-3">
+                            <NavLink class="nav-link" href="admin/permissions">
+                                <Icon Name="IconName.ShieldFill" Size="IconSize.x4" class="js-nav-icon"/> Rettigheder
                             </NavLink>
                         </div>
                     </nav>
@@ -74,8 +69,8 @@
                 @foreach (var room in AccessibleRooms)
                 {
                     <div class="nav-item px-3">
-                        <NavLink class="nav-link" href="@($"room?id={room}")" Match="NavLinkMatch.All">
-                            <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> @room
+                        <NavLink class="nav-link" href="@($"room/{room}")" Match="NavLinkMatch.All">
+                            <Icon Name="IconName.DoorClosedFill" Size="IconSize.x4" class="js-nav-icon"/> @room
                         </NavLink>
                     </div>
                 }
@@ -105,18 +100,8 @@
     {
         if (httpContext is not null)
         {
-            var test = Navigation.ToAbsoluteUri(Navigation.Uri);
-            Debug.WriteLine(test);
-            var test2 = test.AbsolutePath;
-            var test3 = test2.Split("/");
-            foreach(string str in test3)
-            {
-                Debug.WriteLine(str);
-            }
-            var test4 = test3.Contains("admin");
             _ShowSubMenu = Navigation.ToAbsoluteUri(Navigation.Uri).AbsolutePath.Split("/").Contains("admin");
             StateHasChanged();
         }
     }
-    
 }
