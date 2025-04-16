@@ -41,16 +41,9 @@ namespace Shared
 
 
         public string DbPath { get; }
-        public DataContext()
+        public DataContext()        
         {
-            var folder = Environment.SpecialFolder.MyDocuments;
-            var path = Environment.GetFolderPath(folder);
-            path = Path.Combine(path, "DenModerneProduktion");
-            if (!Directory.Exists(path))
-            {
-                System.IO.Directory.CreateDirectory(path);
-            }
-            DbPath = System.IO.Path.Join(path, "data.db");
+
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder options)
