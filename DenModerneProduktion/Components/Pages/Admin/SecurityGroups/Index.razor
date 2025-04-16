@@ -11,11 +11,15 @@
         <th>ID</th>
         <th>Navn</th>
         <th>Beskrivelse</th>
+        <th>Antal rettigheder</th>
+        <th>Antal medlemmer</th>
     </Headers>
     <Rows>
         <td>@context.Id</td>
         <td>@context.Name</td>
         <td>@context.Desc</td>
+        <td>@context.Permissions.Count()</td>
+        <td>@context.Users.Count()</td>
     </Rows>
 </GenericCRUDListView>
 

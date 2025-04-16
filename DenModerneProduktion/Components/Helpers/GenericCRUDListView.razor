@@ -6,6 +6,7 @@
 @using System.Diagnostics
 @inject ApiRequester requester
 @inject ViewHelper viewHelper
+
 <h3>@Title</h3>
 <div class="d-flex flex-row justify-content-between">
     <span class="fs-6 fst-italic">@Subtitle</span>
@@ -32,7 +33,7 @@
                 <td style="text-align:end">
                     @if(ShowEdit)
                     {
-                        <a href="admin/security_groups/@item.Id">
+                        <a href="@Link/@item.Id">
                             <button class="btn-outline-primary btn btn-sm">Rediger</button>
                         </a>
                     }
@@ -51,16 +52,16 @@
 
 @code {
     [Parameter]
-    public string Title { get; set; } = "EXAMPLE Title";
+    public string Title { get; set; } = "EXAMPLES";
 
     [Parameter]
     public string Subtitle { get; set; } = "EXAMPLE Subtitle";
 
     [Parameter]
-    public string Link { get; set; } = "admin/EXAMPLE";
+    public string Link { get; set; } = "admin/EXAMPLES";
 
     [Parameter]
-    public string APIEndpoint { get; set; } = "api/EXAMPLE";
+    public string APIEndpoint { get; set; } = "api/EXAMPLES";
 
     [Parameter]
     public RenderFragment? Headers { get; set; } = null;
@@ -79,12 +80,23 @@
     protected List<TType>? Items { get; set; } = new List<TType>();
     protected override async Task OnInitializedAsync()
     {
-        Items = await requester.Get<List<TType>>(APIEndpoint);
+        viewHelper.ShowLoader("Henter " + Title.ToLower() + "...");
 
-        if(Items == null)
+        var response = await requester.Get<List<TType>>(APIEndpoint);
+
+        if(response.StatusCode != 200)
+        {
+            viewHelper.Alert(response.Message);
+        }
+
+        Items = response.Data;
+
+        if (Items == null)
         {
             Items = new List<TType>();
         }
+
+        viewHelper.HideLoader();
     }
 
 

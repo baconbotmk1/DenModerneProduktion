@@ -1,4 +1,5 @@
-﻿using Mapster;
+﻿using System.Diagnostics;
+using Mapster;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Shared;
@@ -19,12 +20,22 @@ namespace SystemAPI.Controllers
         }
 
         [HttpGet]
-        public IEnumerable<SecurityGroup> Get()
+        public ActionResult<IEnumerable<SecurityGroup>> Get()
         {
-            return context.SecurityGroups
-                .Include(e => e.SecurityGroupPermissions)
-                .ThenInclude(e => e.Permission)
-                .ToList();
+            try
+            {
+                var data = context.SecurityGroups
+                    .Include(e => e.SecurityGroupPermissions)
+                    .ThenInclude(e => e.Permission)
+                    .ToList();
+
+                return Ok(data);
+            }
+            catch(Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+                return StatusCode(500, "Internal Error");
+            }
         }
 
         [HttpGet("{id}")]

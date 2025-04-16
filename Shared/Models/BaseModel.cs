@@ -6,7 +6,7 @@ namespace Shared.Models
 {
 	public abstract class BaseModel
 	{
-		[Key]
+        [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
 		public int Id { get; set; }
 
 		public BaseModel()

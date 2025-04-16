@@ -41,7 +41,7 @@
     {
         if (SecurityGroupID != 0)
         {
-            SecurityGroup? securityGroup = await requester.Get<SecurityGroup>("api/security_groups/" + SecurityGroupID);
+            SecurityGroup? securityGroup = (await requester.Get<SecurityGroup>("api/security_groups/" + SecurityGroupID)).Data;
 
             if (securityGroup != null)
             {
@@ -60,11 +60,11 @@
     {
         viewHelper.ShowLoader("Opretter sikkerhedsgruppe...");
 
-        SecurityGroup? newSecurityGroup = await requester.Post<SecurityGroup>("api/security_groups", new CreateSecurityGroupDTO()
+        SecurityGroup? newSecurityGroup = (await requester.Post<SecurityGroup>("api/security_groups", new CreateSecurityGroupDTO()
         {
             Name = name,
             Desc = desc
-        });
+        })).Data;
 
         viewHelper.HideLoader();
 
@@ -79,11 +79,11 @@
     {
         viewHelper.ShowLoader("Opdatere sikkerhedsgruppe...");
 
-        SecurityGroup? updatedSecurityGroup = await requester.Put<SecurityGroup>("api/security_groups/" + SecurityGroupID, new CreateSecurityGroupDTO()
+        SecurityGroup? updatedSecurityGroup = (await requester.Put<SecurityGroup>("api/security_groups/" + SecurityGroupID, new CreateSecurityGroupDTO()
         {
             Name = name,
             Desc = desc
-        });
+        })).Data;
 
         viewHelper.HideLoader();
 

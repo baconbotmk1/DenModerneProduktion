@@ -33,6 +33,8 @@ namespace Shared.Services
 
         public void Update(User user)
         {
+            
+
             context.Entry(user).State = EntityState.Modified;
         }
 

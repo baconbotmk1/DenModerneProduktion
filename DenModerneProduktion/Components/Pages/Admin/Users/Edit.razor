@@ -1,0 +1,109 @@
+﻿@page "/admin/users/{id}"
+@using System.Diagnostics
+@using DenModerneProduktion.Services
+@using Shared.DTOs
+@using Shared.Models
+@inject ApiRequester requester
+@inject ViewHelper viewHelper
+@inject NavigationManager navigationManager
+
+<div class="card w-50">
+    <div class="card-header">
+        <h3>@(UserID == 0 ? "Ny Bruger" : "Bruger #" + UserID)</h3>
+
+    </div>
+    <div class="card-body">
+        <div class="mb-2">
+            <span class="form-label">Navn</span>
+            <input @bind-value="name" required name="name" placeholder="Navn" type="text" class="form-control" />
+        </div>
+    </div>
+    <div class="card-footer">
+        <button @onclick="() => Create()" class="@(UserID == 0 ? "" : "d-none") float-end btn btn-sm btn-success">Opret</button>
+        <button @onclick="() => Update()" class="@(UserID != 0 ? "" : "d-none") float-end btn btn-sm btn-primary">Gem</button>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string id { get; set; }
+
+    public string name { get; set; } = "";
+
+    public int UserID => Int32.TryParse(id, out int res) ? res : 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (UserID != 0)
+        {
+            User? user = (await requester.Get<User>("api/users/" + UserID)).Data;
+
+            if (user != null)
+            {
+                name = user.Name;
+            }
+            else
+            {
+                navigationManager.NavigateTo("admin/users");
+            }
+        }
+    }
+
+
+    async public Task Create()
+    {
+        viewHelper.ShowLoader("Opretter bruger...");
+
+        var response = await requester.Post<User>("api/users", new CreateUser()
+        {
+            Name = name,
+        });
+
+        User? newUser = response.Data;
+
+        if (response.StatusCode > 200 || response.StatusCode < 200)
+        {
+            viewHelper.Alert(response.Message);
+
+            viewHelper.HideLoader();
+
+            return;
+        }
+
+        viewHelper.HideLoader();
+
+        if (newUser != null && newUser.Id != null)
+        {
+            navigationManager.NavigateTo($"/admin/users/{newUser.Id}");
+            return;
+        }
+    }
+
+    async public Task Update()
+    {
+        viewHelper.ShowLoader("Opdatere bruger...");
+
+        var response = await requester.Put<User>("api/users/" + UserID, new CreateUser()
+        {
+            Name = name,
+        });
+
+        if(response.StatusCode > 200 || response.StatusCode < 200)
+        {
+            viewHelper.Alert(response.Message);
+
+            viewHelper.HideLoader();
+
+            return;
+        }
+
+        User? updatedUser = response.Data;
+
+        viewHelper.HideLoader();
+
+        if (updatedUser != null)
+        {
+            name = updatedUser.Name;
+        }
+    }
+}

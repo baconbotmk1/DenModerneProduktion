@@ -20,5 +20,10 @@ namespace DenModerneProduktion.Services
         {
             _JS.InvokeVoidAsync("hideLoader");
         }
+
+        public void Alert(string message)
+        {
+            _JS.InvokeVoidAsync("alert", message);
+        }
     }
 }
