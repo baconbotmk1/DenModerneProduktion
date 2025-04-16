@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Shared;
 using Shared.Models;
 using Shared.Services;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace SystemAPI.Controllers
 {
@@ -27,9 +28,20 @@ namespace SystemAPI.Controllers
 
 
         [HttpGet]
-        public virtual IEnumerable<T> Get()
+        public virtual ActionResult<IEnumerable<T>> Get()
         {
-            return repository.Get();
+            IEnumerable<T> data;
+
+            try
+            {
+                data = repository.Get();
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(500, "internal error");
+            }
+
+            return Ok(data);
         }
 
         [HttpGet("{id}")]

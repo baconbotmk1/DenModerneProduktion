@@ -66,7 +66,7 @@
     {
         if (ItemID != 0)
         {
-            TType? item = await requester.Get<TType>(APIEndpoint + "/" + ItemID);
+            TType? item = (await requester.Get<TType>(APIEndpoint + "/" + ItemID)).Data;
 
             if (item != null)
             {

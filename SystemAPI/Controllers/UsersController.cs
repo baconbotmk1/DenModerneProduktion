@@ -19,9 +19,11 @@ namespace SystemAPI.Controllers
         }
 
         [HttpGet]
-        public IEnumerable<User> Get()
+        public ActionResult<IEnumerable<User>> Get()
         {
-            return context.Users
+            return HandleExceptions(() =>
+            {
+                var data = context.Users
                 .AsNoTracking()
                 .Include(e => e.UserSecurityGroups)
                     .ThenInclude(e => e.SecurityGroup)
@@ -29,72 +31,87 @@ namespace SystemAPI.Controllers
                             .ThenInclude(e => e.Permission)
                 .Include(e => e.AccessCards)
                 .ToList();
+
+                return Ok(data);
+            });
         }
 
         [HttpPost]
         [SwaggerRequestExample(typeof(CreateUser), typeof(CreateUserExample))]
         public ActionResult<User> Post([FromBody] CreateUser data)
         {
-            User item = data.Adapt<User>();
+            return HandleExceptions(() =>
+            {
+                User item = data.Adapt<User>();
 
-            repository.Insert(item);
-            repository.Save();
+                repository.Insert(item);
+                repository.Save();
 
-            return Ok(item);
+                return Ok(item);
+            });
         }
 
 
         [HttpGet("{id}")]
         public ActionResult<User> GetUserById(int id)
         {
-            User? accessCard = repository.GetById(id);
-
-            if (accessCard == null)
+            return HandleExceptions(() =>
             {
-                return NotFound();
-            }
+                User? accessCard = repository.GetById(id);
 
-            return Ok(accessCard);
+                if (accessCard == null)
+                {
+                    return NotFound();
+                }
+
+                return Ok(accessCard);
+            });
         }
 
 
         [HttpPut("{id}")]
         public ActionResult<User> Put(int id, [FromBody] CreateUser data)
         {
-            User? item = repository.GetById(id);
-
-            if (item == null)
+            return HandleExceptions(() =>
             {
-                return NotFound();
-            }
+                User? item = repository.GetById(id);
 
-            data.Adapt(item);
+                if (item == null)
+                {
+                    return NotFound();
+                }
 
-            repository.Update(item);
-            repository.Save();
+                data.Adapt(item);
 
-            return Ok(item);
+                repository.Update(item);
+                repository.Save();
+
+                return Ok(item);
+            });
         }
 
         [HttpDelete("{id}")]
         public ActionResult Delete(int id)
         {
-            User? foundObject = repository.GetById(id);
-
-            if (foundObject == null)
+            return HandleExceptions(() =>
             {
-                return NotFound();
-            }
+                User? foundObject = repository.GetById(id);
 
-            bool deleted = repository.Delete(id);
-            repository.Save();
+                if (foundObject == null)
+                {
+                    return NotFound();
+                }
 
-            if (!deleted)
-            {
-                return NotFound();
-            }
+                bool deleted = repository.Delete(id);
+                repository.Save();
 
-            return Ok();
+                if (!deleted)
+                {
+                    return NotFound();
+                }
+
+                return Ok();
+            });
         }
     }
 }

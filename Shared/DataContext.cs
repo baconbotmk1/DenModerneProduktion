@@ -2,12 +2,13 @@
 using Microsoft.EntityFrameworkCore;
 using Shared.Models;
 using Shared.Models.Assignables;
+using Pomelo.EntityFrameworkCore.MySql;
 
 namespace Shared
 {
-	public class DataContext : DbContext
-	{
-		public DbSet<AccessCard> AccessCards { get; set; }
+    public class DataContext : DbContext
+    {
+        public DbSet<AccessCard> AccessCards { get; set; }
         public DbSet<Building> Buildings { get; set; }
         public DbSet<Cadastre> Cadastres { get; set; }
         public DbSet<Device> Devices { get; set; }
@@ -40,20 +41,17 @@ namespace Shared
 
 
         public string DbPath { get; }
-        public DataContext()
-	    {
-            var folder = Environment.SpecialFolder.MyDocuments;
-            var path = Environment.GetFolderPath(folder);
-            path = Path.Combine(path, "DenModerneProduktion");
-            if (!Directory.Exists(path))
-            {
-                System.IO.Directory.CreateDirectory(path);
-            }
-            DbPath = System.IO.Path.Join(path, "data.db");
+        public DataContext()        
+        {
+
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder options)
-            => options.UseSqlite($"Data Source={DbPath}");
+        {
+            var serverVersion = new MySqlServerVersion(new Version(8, 0, 41));
+            //options.UseMySql("Server=127.0.0.1;Port=3308;Database=denmoderneproduktion;User=root;Password=pass", serverVersion);
+            options.UseMySql("Server=5.75.144.48;Port=3389;Database=main;User=mysql;Password=DMPjs", serverVersion);
+        }//options.UseSqlite($"Data Source={DbPath}");
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

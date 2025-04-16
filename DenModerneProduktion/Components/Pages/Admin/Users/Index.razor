@@ -1,0 +1,22 @@
+﻿@page "/admin/users"
+@using DenModerneProduktion.Components.Helpers
+@using DenModerneProduktion.Services
+@using Shared.Models
+@using System.Diagnostics
+@inject ApiRequester requester
+@inject ViewHelper viewHelper
+
+<GenericCRUDListView DeleteMessage="DeleteMessage" Link="admin/users" APIEndpoint="api/users" TType="User" Title="Brugere" Subtitle="Disse er de forskellige brugere i systemet. De omfatter både medarbejdere og kursister.">
+    <Headers>
+        <th>ID</th>
+        <th>Navn</th>
+    </Headers>
+    <Rows>
+        <td>@context.Id</td>
+        <td>@context.Name</td>
+    </Rows>
+</GenericCRUDListView>
+
+@code {
+    public string DeleteMessage(User user) => "Slet brugeren '" + user.Name +"'?";
+}
