@@ -1,16 +1,17 @@
-﻿@inject IJSRuntime JS
+﻿@using System.Diagnostics
+@inject IJSRuntime JS
 
 @foreach (InputBase input in Inputs)
 {
-    <DynamicComponent Type="@input.GetType()" Parameters="@(input.GetParameters().AddOrReplace("ParentList", RealInputs))" />
+    <DynamicComponent Type="@input.GetType()" Parameters="@(input.GetParameters().AddOrReplace("OnValueChanged", (string value) => {Debug.WriteLine("Value changed to: " + value);Values[input.Name] = value;}))" />
 }
 
 <hr/>
 
 <div class="d-flex flex-row justify-content-end">
-    <Button class="mt-3 w-25 btn-sm" Color="ButtonColor.Success" Type="ButtonType.Button" @onclick="Confirm">
+    <button class="mt-3 w-25 btn-sm" Color="ButtonColor.Success" type="button" @onclick="() => Confirm()">
         @AcceptText
-    </Button>
+    </button>
 </div>
 
 @code {
@@ -18,9 +19,11 @@
 
     [Parameter] public string AcceptText { get; set; } = "Bekræft";
 
-    [Parameter] public EventCallback<MouseEventArgs> OnConfirm { get; set; } = new EventCallback<MouseEventArgs>();
+    [Parameter] public Func<SubmitModal, bool> OnSubmit { get; set; } = new Func<SubmitModal, bool>((SubmitModal eh) => true);
 
     public Dictionary<string, InputBase> RealInputs { get; set; } = new Dictionary<string, InputBase>();
+
+    public Dictionary<string, string> Values { get; set; } = new Dictionary<string, string>();
 
     [Parameter]
     public IEnumerable<InputBase> Inputs { get; set; } = new List<InputBase>();
@@ -29,13 +32,32 @@
 
     protected void Confirm()
     {
-        OnConfirm.InvokeAsync();
-        Modal.HideAsync();
+        foreach (KeyValuePair<string, string> kvpair in Values)
+        {
+            Debug.WriteLine(kvpair.Key + ": " + kvpair.Value);
+        }
+        /*bool shouldClose = OnSubmit.Invoke(this);
+
+        if (shouldClose)
+        {
+            Modal.HideAsync();
+            }*/
     }
 
     protected override void OnInitialized()
     {
+        Debug.WriteLine("Started");
         base.OnInitialized();
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        Debug.WriteLine("Rendering: " + (firstRender ? "Yes" : "No"));
+        foreach (KeyValuePair<string,string> kvpair in Values)
+        {
+            Debug.WriteLine(kvpair.Key + ": " + kvpair.Value);
+        }
+        base.OnAfterRender(firstRender);
     }
 
 

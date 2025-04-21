@@ -1,8 +1,9 @@
 ﻿@inherits InputBase
 
+
 <div class="mb-2">
     <span class="form-label">Navn</span>
-    <select name="@Name" value="@Value" @oninput="OnInput" class="form-select @(!ShowError ? "is-invalid" : "")" type="@Type" placeholder="@Placeholder" required="@IsRequired">
+    <select name="@Name" @bind="@Value" class="form-select @(!ShowError ? "is-invalid" : "")" placeholder="@Placeholder" required="@IsRequired">
         @foreach(SelectWithValidation.Option option in Options)
         {
             <option value="@option.Value">@option.Text</option>
@@ -31,7 +32,7 @@
 
     protected override void OnAfterRender(bool firstRender)
     {
-        if(firstRender)
+        if(firstRender && ParentList != null)
         {
             ParentList.Add(Name, this);
         }

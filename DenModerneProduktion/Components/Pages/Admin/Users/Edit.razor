@@ -25,23 +25,22 @@
     </div>
     @if(UserID != 0)
     {
-    <div class="card w-50">
-        <div class="card-header">
-            <h3>Sikkerhedsgrupper</h3>
+        <div class="card w-50">
+            <div class="card-header">
+                <h3>Sikkerhedsgrupper</h3>
 
+            </div>
+            <div class="card-body">
+
+            </div>
+            <div class="card-footer">
+                <button @onclick="() => BeginAddingSecurityGroup()" class="@(UserID != 0 ? "" : "d-none") float-end btn btn-sm btn-primary">Tilføj sikkerhedsgruppe</button>
+            </div>
         </div>
-        <div class="card-body">
-            
-        </div>
-        <div class="card-footer">
-            <button @onclick="() => BeginAddingSecurityGroup()" class="@(UserID != 0 ? "" : "d-none") float-end btn btn-sm btn-primary">Tilføj sikkerhedsgruppe</button>
-        </div>
-    </div>
     }
 </div>
 
-<Modal @ref="AddSecurityGroupModal" ShowCloseButton="true" CloseOnEscape="true" Title="Tilføj Sikkerhedsgruppe">
-</Modal>
+<GenericModal @ref="AddSecurityGroupModal" Title="Tilføj Sikkerhedsgruppe" Inputs="addSecGrpInputs" OnSubmitAsync="HandleModalSubmit" />
 
 @code {
     [Parameter]
@@ -192,44 +191,47 @@
         }
     }
 
-    protected override Task OnAfterRenderAsync(bool firstRender)
-    {
-        Debug.WriteLine("Entries: " + Inputs.Keys.Count());
-        foreach (KeyValuePair<string, InputBase> input in Inputs)
-        {
-            Debug.WriteLine(input.Key + ": " + input.Value.Name);
-        }
+    private GenericModal AddSecurityGroupModal;
+    private List<ModalInput> addSecGrpInputs { get; set; } = new List<ModalInput>();
 
-        return base.OnAfterRenderAsync(firstRender);
+    private async Task BeginAddingSecurityGroup()
+    {
+        addSecGrpInputs = new List<ModalInput>()
+        {
+            //new ModalInput { Name = "name", Label = "Name", DType = InputType.Text },
+            //new ModalInput { Name = "age", Label = "Age", DType = InputType.Number },
+            //new ModalInput { Name = "dob", Label = "Date of Birth", DType = InputType.Date },
+            /*new ModalInput
+            {
+                Name = "color", Label = "Favorite Color", DType = InputType.Select,
+                Options = new List<Option> { new Option("Red"), new Option("Green"), new Option("Blue","blue"), new Option("Purple", "1") }
+            },*/
+            new ModalInput
+            {
+                Name = "security_group", Label = "Sikkerhedsgruppe", DType = InputType.Select,
+                Options = RemainingSecurityGroups.OrderByDescending(e => e.Name).Select(e => new Option(e.Name, e.Id.ToString())).ToList()
+            }
+        };
+
+        await AddSecurityGroupModal.Show();
     }
 
-    public Modal AddSecurityGroupModal { get; set; }
-
-    async public Task BeginAddingSecurityGroup()
+    private async Task<bool> HandleModalSubmit(Dictionary<string,ModalInput> inputs)
     {
-        var parameters = new Dictionary<string, object>();
 
-        parameters.Add("Inputs", new List<InputBase>()
+        string sec_grp = (string)inputs["security_group"].Value ?? "";
+
+        var response = await requester.Put<UserSecurityGroup>($"api/user/{UserID}/security_group/" + sec_grp, null);
+
+        if (response.IsSuccessResponse)
         {
-            new SelectWithValidation()
-            {
-                Name = "security_group",
-                Title = "Sikkerhedsgruppe",
-                IsRequired = true,
-                Options = RemainingSecurityGroups.OrderByDescending(e => e.Name).Select(e => new SelectWithValidation.Option()
-                {
-                    Text = e.Name,
-                    Value = e.Id.ToString()
-                }),
-
-            }
-        });
-
-        parameters.Add("OnSubmit", new Action<SubmitModal>(( SubmitModal submitModal ) =>
+            return true;
+        }
+        else
         {
+            inputs["security_group"].Error = "[ERROR] " + response.Status.ToString() + ": " + response.Message;
 
-        }));
-
-        await AddSecurityGroupModal.ShowAsync<SubmitModal>(title: "Tilføj Sikkerhedsgruppe", parameters: parameters);
+            return false;
+        }
     }
 }

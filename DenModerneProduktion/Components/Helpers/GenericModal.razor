@@ -1,0 +1,64 @@
+﻿@using BlazorBootstrap
+@using System.Diagnostics
+
+<Modal @ref="ModalRef">
+    <HeaderTemplate>
+        <h5 class="modal-title">@Title</h5>
+    </HeaderTemplate>
+    <BodyTemplate>
+        @foreach (var input in Inputs)
+        {
+            <DynamicInput Input="input" />
+        }
+    </BodyTemplate>
+    <FooterTemplate>
+        <Button Color="ButtonColor.Primary" @onclick="HandleSubmit">Submit</Button>
+        <Button Color="ButtonColor.Secondary" @onclick="Hide">Cancel</Button>
+    </FooterTemplate>
+</Modal>
+
+@code {
+    private Modal ModalRef;
+
+    [Parameter] public string Title { get; set; } = "Title Missing";
+
+    [Parameter] public List<ModalInput> Inputs { get; set; }
+
+    //[Parameter] public EventCallback<List<ModalInput>> OnSubmit { get; set; }
+    //[Parameter] public Func<List<ModalInput>,bool> OnSubmit { get; set; }
+    [Parameter] public Func<Dictionary<string,ModalInput>,bool> OnSubmit { get; set; }
+    [Parameter] public Func<Dictionary<string,ModalInput>,Task<bool>> OnSubmitAsync { get; set; }
+
+    public async Task Show()
+    {
+        await ModalRef.ShowAsync();
+    }
+
+    public async Task Hide()
+    {
+        await ModalRef.HideAsync();
+    }
+
+    private async Task HandleSubmit()
+    {
+        if (OnSubmit != null)
+        {
+            bool shouldClose = OnSubmit.Invoke(Inputs.ToDictionary(e => e.Name));
+
+            if (shouldClose)
+            {
+                await ModalRef.HideAsync();
+            }
+        }
+
+        if (OnSubmitAsync != null)
+        {
+            bool shouldClose = await OnSubmitAsync.Invoke(Inputs.ToDictionary(e => e.Name));
+
+            if (shouldClose)
+            {
+                await ModalRef.HideAsync();
+            }
+        }
+    }
+}

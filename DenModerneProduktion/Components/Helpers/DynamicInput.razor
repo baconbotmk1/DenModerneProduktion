@@ -1,0 +1,98 @@
+﻿@using System.Diagnostics
+
+<div class="mb-3">
+    <label>@Input.Label</label>
+
+    @switch (Input.DType)
+    {
+        case InputType.Text:
+            <input class="form-control @(!string.IsNullOrEmpty(Input.Error) ? "is-invalid" : null)" value="@Input.Value" @onchange="__value => Input.Value = __value.Value.ToString()" />
+            break;
+        case InputType.Number:
+            <input class="form-control @(!string.IsNullOrEmpty(Input.Error) ? "is-invalid" : null)" type="number" value="@Input.Value" @onchange="(__value => Input.Value = !string.IsNullOrEmpty((string?)__value.Value) ? Convert.ToInt32(__value.Value ?? 0) : null)" />
+            break;
+        case InputType.Date:
+            <input class="form-control @(!string.IsNullOrEmpty(Input.Error) ? "is-invalid" : null)" type="date" value="@(Input.Value != null ? (Input.Value is DateTime ? null : DateTime.Parse((string)Input.Value)) : null)" @onchange="OnDateChanged" />
+            break;
+        case InputType.Select:
+            <select class="form-select @(!string.IsNullOrEmpty(Input.Error) ? "is-invalid" : null)" value="@(Input.Value is Option ? ((Option)Input.Value).Value : Input.Value)" @onchange="__value => Input.Value = __value.Value.ToString()">
+                @if (Input.Options != null)
+                {
+                    @foreach (var option in Input.Options)
+                    {
+                        <option value="@option.Value">@option.Label</option>
+                    }
+                }
+            </select>
+            break;
+    }
+
+    @if(!string.IsNullOrEmpty(Input.Error))
+    {
+        <span class="fst-italic text-danger">@Input.Error</span>
+    }
+</div>
+
+@code {
+    [Parameter] public ModalInput Input { get; set; }
+
+    // Typed values for local binding
+    private string textValue;
+    private int numberValue;
+    private DateTime dateValue;
+    private string selectedValue;
+
+    protected override void OnParametersSet()
+    {
+        switch (Input.DType)
+        {
+            case InputType.Text:
+                textValue = Input.Value as string ?? "";
+                break;
+            case InputType.Number:
+                numberValue = Convert.ToInt32(Input.Value ?? 0);
+                break;
+            case InputType.Date:
+                dateValue = Input.Value is DateTime dt ? dt : DateTime.Today;
+                break;
+            case InputType.Select:
+                selectedValue = Input.Value as string ?? (Input.Options.Count > 0 ? Input.Options?.FirstOrDefault().Value : "") ?? "";
+                Input.Value = selectedValue;
+                break;
+        }
+    }
+
+    private void UpdateValue(ChangeEventArgs e)
+    {
+        switch (Input.DType)
+        {
+            case InputType.Text:
+                Input.Value = textValue;
+                break;
+            case InputType.Number:
+                Input.Value = numberValue;
+                break;
+            case InputType.Date:
+                Input.Value = dateValue;
+                break;
+            case InputType.Select:
+                Input.Value = selectedValue;
+                break;
+        }
+    }
+
+    private void OnDateChanged(ChangeEventArgs e)
+    {
+        Debug.WriteLine(e.Value != null ? e.Value.GetType().Name : "null");
+
+        string val = (string)e.Value;
+
+        if (val == "")
+        {
+            Input.Value = null;
+            return;
+        }
+
+        Input.Value = DateTime.Parse(val);
+    }
+}

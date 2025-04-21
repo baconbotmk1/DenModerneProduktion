@@ -1,11 +1,22 @@
-﻿
+﻿@using System.Diagnostics
+
 
 @code {
     [Parameter]
     public string Type { get; set; }
 
+    private string _value;
+
     [Parameter]
-    public string Value { get; set; }
+    public string Value
+    {
+        get => _value;
+        set
+        {
+            _value = value;
+            if (OnValueChanged != null) OnValueChanged.Invoke(_value);
+        }
+    }
 
     [Parameter]
     public string Name { get; set; }
@@ -26,6 +37,9 @@
 
     [Parameter]
     public EventCallback<string> ValueChanged { get; set; }
+
+    [Parameter]
+    public Action<string> OnValueChanged { get; set; } = (string eh) => { };
 
 
     public Dictionary<string, object?> GetParameters()
