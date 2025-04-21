@@ -87,6 +87,7 @@
         if(response.StatusCode != 200)
         {
             viewHelper.Alert(response.Message);
+            return;
         }
 
         Items = ((Shared.Responses.AcceptedResponse<List<TType>>)response).Data;

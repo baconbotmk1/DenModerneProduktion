@@ -1,0 +1,63 @@
+﻿@inject IJSRuntime JS
+
+@foreach (InputBase input in Inputs)
+{
+    <DynamicComponent Type="@input.GetType()" Parameters="@(input.GetParameters().AddOrReplace("ParentList", RealInputs))" />
+}
+
+<hr/>
+
+<div class="d-flex flex-row justify-content-end">
+    <Button class="mt-3 w-25 btn-sm" Color="ButtonColor.Success" Type="ButtonType.Button" @onclick="Confirm">
+        @AcceptText
+    </Button>
+</div>
+
+@code {
+    [Parameter] public string Text { get; set; } = "Modal Titel";
+
+    [Parameter] public string AcceptText { get; set; } = "Bekræft";
+
+    [Parameter] public EventCallback<MouseEventArgs> OnConfirm { get; set; } = new EventCallback<MouseEventArgs>();
+
+    public Dictionary<string, InputBase> RealInputs { get; set; } = new Dictionary<string, InputBase>();
+
+    [Parameter]
+    public IEnumerable<InputBase> Inputs { get; set; } = new List<InputBase>();
+
+    [Parameter] public Modal Modal { get; set; } = default!;
+
+    protected void Confirm()
+    {
+        OnConfirm.InvokeAsync();
+        Modal.HideAsync();
+    }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+    }
+
+
+    public object? GetInput(string key)
+    {
+        if(RealInputs.ContainsKey(key))
+        {
+            if(RealInputs[key].GetType() == typeof(SelectWithValidation))
+            {
+                SelectWithValidation input = (SelectWithValidation)RealInputs[key];
+                return RealInputs[key].Value;
+            }
+
+            if(RealInputs[key].GetType() == typeof(InputWithValidation))
+            {
+                InputWithValidation input = (InputWithValidation)RealInputs[key];
+                return RealInputs[key].Value;
+            }
+
+            return RealInputs[key].Value;
+        }
+
+        return null;
+    }
+}
