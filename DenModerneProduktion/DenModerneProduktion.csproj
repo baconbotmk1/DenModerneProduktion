@@ -16,10 +16,6 @@
     <None Remove="Components\Pages\Admin\Users\" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Components\Pages\Admin\Permissions\" />
-    <Folder Include="Components\Pages\Admin\Users\" />
-  </ItemGroup>
-  <ItemGroup>
     <PackageReference Include="Blazor.Bootstrap" Version="3.3.1" />
   </ItemGroup>
 </Project>
