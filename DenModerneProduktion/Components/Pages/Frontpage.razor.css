@@ -1,6 +1,40 @@
-﻿namespace DenModerneProduktion.Components.Pages
-{
-    public class Frontpange
-    {
-    }
+﻿.js-status-container{
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+}
+.js-status-card-list {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    flex-wrap:wrap;
+    width:60%;
+}
+
+.js-status-card{
+    width:45%;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    border:1px solid black;
+    margin:2.5%;
+}
+.js-status-card-header-title{
+    font-size:28px;
+}
+.js-status-card-header-value{
+    font-size:20px;
+    font-weight:600;
+}
+.js-status-card-header{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    border-bottom:dashed 3px black;
+    width:100%;
+    padding:10px;
+}
+.js-status-card-info-list{
+    margin:10px;
 }

@@ -1,6 +1,62 @@
-﻿namespace DenModerneProduktion.Components.Pages
-{
-    public class Room
-    {
+﻿.js-room-data-graph{
+    width: 100%;
+    height:40vh;
+    border:1px solid black;
+}
+.js-room-container{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+}
+.js-room-header{
+    display:flex;
+    justify-content:space-between;
+    width:80%;
+}
+.js-room-header-type-selector, .js-room-header-period-selector {
+    display: flex;
+    margin-right:20px;
+}
+    .js-room-header-type-selector h4, .js-room-header-period-selector h4 {
+        border: solid 1px black;
+        text-align: center;
+        align-content: center;
+        justify-content: center;
+        width: 50px;
+        height: 50px;
     }
+        .js-room-header-type-selector h4:first-child, .js-room-header-period-selector h4:first-child {
+            border-right: none;
+            border-radius: 25% 0% 0% 25%;
+        }
+        .js-room-header-type-selector h4:last-child, .js-room-header-period-selector h4:last-child {
+            border-left: none;
+            border-radius: 0% 25% 25% 0%;
+        }
+        .js-room-header-type-selector h4:hover, .js-room-header-period-selector h4:hover{
+            cursor: pointer;
+        }
+.js-room-header-selectors {
+    display: flex;
+    flex-direction: row;
+}
+.js-room-data-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:end;
+    margin-bottom:10px;
+}
+.js-room-data-limit{
+    display:flex;
+}
+.js-room-data-limit-min, .js-room-data-limit-max {
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    margin-left: 20px;
+}
+
+
+.js-room-data{
+    width:80%;
 }

@@ -1,43 +1,37 @@
 ﻿@page "/"
-<h3>Status dashboard</h3>
-<div>
-    <div class="js-status-card">
-        <div class="js-status-card-header">
-            <h4 class="js-status-card-header-title">Global temperatur</h4>
-            <span class="js-status-card-header-value">@GlobalTemperature</span>
-        </div>
-        <div class="js-status-card-info">
-            <h4 class="js-status-card-info-header">Uden for normalen</h4>
+<div class="js-status-container">
+    <h1>Status dashboard</h1>
+    <div class="js-status-card-list">
+        <div class="js-status-card">
+            <div class="js-status-card-header">
+                <h4 class="js-status-card-header-title">Global temperatur</h4>
+                <span class="js-status-card-header-value">@GlobalTemperature&deg;</span>
+            </div>
             <div class="js-status-card-info-list">
                 @foreach (var device in TemperatureDevices)
                 {
-                    <p class="js-status-card-info-list-item">{Lokale navn} <span>{tempVærdi}</span></p>
+                    <p class="js-status-card-info-list-item">{Lokale navn} <span>{tempVærdi}&deg;</span></p>
                 }
             </div>
         </div>
-    </div>
 
-    <div class="js-status-card">
-        <div class="js-status-card-header">
-            <h4 class="js-status-card-header-title">Global fugtighed</h4>
-            <span class="js-status-card-header-value">@GlobalHumidity</span>
-        </div>
-        <div class="js-status-card-info">
-            <h4 class="js-status-card-info-header">Uden for normalen</h4>
+        <div class="js-status-card">
+            <div class="js-status-card-header">
+                <h4 class="js-status-card-header-title">Global fugtighed</h4>
+                <span class="js-status-card-header-value">@GlobalHumidity%</span>
+            </div>
             <div class="js-status-card-info-list">
                 @foreach (var device in HumidityDevices)
                 {
-                    <p class="js-status-card-info-list-item">{Lokale navn} <span>{fugtVærdi}</span></p>
+                    <p class="js-status-card-info-list-item">{Lokale navn} <span>{fugtVærdi}%</span></p>
                 }
             </div>
         </div>
-    </div>
 
-    <div class="js-status-card">
-        <div class="js-status-card-header">
-            <h4 class="js-status-card-header-title">Åbne døre</h4>
-        </div>
-        <div class="js-status-card-info">
+        <div class="js-status-card">
+            <div class="js-status-card-header">
+                <h4 class="js-status-card-header-title">Åbne døre</h4>
+            </div>
             <div class="js-status-card-info-list">
                 @foreach (var device in DoorDevices)
                 {
@@ -45,13 +39,11 @@
                 }
             </div>
         </div>
-    </div>
 
-    <div class="js-status-card">
-        <div class="js-status-card-header">
-            <h4 class="js-status-card-header-title">Åbne vinduer</h4>
-        </div>
-        <div class="js-status-card-info">
+        <div class="js-status-card">
+            <div class="js-status-card-header">
+                <h4 class="js-status-card-header-title">Åbne vinduer</h4>
+            </div>
             <div class="js-status-card-info-list">
                 @foreach (var device in WindowDevices)
                 {

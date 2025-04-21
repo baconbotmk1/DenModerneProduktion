@@ -1,17 +1,21 @@
 ﻿@page "/lobby"
 
-<h3>Lobby</h3>
-<div>
+<div class="js-lobby-container">
+    <h1>Lobby</h1>
     <div class="js-lobby-map">Map</div>
     <div class="js-lobby-list">
         @foreach (var room in AccessibleRooms)
         {
             <div class="js-lobby-list-item">
-                <p class="js-lobby-list-item-title">{RoomName}</p>
-                <p class="js-lobby-list-item-temperature">Temperatur: <span>{RoomTemperatureValue}</span></p>
-                <p class="js-lobby-list-item-humidity">Fugtighed: <span>{RoomHumidityValue}</span></p>
+                <div class="js-lobby-list-item-info">
+                    <p class="js-lobby-list-item-info-title">52.200</p>
+                    <div class="js-lobby-list-item-info-data">
+                        <p class="js-lobby-list-item-info-data-temperature">Temperatur: <span>22.3&deg;</span></p>
+                        <p class="js-lobby-list-item-info-data-humidity">Fugtighed: <span>55%</span></p>
+                    </div>
+                </div>
                 <div class="js-lobby-list-item-icon">{RoomIcon}</div>
-                <div class="js-lobby-list-item-accessible-timespan">{AccessibleTimeSpan}</div>
+                <div class="js-lobby-list-item-accessible-timespan">08:00-16:00</div>
             </div>
         }
     </div>

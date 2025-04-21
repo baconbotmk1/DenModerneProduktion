@@ -1,17 +1,19 @@
 ﻿@page "/rooms/{id}"
 
-<h3>Room</h3>
-<div>
+<div class="js-room-container">
+    <h1>Room</h1>
     <div class="js-room-header">
-        <div class="js-room-header-type-selector">
-            <h4 @onclick="()=>ChangeType(0)">Temp.</h4>
-            <h4 @onclick="()=>ChangeType(1)">Hum.</h4>
-            <h4 @onclick="()=>ChangeType(2)">kWh.</h4>
-        </div>
-        <div class="js-room-header-period-selector">
-            <h4 @onclick="()=>ChangePeriod(0)">Day</h4>
-            <h4 @onclick="()=>ChangePeriod(1)">Week</h4>
-            <h4 @onclick="()=>ChangePeriod(2)">Month</h4>
+        <div class="js-room-header-selectors">
+            <div class="js-room-header-type-selector">
+                <h4 @onclick="()=>ChangeType(0)"><Icon Name="IconName.ThermometerHigh" Size="IconSize.x4"/></h4>
+                <h4 @onclick="()=>ChangeType(1)"><Icon Name="IconName.DropletFill" Size="IconSize.x4"/></h4>
+                <h4 @onclick="()=>ChangeType(2)"><Icon Name="IconName.LightningFill" Size="IconSize.x4"/></h4>
+            </div>
+            <div class="js-room-header-period-selector">
+                <h4 @onclick="()=>ChangePeriod(0)">D</h4>
+                <h4 @onclick="()=>ChangePeriod(1)">W</h4>
+                <h4 @onclick="()=>ChangePeriod(2)">M</h4>
+            </div>
         </div>
         @if (UserIsAdmin)
         {
@@ -26,11 +28,11 @@
             <div class="js-room-data-limit">
                 <div class="js-room-data-limit-min">
                     <label for="js-room-data-limit-min-value">Minimum</label>
-                    <InputNumber id="js-room-data-limit-min-value" @bind-Value="MinValue"></InputNumber>
+                    <InputNumber id="js-room-data-limit-min-value" @bind-Value="MinValue" class="js-room-data-limit-min-input"></InputNumber>
                 </div>
                 <div class="js-room-data-limit-max">
                     <label for="js-room-data-limit-max-value">Maximum</label>
-                    <InputNumber id="js-room-data-limit-max-value" @bind-Value="MaxValue"></InputNumber>
+                    <InputNumber id="js-room-data-limit-max-value" @bind-Value="MaxValue" class="js-room-data-limit-max-input"></InputNumber>
                 </div>
             </div>
         </div>
