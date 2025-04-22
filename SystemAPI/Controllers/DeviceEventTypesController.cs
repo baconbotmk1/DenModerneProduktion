@@ -41,7 +41,7 @@ namespace SystemAPI.Controllers
 
 
         [HttpGet("{id}")]
-        public ActionResult<User> GetById(int id)
+        public ActionResult<DeviceEventType> GetById(int id)
         {
             return HandleExceptions(() =>
             {

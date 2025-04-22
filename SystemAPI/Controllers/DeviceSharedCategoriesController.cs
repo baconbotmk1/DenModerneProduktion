@@ -43,7 +43,7 @@ namespace SystemAPI.Controllers
 
 
         [HttpGet("{id}")]
-        public ActionResult<User> GetById(int id)
+        public ActionResult<DeviceSharedCategory> GetById(int id)
         {
             return HandleExceptions(() =>
             {

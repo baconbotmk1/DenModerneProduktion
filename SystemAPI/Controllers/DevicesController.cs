@@ -1,24 +1,27 @@
 ﻿using System.Diagnostics;
-using Shared.DTOs.DeviceDataType;
+using Shared.DTOs.Device;
 
 namespace SystemAPI.Controllers
 {
     [ApiController]
-    [Route("api/device_data_types")]
-    public class DeviceDataTypesController : BaseController<DeviceDataType>
+    [Route("api/devices")]
+    public class DevicesController : BaseController<Device>
     {
-        public DeviceDataTypesController(DataContext Context, IRepository<DeviceDataType> DIrepository) : base(Context, DIrepository)
+        public DevicesController(DataContext Context, IRepository<Device> DIrepository) : base(Context, DIrepository)
         {
         }
 
         [HttpGet]
-        public ActionResult<IEnumerable<DeviceDataType>> Get()
+        public ActionResult<IEnumerable<Device>> Get()
         {
             return HandleExceptions(() =>
             {
-                var data = context.DeviceDataTypes
+                var data = context.Devices
                     .AsNoTracking()
-                    .Include(e => e.Category)
+                    .Include(e => e.Type)
+                    .Include(e => e.Infos)
+                    .Include(e => e.Data)
+                    .Include(e => e.Events)
                     .ToList();
 
                 return Ok(data);
@@ -26,11 +29,11 @@ namespace SystemAPI.Controllers
         }
 
         [HttpPost]
-        public ActionResult<DeviceDataType> Post([FromBody] CreateDeviceDataType data)
+        public ActionResult<Device> Post([FromBody] CreateDevice data)
         {
             return HandleExceptions(() =>
             {
-                DeviceDataType item = data.Adapt<DeviceDataType>();
+                Device item = data.Adapt<Device>();
 
                 repository.Insert(item);
                 repository.Save();
@@ -41,28 +44,28 @@ namespace SystemAPI.Controllers
 
 
         [HttpGet("{id}")]
-        public ActionResult<DeviceDataType> GetById(int id)
+        public ActionResult<Device> GetById(int id)
         {
             return HandleExceptions(() =>
             {
-                DeviceDataType? deviceDataType = repository.GetById(id);
+                Device? device = repository.GetById(id);
 
-                if (deviceDataType == null)
+                if (device == null)
                 {
                     return NotFound();
                 }
 
-                return Ok(deviceDataType);
+                return Ok(device);
             });
         }
 
 
         [HttpPut("{id}")]
-        public ActionResult<DeviceDataType> Put(int id, [FromBody] CreateDeviceDataType data)
+        public ActionResult<Device> Put(int id, [FromBody] CreateDevice data)
         {
             try
             {
-                DeviceDataType? item = repository.GetById(id);
+                Device? item = repository.GetById(id);
 
                 if (item == null)
                 {
@@ -91,7 +94,7 @@ namespace SystemAPI.Controllers
         {
             return HandleExceptions(() =>
             {
-                DeviceDataType? foundObject = repository.GetById(id);
+                Device? foundObject = repository.GetById(id);
 
                 if (foundObject == null)
                 {

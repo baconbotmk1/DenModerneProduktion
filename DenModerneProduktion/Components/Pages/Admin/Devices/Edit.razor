@@ -1,0 +1,235 @@
+﻿@page "/admin/devices/{id}"
+@using System.Diagnostics
+@using DenModerneProduktion.Services
+@using Shared.DTOs.Device
+@using Shared.DTOs.User
+@using Shared.Models
+@using System.Text.Json;
+@using DenModerneProduktion.Components.Helpers;
+@inject ApiRequester requester
+@inject ViewHelper viewHelper
+@inject NavigationManager navigationManager
+
+<div class="d-flex flex-row">
+    <div class="card w-50 me-5">
+        <div class="card-header">
+            <h3>@(DeviceID == 0 ? "Ny Enhed" : "Enhed #" + DeviceID)</h3>
+
+        </div>
+        <div class="card-body">
+            <InputWithValidation Title="Navn" @ref="NameField" ParentList="@Inputs" IsRequired="true" Type="text" Name="name" @bind-value="@Name" />
+            <SelectWithValidation Options="Types.Select(e => new SelectWithValidation.Option() {Text = e.Name, Value = e.Id.ToString()})" Title="Type" @ref="TypeIdField" ParentList="@Inputs" @bind-Value="@TypeId" Name="typeId" IsRequired="true" />
+            <SelectWithValidation Options="Rooms.Select(e => new SelectWithValidation.Option() {Text = e.Name, Value = e.Id.ToString()}).Prepend(SelectWithValidation.Option.None)" Title="Lokale" @ref="RoomIdField" ParentList="@Inputs" @bind-Value="@RoomId" Name="roomId" IsRequired="false" />
+            <SelectWithValidation Options="Sections.Select(e => new SelectWithValidation.Option() {Text = e.Name, Value = e.Id.ToString()}).Prepend(SelectWithValidation.Option.None)" Title="Sektion" @ref="SectionIdField" ParentList="@Inputs" @bind-Value="@SectionId" Name="sectionId" IsRequired="false" />
+        </div>
+        <div class="card-footer">
+            <button @onclick="() => Create()" class="@(DeviceID == 0 ? "" : "d-none") float-end btn btn-sm btn-success">Opret</button>
+            <button @onclick="() => Update()" class="@(DeviceID != 0 ? "" : "d-none") float-end btn btn-sm btn-primary">Gem</button>
+        </div>
+    </div>
+</div>
+
+
+@code {
+    [Parameter]
+    public string id { get; set; }
+    public Device? Item { get; set; }
+
+    public string Name { get; set; } = "";
+    public InputWithValidation NameField { get; set; }
+
+    public string TypeId { get; set; } = "";
+    public SelectWithValidation TypeIdField { get; set; }
+
+    public string? RoomId { get; set; } = "";
+    public SelectWithValidation RoomIdField { get; set; }
+
+    public string? SectionId { get; set; } = "";
+    public SelectWithValidation SectionIdField { get; set; }
+
+    public int DeviceID => Int32.TryParse(id, out int res) ? res : 0;
+
+    public List<DeviceType> Types { get; set; } = new List<DeviceType>();
+
+    public List<Room> Rooms { get; set; } = new List<Room>();
+    public List<Section> Sections { get; set; } = new List<Section>();
+
+    public Dictionary<string, InputBase> Inputs { get; set; } = new Dictionary<string, InputBase>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        Item = new Device();
+
+        Debug.WriteLine("Starting");
+
+        var typesResponse = await requester.Get<List<DeviceType>>("api/device_types");
+        if (typesResponse.IsSuccessResponse)
+        {
+            Types = typesResponse.TryGetData<List<DeviceType>>() ?? new List<DeviceType>();
+        }
+
+        var roonsResponse = await requester.Get<List<Room>>("api/rooms");
+        if (roonsResponse.IsSuccessResponse)
+        {
+            Rooms = roonsResponse.TryGetData<List<Room>>() ?? new List<Room>();
+        }
+
+        var sectionsResponse = await requester.Get<List<Section>>("api/sections");
+        if (sectionsResponse.IsSuccessResponse)
+        {
+            Sections = sectionsResponse.TryGetData<List<Section>>() ?? new List<Section>();
+        }
+
+        if (DeviceID != 0)
+        {
+            viewHelper.ShowLoader("Henter enhed...");
+
+            var response = await requester.Get<Device>("api/devices/" + DeviceID);
+
+            if(response.Status >= 4000)
+            {
+                viewHelper.Alert("Noget gik galt, genindlæs siden og prøv igen...");
+                return;
+            }
+
+            viewHelper.HideLoader();
+
+            Device? device = response.TryGetData<Device>();
+
+            if (device != null)
+            {
+                Item = device;
+                Name = device.Name;
+                TypeId = device.TypeId.ToString();
+                RoomId = device.RoomId.ToString();
+                SectionId = device.SectionId.ToString();
+            }
+            else
+            {
+                navigationManager.NavigateTo("admin/devices");
+            }
+        }
+    }
+
+
+    async public Task Create()
+    {
+        // Reset all error messages on fields.
+        Inputs.ToList().ForEach(i => i.Value.SetError(""));
+
+        viewHelper.ShowLoader("Opretter enhed...");
+
+        var response = await requester.Post<Device>("api/devices", new CreateDevice()
+        {
+            Name = Inputs["name"].Value,
+            TypeId = int.Parse(Inputs["typeId"].Value),
+            RoomId = string.IsNullOrEmpty(Inputs["roomId"].Value) ? null : int.Parse(Inputs["roomId"].Value),
+            SectionId = string.IsNullOrEmpty(Inputs["sectionId"].Value) ? null : int.Parse(Inputs["sectionId"].Value),
+        });
+
+        viewHelper.HideLoader();
+
+        if (!response.IsSuccessResponse)
+        {
+            var errorContent = ((ErrorResponse)response).Title;
+            var validationError = JsonSerializer.Deserialize<Shared.Responses.ApiValidationError>(errorContent, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+            // Now you can access validationError.Errors["Name"], etc.
+            foreach (var error in validationError.Errors)
+            {
+
+                string loweredKey = error.Key.ToLower();
+                if (Inputs.ContainsKey(loweredKey))
+                {
+                    Inputs[loweredKey].SetError(string.Join(", ", error.Value));
+                }
+            }
+
+            return;
+        }
+
+        Device? newDevice = response is AcceptedResponse<Device> ? ((AcceptedResponse<Device>)response).Data : null;
+
+        if (response.StatusCode > 200 || response.StatusCode < 200)
+        {
+            viewHelper.Alert(response.Message);
+
+            return;
+        }
+
+        if (newDevice != null && newDevice.Id != null)
+        {
+            navigationManager.NavigateTo($"/admin/devices/{newDevice.Id}", forceLoad: true);
+
+            return;
+        }
+    }
+
+    async public Task Update()
+    {
+        // Reset all error messages on fields.
+        Inputs.ToList().ForEach(i => i.Value.SetError(""));
+
+        if (string.IsNullOrEmpty(Inputs["roomId"].Value) && string.IsNullOrEmpty(Inputs["sectionId"].Value))
+        {
+            Inputs["roomId"].SetError("Der skal mindst være sat et lokale eller en sektion");
+            Inputs["sectionId"].SetError("Der skal mindst være sat et lokale eller en sektion");
+
+            return;
+        }
+
+        if (!string.IsNullOrEmpty(Inputs["roomId"].Value) && !string.IsNullOrEmpty(Inputs["sectionId"].Value))
+        {
+            Inputs["sectionId"].SetError("Hvis lokale er sat, må en sektion ikke være sat");
+
+            return;
+        }
+
+        viewHelper.ShowLoader("Opdatere enhed...");
+
+        var response = await requester.Put<Device>("api/devices/" + DeviceID, new CreateDevice()
+        {
+            Name = Inputs["name"].Value,
+            TypeId = int.Parse(Inputs["typeId"].Value),
+            RoomId = string.IsNullOrEmpty(Inputs["roomId"].Value) ? null : int.Parse(Inputs["roomId"].Value),
+            SectionId = string.IsNullOrEmpty(Inputs["sectionId"].Value) ? null : int.Parse(Inputs["sectionId"].Value),
+        });
+
+        viewHelper.HideLoader();
+
+        if (!response.IsSuccessResponse)
+        {
+            var errorContent = ((ErrorResponse)response).Title;
+            var validationError = JsonSerializer.Deserialize<Shared.Responses.ApiValidationError>(errorContent, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+            // Now you can access validationError.Errors["Name"], etc.
+            foreach (var error in validationError.Errors)
+            {
+
+                string loweredKey = error.Key.ToLower();
+                if (Inputs.ContainsKey(loweredKey))
+                {
+                    Inputs[loweredKey].SetError(string.Join(", ", error.Value));
+                }
+            }
+
+            return;
+        }
+
+        Device? updatedDevice = ((Shared.Responses.AcceptedResponse<Device>)response).Data;
+
+        if (updatedDevice != null)
+        {
+            Name = updatedDevice.Name;
+            TypeId = updatedDevice.TypeId.ToString();
+            RoomId = updatedDevice.RoomId.ToString();
+            SectionId = updatedDevice.SectionId.ToString();
+        }
+    }
+}
