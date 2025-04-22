@@ -1,4 +1,8 @@
-﻿@page "/lobby"
+﻿@using DenModerneProduktion.Services
+@inject ViewHelper viewHelper
+@inject ApiRequester requester
+
+@page "/lobby"
 <PageTitle>Lobby</PageTitle>
 
 <div class="js-lobby-container">
@@ -9,18 +13,59 @@
         {
             <div class="js-lobby-list-item">
                 <div class="js-lobby-list-item-info">
-                    <p class="js-lobby-list-item-info-title">52.200</p>
+                    <p class="js-lobby-list-item-info-title">@room.Name</p>
                     <div class="js-lobby-list-item-info-data">
-                        <p class="js-lobby-list-item-info-data-temperature">Temperatur: <span>22.3&deg;</span></p>
+                        <p class="js-lobby-list-item-info-data-temperature">Temperatur: <span>22,4&deg;</span></p>
                         <p class="js-lobby-list-item-info-data-humidity">Fugtighed: <span>55%</span></p>
                     </div>
                 </div>
-                <div class="js-lobby-list-item-icon">{RoomIcon}</div>
+                <div class="js-lobby-list-item-icon"><Icon Name="IconList[CustomCount++ % IconList.Count]" Size="IconSize.x4" Style="@($"color:#{GenerateHexColor()}")" /></div>
                 <div class="js-lobby-list-item-accessible-timespan">08:00-16:00</div>
             </div>
         }
     </div>
 </div>
 @code {
-    public List<string> AccessibleRooms { get; set; } = new() { "52.200", "52.201" };
+    public int CustomCount { get; set; } = 0;
+    public List<IconName> IconList { get; set; } = new() { IconName.CircleFill, IconName.TriangleFill, IconName.ExclamationSquareFill, IconName.ExclamationOctagonFill, IconName.SquareFill, IconName.BalloonFill, IconName.BatteryFull, IconName.BellFill, IconName.CheckSquareFill, IconName.CloudFill };
+    public List<Shared.Models.Room> AccessibleRooms { get; set; } = new();
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        viewHelper.NavUpdate += async () => await GetAccessibleRoomsAsync();
+        await GetAccessibleRoomsAsync();
+    }
+    private async Task GetAccessibleRoomsAsync()
+    {
+        var response = await requester.Get<List<Shared.Models.Room>>("api/rooms");
+        if (response.StatusCode != 200)
+        {
+            viewHelper.Alert(response.Message);
+            return;
+        }
+
+        AccessibleRooms = ((Shared.Responses.AcceptedResponse<List<Shared.Models.Room>>)response).Data;
+        StateHasChanged();
+    }
+
+    private string GenerateHexColor()
+    {
+        List<int[]> rgbValues = new() {
+            new int[] {255,0,0},
+            new int[] {0,255,0},
+            new int[] {0,0,255},
+            new int[] {255,255,0},
+            new int[] {255,0,255},
+            new int[] {0,255,255},
+        };
+        int iconLoops = (CustomCount - 1) / IconList.Count;
+        int rgbLoops = (iconLoops) / rgbValues.Count;
+
+        int rVal = (int)Math.Ceiling(rgbValues[iconLoops % rgbValues.Count()][0] / Math.Pow(2, rgbLoops));
+        int gVal = (int)Math.Ceiling(rgbValues[iconLoops % rgbValues.Count()][1] / Math.Pow(2, rgbLoops));
+        int bVal = (int)Math.Ceiling(rgbValues[iconLoops % rgbValues.Count()][2] / Math.Pow(2, rgbLoops));
+        string color = $"{rVal.ToString("X2")}{gVal.ToString("X2")}{bVal.ToString("X2")}";
+        return color;
+    }
 }

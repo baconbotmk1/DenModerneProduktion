@@ -1,8 +1,13 @@
-﻿@page "/rooms/{id}"
+﻿@using DenModerneProduktion.Services
+@inject ApiRequester requester
+@inject ViewHelper viewHelper
+@inject NavigationManager Navigation
+
+@page "/rooms/{id}"
 <PageTitle>Lokale</PageTitle>
 
 <div class="js-room-container">
-    <h1>Room</h1>
+    <h1>@_Room.Name</h1>
     <div class="js-room-header">
         <div class="js-room-header-selectors">
             <div class="js-room-header-type-selector">
@@ -47,6 +52,7 @@
     [Parameter]
     public string id { get; set; }
 
+    public Shared.Models.Room _Room { get; set; } = new();
     public double MinValue { get; set; } = 18.2;
     public double MaxValue { get; set; }
     public bool UserIsAdmin { get; set; }
@@ -60,9 +66,29 @@
 
     }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
+        await GetThisRoomData();
         UserIsAdmin = CheckIfUserIsAdmin();
+        await OnLocationChangedAsync();
+        Navigation.LocationChanged += async (object? sender, LocationChangedEventArgs e) => await OnLocationChangedAsync();
+    }
+
+    private async Task OnLocationChangedAsync()
+    {
+        await GetThisRoomData();
+    }
+    private async Task GetThisRoomData()
+    {
+        var response = await requester.Get<Shared.Models.Room>("api/rooms/" + id);
+        if (response.StatusCode != 200)
+        {
+            viewHelper.Alert(response.Message);
+            return;
+        }
+
+        _Room = ((Shared.Responses.AcceptedResponse<Shared.Models.Room>)response).Data;
+        StateHasChanged();
     }
 
     private bool CheckIfUserIsAdmin()
