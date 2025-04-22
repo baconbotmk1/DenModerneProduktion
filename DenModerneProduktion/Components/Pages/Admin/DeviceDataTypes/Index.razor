@@ -1,0 +1,95 @@
+﻿@page "/admin/device_types"
+@using DenModerneProduktion.Components.Helpers
+@using DenModerneProduktion.Services
+@using Shared.Models
+@using System.Diagnostics
+@using Microsoft.AspNetCore.Components.Web
+@inject ApiRequester requester
+@inject ViewHelper viewHelper
+
+<h3>Enhedstyper</h3>
+<div class="d-flex flex-row justify-content-between">
+    <span class="fs-6 fst-italic">Diverse enhedstyper</span>
+
+    <div class="text-end">
+        <a href="test/new">
+            <button class="btn btn-sm btn-primary">Opret ny kategori</button>
+        </a>
+    </div>
+</div>
+<hr />
+<table class="table table-sm">
+    <thead>
+        <tr>
+            <th colspan="2">ID</th>
+            <th>Kategori</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (DeviceSharedCategory item in Categories)
+        {
+            <tr class="bg-primary">
+                <td colspan="2">@item.Id</td>
+                <td>@item.Name</td>
+                <td style="text-align:end">
+                </td>
+            </tr>
+
+            <tr>
+                <td>
+                    <table class="table table-sm">
+                        @foreach (DeviceInfoType item2 in item.InfoTypes)
+                        {
+                            <tr>
+                                <td></td>
+                                <td>@item2.Id</td>
+                                <td>@item2.Type</td>
+                                <td style="text-align:end">
+                                </td>
+                            </tr>
+                        }
+                    </table>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<Modal @ref="modal" />
+
+@code {
+    public string Title { get; set; } = "EXAMPLES";
+    public string Subtitle { get; set; } = "EXAMPLE Subtitle";
+    public string Link { get; set; } = "admin/EXAMPLES";
+    public string APIEndpoint { get; set; } = "api/shared_";
+
+    public bool ShowDelete { get; set; } = true;
+    public bool ShowEdit { get; set; } = true;
+
+    protected List<DeviceSharedCategory>? Categories { get; set; } = new List<DeviceSharedCategory>();
+    protected override async Task OnInitializedAsync()
+    {
+        viewHelper.ShowLoader("Henter " + Title.ToLower() + "...");
+
+        var response = await requester.Get<List<DeviceSharedCategory>>("api/device_shared_categories");
+
+        if (response.StatusCode != 200)
+        {
+            viewHelper.Alert(response.Message);
+            return;
+        }
+
+        Categories = ((Shared.Responses.AcceptedResponse<List<DeviceSharedCategory>>)response).Data;
+
+        if (Categories == null)
+        {
+            Categories = new List<DeviceSharedCategory>();
+        }
+
+        viewHelper.HideLoader();
+    }
+
+
+    private Modal modal = default!;
+}

@@ -7,6 +7,8 @@ namespace Shared.Models
         [Required]
         public string Type { get; set; } = default!;
 
+        public string? Desc { get; set; }
+
         [Required]
         public int CategoryId { get; set; }
         public DeviceSharedCategory Category { get; set; }

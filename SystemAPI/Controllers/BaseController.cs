@@ -13,6 +13,7 @@ namespace SystemAPI.Controllers
         protected DataContext context;
         protected IRepository<T> repository;
 
+        [ApiExplorerSettings(IgnoreApi = true)]
         public ActionResult HandleError(Exception ex)
         {
             Debug.WriteLine(ex.Message);
@@ -31,6 +32,7 @@ namespace SystemAPI.Controllers
             }*/
         }
 
+        [ApiExplorerSettings(IgnoreApi = true)]
         public ActionResult<T> HandleException(Func<ActionResult<T>> func)
         {
             try
@@ -42,6 +44,8 @@ namespace SystemAPI.Controllers
                 return HandleError(ex);
             }
         }
+
+        [ApiExplorerSettings(IgnoreApi = true)]
         public ActionResult HandleExceptions(Func<ActionResult> func)
         {
             try

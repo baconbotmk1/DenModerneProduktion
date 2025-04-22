@@ -20,6 +20,10 @@
     <None Remove="DTOs\Cadastre\" />
     <None Remove="DTOs\Permission\" />
     <None Remove="Responses\" />
+    <None Remove="DTOs\DeviceDataType\" />
+    <None Remove="DTOs\DeviceSharedCategory\" />
+    <None Remove="DTOs\DeviceInfoType\" />
+    <None Remove="DTOs\DeviceEventType\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Models\" />
@@ -31,6 +35,10 @@
     <Folder Include="DTOs\Cadastre\" />
     <Folder Include="DTOs\Permission\" />
     <Folder Include="Responses\" />
+    <Folder Include="DTOs\DeviceDataType\" />
+    <Folder Include="DTOs\DeviceSharedCategory\" />
+    <Folder Include="DTOs\DeviceInfoType\" />
+    <Folder Include="DTOs\DeviceEventType\" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
