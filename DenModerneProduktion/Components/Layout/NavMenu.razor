@@ -1,6 +1,9 @@
 ﻿@using System.Diagnostics
+@using DenModerneProduktion.Services
 @inject NavigationManager Navigation
 @inject IHttpContextAccessor httpContextAccessor
+@inject ApiRequester requester
+@inject ViewHelper viewHelper
 
 <div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
@@ -82,18 +85,18 @@
 @code {
     public HttpContext? httpContext => httpContextAccessor.HttpContext;
 
-    // public List<string> AccessibleRooms { get; set; } = new() { "52.200", "52.201", "52.202" };
-    public List<string> AccessibleRooms { get; set; } = new() { "52.200", "52.201", "52.202", "52.203", "52.204", "52.205", "52.206", "52.207", "52.208", "52.209", "52.210", "52.211", "52.212", "52.213", "52.214", "52.215", "52.216", "52.217", "52.218", "52.219", "52.220" };
+    public List<Shared.Models.Room> AccessibleRooms { get; set; } = new();
 
     private bool _ShowSubMenu { get; set; }
     private bool _ShowAdminMenu { get; set; } = true;
 
     private void ShowAdminMenu() => _ShowAdminMenu = true;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         OnLocationChanged();
         Navigation.LocationChanged += (object? sender, LocationChangedEventArgs e) => OnLocationChanged();
+        await GetAccessibleRoomsAsync();
     }
 
     private void OnLocationChanged()
@@ -103,5 +106,16 @@
             _ShowSubMenu = Navigation.ToAbsoluteUri(Navigation.Uri).AbsolutePath.Split("/").Contains("admin");
             StateHasChanged();
         }
+    }
+    private async Task GetAccessibleRoomsAsync()
+    {
+        var response = await requester.Get<List<Shared.Models.Room>>("api/rooms");
+        if (response.StatusCode != 200)
+        {
+            viewHelper.Alert(response.Message);
+            return;
+        }
+
+        AccessibleRooms = ((Shared.Responses.AcceptedResponse<List<Shared.Models.Room>>)response).Data;
     }
 }
