@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Shared;
 
@@ -11,9 +12,11 @@ using Shared;
 namespace Shared.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20250422081733_FixedTypesMissingColumns")]
+    partial class FixedTypesMissingColumns
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -126,20 +129,10 @@ namespace Shared.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<int?>("RoomId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("SectionId")
-                        .HasColumnType("int");
-
                     b.Property<int>("TypeId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("RoomId");
-
-                    b.HasIndex("SectionId");
 
                     b.HasIndex("TypeId");
 
@@ -375,6 +368,7 @@ namespace Shared.Migrations
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Desc")
+                        .IsRequired()
                         .HasColumnType("longtext");
 
                     b.Property<string>("Name")
@@ -888,23 +882,11 @@ namespace Shared.Migrations
 
             modelBuilder.Entity("Shared.Models.Device", b =>
                 {
-                    b.HasOne("Shared.Models.Room", "Room")
-                        .WithMany()
-                        .HasForeignKey("RoomId");
-
-                    b.HasOne("Shared.Models.Section", "Section")
-                        .WithMany()
-                        .HasForeignKey("SectionId");
-
                     b.HasOne("Shared.Models.DeviceType", "Type")
                         .WithMany()
                         .HasForeignKey("TypeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Room");
-
-                    b.Navigation("Section");
 
                     b.Navigation("Type");
                 });
@@ -931,7 +913,7 @@ namespace Shared.Migrations
             modelBuilder.Entity("Shared.Models.DeviceDataType", b =>
                 {
                     b.HasOne("Shared.Models.DeviceSharedCategory", "Category")
-                        .WithMany("DataTypes")
+                        .WithMany()
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -961,7 +943,7 @@ namespace Shared.Migrations
             modelBuilder.Entity("Shared.Models.DeviceEventType", b =>
                 {
                     b.HasOne("Shared.Models.DeviceSharedCategory", "Category")
-                        .WithMany("EventTypes")
+                        .WithMany()
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -991,7 +973,7 @@ namespace Shared.Migrations
             modelBuilder.Entity("Shared.Models.DeviceInfoType", b =>
                 {
                     b.HasOne("Shared.Models.DeviceSharedCategory", "Category")
-                        .WithMany("InfoTypes")
+                        .WithMany()
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1306,15 +1288,6 @@ namespace Shared.Migrations
                     b.Navigation("Events");
 
                     b.Navigation("Infos");
-                });
-
-            modelBuilder.Entity("Shared.Models.DeviceSharedCategory", b =>
-                {
-                    b.Navigation("DataTypes");
-
-                    b.Navigation("EventTypes");
-
-                    b.Navigation("InfoTypes");
                 });
 
             modelBuilder.Entity("Shared.Models.Permission", b =>

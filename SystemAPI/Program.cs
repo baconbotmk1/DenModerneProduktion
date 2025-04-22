@@ -41,6 +41,12 @@ public class Program
         builder.Services.AddScoped<IRepository<Building>, BuildingRepository>();
         builder.Services.AddScoped<IRepository<Room>, RoomRepository>();
         builder.Services.AddScoped<IRepository<Section>, SectionRepository>();
+        builder.Services.AddScoped<IRepository<DeviceDataType>, GenericRepository<DeviceDataType>>();
+        builder.Services.AddScoped<IRepository<DeviceInfoType>, GenericRepository<DeviceInfoType>>();
+        builder.Services.AddScoped<IRepository<DeviceEventType>, GenericRepository<DeviceEventType>>();
+        builder.Services.AddScoped<IRepository<DeviceSharedCategory>, GenericRepository<DeviceSharedCategory>>();
+        builder.Services.AddScoped<IRepository<DeviceType>, GenericRepository<DeviceType>>();
+        builder.Services.AddScoped<IRepository<Device>, GenericRepository<Device>>();
 
         var app = builder.Build();
 

@@ -38,7 +38,9 @@ namespace DenModerneProduktion.Services
 
             if (response.IsSuccessStatusCode)
             {
-                var result = await response.Content.ReadFromJsonAsync<T>();
+                
+                Debug.WriteLine(response.Content.ReadAsStream().Length);
+                var result = await response.Content.ReadFromJsonAsync<T?>();
 
                 return new AcceptedResponse<T?>(result);
             }

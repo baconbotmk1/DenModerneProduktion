@@ -9,11 +9,19 @@
         public object? Value { get; set; }
 
         public string? Error { get; set; } = null;
+
+        public bool Required { get; set; } = false;
+
+        public void Reset()
+        {
+            Error = null;
+        }
     }
 
     public enum InputType
     {
         Text,
+        TextArea,
         Select,
         Number,
         Date

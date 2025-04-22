@@ -1,16 +1,14 @@
 ﻿using System;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-namespace Shared.Models
+
+namespace Shared.DTOs.DeviceType
 {
-	public class DeviceType : BaseModel
-    {
+	public class CreateDeviceType
+	{
         [Required]
         public string Name { get; set; }
         public string? Desc { get; set; }
-
-        public DeviceType()
-		{
-		}
-	}
+    }
 }
 

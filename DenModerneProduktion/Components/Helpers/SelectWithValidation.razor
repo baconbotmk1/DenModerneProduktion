@@ -2,7 +2,7 @@
 
 
 <div class="mb-2">
-    <span class="form-label">Navn</span>
+    <span class="form-label">@Title</span>
     <select name="@Name" @bind="@Value" class="form-select @(!ShowError ? "is-invalid" : "")" placeholder="@Placeholder" required="@IsRequired">
         @foreach(SelectWithValidation.Option option in Options)
         {
@@ -44,6 +44,8 @@
     {
         public string Text { get; set; }
         public string Value { get; set; }
+
+        public static Option None => new Option() { Value = "", Text = "(Ingen)" };
     }
 }
 

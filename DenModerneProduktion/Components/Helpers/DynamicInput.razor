@@ -1,12 +1,21 @@
 ﻿@using System.Diagnostics
 
 <div class="mb-3">
-    <label>@Input.Label</label>
+    <div class="d-flex fw-bold fs-6 flex-row justify-content-start">
+        @if (Input.Required)
+        {
+            <label class="text-danger me-1">* </label>
+        }
+        <label>@Input.Label</label>
+    </div>
 
     @switch (Input.DType)
     {
         case InputType.Text:
             <input class="form-control @(!string.IsNullOrEmpty(Input.Error) ? "is-invalid" : null)" value="@Input.Value" @onchange="__value => Input.Value = __value.Value.ToString()" />
+            break;
+        case InputType.TextArea:
+            <textarea class="form-control @(!string.IsNullOrEmpty(Input.Error) ? "is-invalid" : null)" value="@Input.Value" @onchange="__value => Input.Value = __value.Value.ToString()"></textarea>
             break;
         case InputType.Number:
             <input class="form-control @(!string.IsNullOrEmpty(Input.Error) ? "is-invalid" : null)" type="number" value="@Input.Value" @onchange="(__value => Input.Value = !string.IsNullOrEmpty((string?)__value.Value) ? Convert.ToInt32(__value.Value ?? 0) : null)" />

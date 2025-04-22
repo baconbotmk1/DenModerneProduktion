@@ -1,21 +1,20 @@
 ﻿using System;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-namespace Shared.Models
+
+namespace Shared.DTOs.DeviceDataType
 {
-	public class DeviceEventType : BaseModel
-    {
+	public class CreateDeviceDataType
+	{
         [Required]
         public string Type { get; set; }
+        [Required]
+        public string DataType { get; set; }
 
         public string? Desc { get; set; }
 
         [Required]
         public int CategoryId { get; set; }
-        public DeviceSharedCategory Category { get; set; }
-
-        public DeviceEventType()
-		{
-		}
-	}
+    }
 }
 

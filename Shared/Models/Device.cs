@@ -13,7 +13,13 @@ namespace Shared.Models
         public int TypeId { get; set; }
 		public DeviceType Type { get; set; }
 
-		[InverseProperty("Device")]
+        public int? RoomId { get; set; }
+        public Room? Room { get; set; }
+
+        public int? SectionId { get; set; }
+        public Section? Section { get; set; }
+
+        [InverseProperty("Device")]
         public ICollection<DeviceInfo> Infos { get; } = new List<DeviceInfo>();
         [InverseProperty("Device")]
         public ICollection<DeviceData> Data { get; } = new List<DeviceData>();

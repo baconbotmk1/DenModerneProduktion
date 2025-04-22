@@ -1,9 +1,11 @@
 ﻿using System;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-namespace Shared.Models
+
+namespace Shared.DTOs.DeviceEventType
 {
-	public class DeviceEventType : BaseModel
-    {
+	public class CreateDeviceEventType
+	{
         [Required]
         public string Type { get; set; }
 
@@ -11,11 +13,6 @@ namespace Shared.Models
 
         [Required]
         public int CategoryId { get; set; }
-        public DeviceSharedCategory Category { get; set; }
-
-        public DeviceEventType()
-		{
-		}
-	}
+    }
 }
 
