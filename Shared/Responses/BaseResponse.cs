@@ -15,7 +15,7 @@ namespace Shared.Responses
 
         public T? TryGetData<T>() where T : class
         {
-            return this is AcceptedResponse<T> ? ((AcceptedResponse<T>)this).Data : null;
+            return this.GetType() == typeof(AcceptedResponse<T>) ? ((AcceptedResponse<T>)this).Data : null;
         }
     }
 }

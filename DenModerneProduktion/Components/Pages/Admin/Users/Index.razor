@@ -3,6 +3,7 @@
 @using DenModerneProduktion.Services
 @using Shared.Models
 @using System.Diagnostics
+@using Microsoft.AspNetCore.Components.Web
 @inject ApiRequester requester
 @inject ViewHelper viewHelper
 
@@ -10,10 +11,12 @@
     <Headers>
         <th>ID</th>
         <th>Navn</th>
+        <th>Sikkerhedsgrupper</th>
     </Headers>
     <Rows>
         <td>@context.Id</td>
         <td>@context.Name</td>
+        <td class="@(context.SecurityGroups.Count() == 0 ? "fst-italic" : "")">@(context.SecurityGroups.Count() == 0 ? "Ingen" : string.Join(", ", context.SecurityGroups.Select(e => e.Name)))</td>
     </Rows>
 </GenericCRUDListView>
 

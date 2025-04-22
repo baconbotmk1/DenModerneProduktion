@@ -4,46 +4,88 @@
 @using Shared.DTOs.User
 @using Shared.Models
 @using System.Text.Json;
+@using DenModerneProduktion.Components.Helpers;
 @inject ApiRequester requester
 @inject ViewHelper viewHelper
 @inject NavigationManager navigationManager
 
-<div class="card w-50">
-    <div class="card-header">
-        <h3>@(UserID == 0 ? "Ny Bruger" : "Bruger #" + UserID)</h3>
+<div class="d-flex flex-row">
+    <div class="card w-50 me-5">
+        <div class="card-header">
+            <h3>@(UserID == 0 ? "Ny Bruger" : "Bruger #" + UserID)</h3>
 
-    </div>
-    <div class="card-body">
-        <div class="mb-2">
-            <span class="form-label">Navn</span>
-            <input @bind-value="name" required name="name" placeholder="Navn" type="text" class="form-control" />
+        </div>
+        <div class="card-body">
+            <InputWithValidation @ref="NameField" ParentList="@Inputs" IsRequired="@true" Type="text" Name="name" @bind-value="@Name" />
+        </div>
+        <div class="card-footer">
+            <button @onclick="() => Create()" class="@(UserID == 0 ? "" : "d-none") float-end btn btn-sm btn-success">Opret</button>
+            <button @onclick="() => Update()" class="@(UserID != 0 ? "" : "d-none") float-end btn btn-sm btn-primary">Gem</button>
         </div>
     </div>
-    <div class="card-footer">
-        <button @onclick="() => Create()" class="@(UserID == 0 ? "" : "d-none") float-end btn btn-sm btn-success">Opret</button>
-        <button @onclick="() => Update()" class="@(UserID != 0 ? "" : "d-none") float-end btn btn-sm btn-primary">Gem</button>
-    </div>
+    @if(UserID != 0)
+    {
+        <div class="card w-50">
+            <div class="card-header">
+                <h3>Sikkerhedsgrupper</h3>
+
+            </div>
+            <div class="card-body">
+
+            </div>
+            <div class="card-footer">
+                <button @onclick="() => BeginAddingSecurityGroup()" class="@(UserID != 0 ? "" : "d-none") float-end btn btn-sm btn-primary">Tilføj sikkerhedsgruppe</button>
+            </div>
+        </div>
+    }
 </div>
+
+<GenericModal @ref="AddSecurityGroupModal" Title="Tilføj Sikkerhedsgruppe" Inputs="addSecGrpInputs" OnSubmitAsync="HandleModalSubmit" />
 
 @code {
     [Parameter]
     public string id { get; set; }
+    public User? Item { get; set; }
 
-    public string name { get; set; } = "";
+    public string Name { get; set; } = "";
+    public InputWithValidation NameField { get; set; }
 
     public int UserID => Int32.TryParse(id, out int res) ? res : 0;
 
+    public Dictionary<string, InputBase> Inputs { get; set; } = new Dictionary<string, InputBase>();
+
+    public List<SecurityGroup> AllSecurityGroups { get; set; } = new List<SecurityGroup>();
+
+    public List<SecurityGroup> RemainingSecurityGroups => AllSecurityGroups.Where(e => !(Item ?? new User()).UserSecurityGroups.Select(e2 => e2.SecurityGroupId).Contains(e.Id)).ToList();
+
     protected override async Task OnInitializedAsync()
     {
+        Item = new User();
+
         if (UserID != 0)
         {
+            viewHelper.ShowLoader("Henter bruger...");
+
             var response = await requester.Get<User>("api/users/" + UserID);
 
-            User? user = response is Shared.Responses.AcceptedResponse<User> ? ((Shared.Responses.AcceptedResponse<User>)response).Data : null;
+            var response2 = await requester.Get<List<SecurityGroup>>("api/security_groups");
+
+            if(response.Status >= 400 || response2.Status >= 400)
+            {
+                viewHelper.Alert("Noget gik galt, genindlæs siden og prøv igen...");
+                return;
+            }
+
+            AllSecurityGroups = response2.TryGetData<List<SecurityGroup>>() ?? new List<SecurityGroup>();
+
+            viewHelper.HideLoader();
+
+            User? user = response.TryGetData<User>();
 
             if (user != null)
             {
-                name = user.Name;
+                Item = user;
+                Name = user.Name;
             }
             else
             {
@@ -55,41 +97,17 @@
 
     async public Task Create()
     {
+        // Reset all error messages on fields.
+        Inputs.ToList().ForEach(i => i.Value.SetError(""));
+
         viewHelper.ShowLoader("Opretter bruger...");
 
         var response = await requester.Post<User>("api/users", new CreateUser()
         {
-            Name = name,
+            Name = Name,
         });
-
-        User? newUser = response is AcceptedResponse<User> ? ((AcceptedResponse<User>)response).Data : null;
-
-        if (response.StatusCode > 200 || response.StatusCode < 200)
-        {
-            viewHelper.Alert(response.Message);
-
-            viewHelper.HideLoader();
-
-            return;
-        }
 
         viewHelper.HideLoader();
-
-        if (newUser != null && newUser.Id != null)
-        {
-            navigationManager.NavigateTo($"/admin/users/{newUser.Id}");
-            return;
-        }
-    }
-
-    async public Task Update()
-    {
-        viewHelper.ShowLoader("Opdatere bruger...");
-
-        var response = await requester.Put<User>("api/users/" + UserID, new CreateUser()
-        {
-            Name = name,
-        });
 
         if (!response.IsSuccessResponse)
         {
@@ -100,19 +118,120 @@
             });
 
             // Now you can access validationError.Errors["Name"], etc.
-            foreach(var error in validationError.Errors)
+            foreach (var error in validationError.Errors)
             {
-                viewHelper.Alert(error.Key + ": " + error.Value);
+
+                string loweredKey = error.Key.ToLower();
+                if (Inputs.ContainsKey(loweredKey))
+                {
+                    Inputs[loweredKey].SetError(string.Join(", ", error.Value));
+                }
             }
+
+            return;
+        }
+
+        User? newUser = response is AcceptedResponse<User> ? ((AcceptedResponse<User>)response).Data : null;
+
+        if (response.StatusCode > 200 || response.StatusCode < 200)
+        {
+            viewHelper.Alert(response.Message);
+
+            return;
+        }
+
+        if (newUser != null && newUser.Id != null)
+        {
+            navigationManager.NavigateTo($"/admin/users/{newUser.Id}");
+            return;
+        }
+    }
+
+    async public Task Update()
+    {
+        // Reset all error messages on fields.
+        Inputs.ToList().ForEach(i => i.Value.SetError(""));
+
+        viewHelper.ShowLoader("Opdatere bruger...");
+
+        var response = await requester.Put<User>("api/users/" + UserID, new CreateUser()
+        {
+            Name = Name,
+        });
+
+        viewHelper.HideLoader();
+
+        if (!response.IsSuccessResponse)
+        {
+            var errorContent = ((ErrorResponse)response).Title;
+            var validationError = JsonSerializer.Deserialize<Shared.Responses.ApiValidationError>(errorContent, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+            // Now you can access validationError.Errors["Name"], etc.
+            foreach (var error in validationError.Errors)
+            {
+
+                string loweredKey = error.Key.ToLower();
+                if (Inputs.ContainsKey(loweredKey))
+                {
+                    Inputs[loweredKey].SetError(string.Join(", ", error.Value));
+                }
+            }
+
+            return;
         }
 
         User? updatedUser = ((Shared.Responses.AcceptedResponse<User>)response).Data;
 
-        viewHelper.HideLoader();
-
         if (updatedUser != null)
         {
-            name = updatedUser.Name;
+            Name = updatedUser.Name;
+        }
+    }
+
+    private GenericModal AddSecurityGroupModal;
+    private List<ModalInput> addSecGrpInputs { get; set; } = new List<ModalInput>();
+
+    private async Task BeginAddingSecurityGroup()
+    {
+        addSecGrpInputs = new List<ModalInput>()
+        {
+            //new ModalInput { Name = "name", Label = "Name", DType = InputType.Text },
+            //new ModalInput { Name = "age", Label = "Age", DType = InputType.Number },
+            //new ModalInput { Name = "dob", Label = "Date of Birth", DType = InputType.Date },
+            /*new ModalInput
+            {
+                Name = "color", Label = "Favorite Color", DType = InputType.Select,
+                Options = new List<Option> { new Option("Red"), new Option("Green"), new Option("Blue","blue"), new Option("Purple", "1") }
+            },*/
+            new ModalInput
+            {
+                Name = "security_group", Label = "Sikkerhedsgruppe", DType = InputType.Select,
+                Options = RemainingSecurityGroups.OrderByDescending(e => e.Name).Select(e => new Option(e.Name, e.Id.ToString())).ToList()
+            }
+        };
+
+        await AddSecurityGroupModal.Show();
+    }
+
+    private async Task<bool> HandleModalSubmit(Dictionary<string,ModalInput> inputs)
+    {
+
+        string sec_grp = (string)inputs["security_group"].Value ?? "";
+
+        var response = await requester.Put<UserSecurityGroup>($"api/user/{UserID}/security_group/" + sec_grp, null);
+
+        if (response.IsSuccessResponse)
+        {
+            return true;
+        }
+        else
+        {
+            inputs["security_group"].Error = "[ERROR] " + response.Status.ToString() + ": " + response.Message;
+
+            return false;
         }
     }
 }

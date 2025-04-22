@@ -1,0 +1,62 @@
+﻿@using System.Diagnostics
+
+
+@code {
+    [Parameter]
+    public string Type { get; set; }
+
+    private string _value;
+
+    [Parameter]
+    public string Value
+    {
+        get => _value;
+        set
+        {
+            _value = value;
+            if (OnValueChanged != null) OnValueChanged.Invoke(_value);
+        }
+    }
+
+    [Parameter]
+    public string Name { get; set; }
+
+    [Parameter]
+    public string Title { get; set; }
+
+    [Parameter]
+    public bool IsRequired { get; set; } = false;
+
+    [Parameter]
+    public string ErrorMessage { get; set; } = "";
+
+    [Parameter]
+    public Dictionary<string, InputBase> ParentList { get; set; }
+
+    public bool ShowError => ErrorMessage == null || ErrorMessage == "";
+
+    [Parameter]
+    public EventCallback<string> ValueChanged { get; set; }
+
+    [Parameter]
+    public Action<string> OnValueChanged { get; set; } = (string eh) => { };
+
+
+    public Dictionary<string, object?> GetParameters()
+    {
+        var parameterProperties = GetType()
+            .GetProperties(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic)
+            .Where(prop => Attribute.IsDefined(prop, typeof(ParameterAttribute)));
+
+        return parameterProperties.ToDictionary(
+            prop => prop.Name,
+            prop => prop.GetValue(this)
+        );
+    }
+
+    public void SetError(string message)
+    {
+        ErrorMessage = message;
+    }
+}
+
