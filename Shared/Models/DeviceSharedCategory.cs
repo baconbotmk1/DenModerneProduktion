@@ -6,7 +6,7 @@ namespace Shared.Models
     {
         [Required]
         public string Name { get; set; }
-		public string Desc { get; set; }
+		public string? Desc { get; set; }
 
         public ICollection<DeviceInfoType> InfoTypes { get; set; } = new List<DeviceInfoType>();
         public ICollection<DeviceDataType> DataTypes { get; set; } = new List<DeviceDataType>();

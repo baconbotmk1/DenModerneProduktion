@@ -5,8 +5,8 @@ namespace Shared.Models
 	public class DeviceEvent : BaseModel
     {
         [Required]
-        public DateTime Timestamp { get; set; }
-		public string? Desc { get; set; }
+        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+        public string? Desc { get; set; }
 
         [Required]
         public int DeviceId { get; set; }

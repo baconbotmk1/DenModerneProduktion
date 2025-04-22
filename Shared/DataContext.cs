@@ -13,6 +13,7 @@ namespace Shared
         public DbSet<Cadastre> Cadastres { get; set; }
         public DbSet<Device> Devices { get; set; }
         public DbSet<DeviceData> DeviceDatas { get; set; }
+        public DbSet<DeviceMqttMap> DeviceMqttMaps { get; set; }
         public DbSet<DeviceDataType> DeviceDataTypes { get; set; }
         public DbSet<DeviceEvent> DeviceEvents { get; set; }
         public DbSet<DeviceEventType> DeviceEventTypes { get; set; }

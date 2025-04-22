@@ -7,7 +7,9 @@ namespace Shared.DTOs.DeviceEventType
 	public class CreateDeviceEventType
 	{
         [Required]
-        public string Type { get; set; }
+        public string Name { get; set; }
+        [Required]
+        public string DataType { get; set; }
 
         public string? Desc { get; set; }
 
