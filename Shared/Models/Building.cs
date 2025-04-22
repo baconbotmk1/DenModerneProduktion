@@ -7,7 +7,7 @@ namespace Shared.Models
         [Required]
         public int CadastreId { get; set; }
         [Required]
-        public int Name { get; set; }
+        public string Name { get; set; }
         public Cadastre Cadastre { get; set; }
 
 		public ICollection<Section> Sections { get; set; } = new List<Section>();
