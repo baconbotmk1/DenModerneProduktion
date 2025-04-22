@@ -5,6 +5,7 @@
 @using System.Diagnostics
 @inject ApiRequester requester
 @inject ViewHelper viewHelper
+<PageTitle>Sikkerhedsgrupper</PageTitle>
 
 <GenericCRUDListView DeleteMessage="DeleteMessage" Link="admin/security_groups" APIEndpoint="api/security_groups" TType="SecurityGroup" Title="Sikkerhedsgrupper" Subtitle="Disse er sikkerhedsgrupper som brugere kan være del af. Det er også dem som får adgang til lokaler, sektioner og enheder.">
     <Headers>

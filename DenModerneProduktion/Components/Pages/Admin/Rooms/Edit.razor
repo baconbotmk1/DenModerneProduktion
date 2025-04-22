@@ -6,6 +6,7 @@
 @inject ApiRequester requester
 @inject ViewHelper viewHelper
 @inject NavigationManager navigationManager
+<PageTitle>Lokale</PageTitle>
 
 <div class="card w-50">
     <div class="card-header">
@@ -74,6 +75,7 @@
 
         if (newRoom != null && newRoom.Id != null)
         {
+            await viewHelper.NavUpdate.Invoke();
             navigationManager.NavigateTo($"/admin/rooms/{newRoom.Id}");
             return;
         }
@@ -98,5 +100,6 @@
             Name = updatedRoom.Name;
             SectionID = updatedRoom.SectionId.ToString();
         }
+        await viewHelper.NavUpdate.Invoke();
     }
 }

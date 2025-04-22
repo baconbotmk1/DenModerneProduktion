@@ -6,6 +6,7 @@
 @using Microsoft.AspNetCore.Components.Web
 @inject ApiRequester requester
 @inject ViewHelper viewHelper
+<PageTitle>Brugere</PageTitle>
 
 <GenericCRUDListView DeleteMessage="DeleteMessage" Link="admin/users" APIEndpoint="api/users" TType="User" Title="Brugere" Subtitle="Disse er de forskellige brugere i systemet. De omfatter både medarbejdere og kursister.">
     <Headers>

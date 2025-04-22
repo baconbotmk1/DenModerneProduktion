@@ -111,6 +111,7 @@
         //parameters.Add("OnReject", EventCallback.Factory.Create<MouseEventArgs>(this, ShowDTMessage));
         parameters.Add("OnConfirm", EventCallback.Factory.Create<MouseEventArgs>(this, () => DeleteItem(item)));
         await modal.ShowAsync<ConfirmModal>(title: "Bekræft sletning", parameters: parameters);
+
     }
 
     private async Task DeleteItem(TType item)
@@ -118,6 +119,7 @@
         viewHelper.ShowLoader();
 
         await requester.Delete(APIEndpoint + "/" + item.Id);
+        await viewHelper.NavUpdate.Invoke();
 
         await OnInitializedAsync();
 

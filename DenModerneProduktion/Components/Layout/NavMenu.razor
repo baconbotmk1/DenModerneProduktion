@@ -72,8 +72,8 @@
                 @foreach (var room in AccessibleRooms)
                 {
                     <div class="nav-item px-3">
-                        <NavLink class="nav-link" href="@($"rooms/{room}")" Match="NavLinkMatch.All">
-                            <Icon Name="IconName.DoorClosedFill" Size="IconSize.x4" class="js-nav-icon"/> @room
+                        <NavLink class="nav-link" href="@($"rooms/{room.Id}")" Match="NavLinkMatch.All">
+                            <Icon Name="IconName.DoorClosedFill" Size="IconSize.x4" class="js-nav-icon"/> @room.Name
                         </NavLink>
                     </div>
                 }
@@ -96,6 +96,7 @@
     {
         OnLocationChanged();
         Navigation.LocationChanged += (object? sender, LocationChangedEventArgs e) => OnLocationChanged();
+        viewHelper.NavUpdate += async () => await GetAccessibleRoomsAsync();
         await GetAccessibleRoomsAsync();
     }
 
@@ -117,5 +118,6 @@
         }
 
         AccessibleRooms = ((Shared.Responses.AcceptedResponse<List<Shared.Models.Room>>)response).Data;
+        StateHasChanged();
     }
 }

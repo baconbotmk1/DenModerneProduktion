@@ -11,7 +11,7 @@ namespace DenModerneProduktion.Services
             _JS = JS;
         }
 
-        public void ShowLoader( string text = "")
+        public void ShowLoader(string text = "")
         {
             _JS.InvokeVoidAsync("showLoader", text);
         }
@@ -25,5 +25,8 @@ namespace DenModerneProduktion.Services
         {
             _JS.InvokeVoidAsync("alert", message);
         }
+
+        public delegate Task TriggerNavUpdate();
+        public TriggerNavUpdate NavUpdate { get; set; }
     }
 }
