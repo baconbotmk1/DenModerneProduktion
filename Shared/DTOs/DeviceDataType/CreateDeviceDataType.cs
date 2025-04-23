@@ -7,7 +7,7 @@ namespace Shared.DTOs.DeviceDataType
 	public class CreateDeviceDataType
 	{
         [Required]
-        public string Type { get; set; }
+        public string Name { get; set; }
         [Required]
         public string DataType { get; set; }
 

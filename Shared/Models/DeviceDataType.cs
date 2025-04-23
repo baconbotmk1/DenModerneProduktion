@@ -5,7 +5,7 @@ namespace Shared.Models
 	public class DeviceDataType : BaseModel
     {
         [Required]
-        public string Type { get; set; } = default!;
+        public string Name { get; set; } = default!;
         [Required]
         public string DataType { get; set; }
 
@@ -15,7 +15,10 @@ namespace Shared.Models
         public int CategoryId { get; set; }
 		public DeviceSharedCategory Category { get; set; }
 
-		public DeviceDataType()
+
+        public string GetSlug() => Category.Name + " - " + Name;
+
+        public DeviceDataType()
 		{
 		}
 	}

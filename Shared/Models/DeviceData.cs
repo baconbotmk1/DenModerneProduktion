@@ -8,6 +8,9 @@ namespace Shared.Models
         public string Value { get; set; }
 
         [Required]
+        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+
+        [Required]
         public int DeviceId { get; set; }
         public Device Device { get; set; }
         [Required]

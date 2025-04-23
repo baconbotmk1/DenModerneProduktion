@@ -17,8 +17,9 @@ namespace SystemAPI.Controllers
             return HandleExceptions(() =>
             {
                 var data = context.Devices
-                    .AsNoTracking()
                     .Include(e => e.Type)
+                    .Include(e => e.Section)
+                    .Include(e => e.Room)
                     .Include(e => e.Infos)
                     .Include(e => e.Data)
                     .Include(e => e.Events)
@@ -48,7 +49,21 @@ namespace SystemAPI.Controllers
         {
             return HandleExceptions(() =>
             {
-                Device? device = repository.GetById(id);
+                Device? device = context.Devices
+                    .AsNoTracking()
+                    .Include(e => e.Type)
+                    .Include(e => e.Section)
+                    .Include(e => e.Room)
+                    .Include(e => e.Infos)
+                        .ThenInclude(e => e.Type)
+                            .ThenInclude(e => e.Category)
+                    .Include(e => e.Data)
+                        .ThenInclude(e => e.Type)
+                            .ThenInclude(e => e.Category)
+                    .Include(e => e.Events)
+                        .ThenInclude(e => e.Type)
+                            .ThenInclude(e => e.Category)
+                    .FirstOrDefault(e => e.Id == id);
 
                 if (device == null)
                 {
@@ -110,6 +125,62 @@ namespace SystemAPI.Controllers
                 }
 
                 return Ok();
+            });
+        }
+
+
+        [HttpPost("{id}/info")]
+        public ActionResult<DeviceInfo> PostInfo(int id, [FromBody] Shared.DTOs.DeviceInfo.CreateDeviceInfo data)
+        {
+            return HandleExceptions(() =>
+            {
+                DeviceInfo item = data.Adapt<DeviceInfo>();
+
+                DeviceInfo? itemOrNull = context.DeviceInfos.FirstOrDefault(e => e.DeviceId == item.DeviceId && e.TypeId == item.TypeId);
+
+                if(itemOrNull != null)
+                {
+                    data.Adapt(itemOrNull);
+
+                    context.Attach(itemOrNull);
+                    context.SaveChanges();
+                }
+                else
+                {
+                    itemOrNull = item;
+                    context.DeviceInfos.Add(item);
+                    context.SaveChanges();
+                }
+
+                return Ok(itemOrNull);
+            });
+        }
+
+        [HttpPost("{id}/data")]
+        public ActionResult<DeviceData> PostData(int id, [FromBody] Shared.DTOs.DeviceData.CreateDeviceData data)
+        {
+            return HandleExceptions(() =>
+            {
+                DeviceData item = data.Adapt<DeviceData>();
+
+                context.DeviceDatas.Add(item);
+                context.SaveChanges();
+
+                return Ok(item);
+            });
+        }
+
+        [HttpPost("{id}/event")]
+        public ActionResult<DeviceEvent> PostEvent(int id, [FromBody] Shared.DTOs.DeviceEvent.CreateDeviceEvent data)
+        {
+            return HandleExceptions(() =>
+            {
+                DeviceEvent item = data.Adapt<DeviceEvent>();
+
+                context.DeviceEvents.Add(item);
+                context.SaveChanges();
+
+                return Ok(item);
             });
         }
     }

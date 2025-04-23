@@ -6,6 +6,7 @@ using Shared.Services;
 using Swashbuckle.AspNetCore.Filters;
 using System.Reflection;
 using System.Text.Json.Serialization;
+using SystemAPI.Services;
 
 namespace SystemAPI;
 
@@ -47,6 +48,8 @@ public class Program
         builder.Services.AddScoped<IRepository<DeviceSharedCategory>, GenericRepository<DeviceSharedCategory>>();
         builder.Services.AddScoped<IRepository<DeviceType>, GenericRepository<DeviceType>>();
         builder.Services.AddScoped<IRepository<Device>, GenericRepository<Device>>();
+
+        builder.Services.AddHostedService<MqttRecorderService>();
 
         var app = builder.Build();
 

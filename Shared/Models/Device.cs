@@ -19,12 +19,14 @@ namespace Shared.Models
         public int? SectionId { get; set; }
         public Section? Section { get; set; }
 
+        public string? Identifier { get; set; }
+
         [InverseProperty("Device")]
-        public ICollection<DeviceInfo> Infos { get; } = new List<DeviceInfo>();
+        public ICollection<DeviceInfo> Infos { get; set; } = new List<DeviceInfo>();
         [InverseProperty("Device")]
-        public ICollection<DeviceData> Data { get; } = new List<DeviceData>();
+        public ICollection<DeviceData> Data { get; set; } = new List<DeviceData>();
         [InverseProperty("Device")]
-        public ICollection<DeviceEvent> Events { get; } = new List<DeviceEvent>();
+        public ICollection<DeviceEvent> Events { get; set; } = new List<DeviceEvent>();
 
         public Device()
 		{

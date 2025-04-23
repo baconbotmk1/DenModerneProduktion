@@ -1,6 +1,8 @@
 ﻿@page "/admin/device_types"
 @using DenModerneProduktion.Components.Helpers
 @using DenModerneProduktion.Services
+@using Shared.DTOs.DeviceDataType
+@using Shared.DTOs.DeviceSharedCategory
 @using Shared.DTOs.DeviceType
 @using Shared.Models
 @using System.Diagnostics
@@ -68,7 +70,7 @@
                         {
                             <tr>
                                 <td>@item2.Id</td>
-                                <td>@item2.Type</td>
+                                <td>@item2.Name</td>
                                 <td style="text-align:end">
                                 </td>
                             </tr>
@@ -107,7 +109,7 @@
                         {
                             <tr>
                                 <td>@item2.Id</td>
-                                <td>@item2.Type</td>
+                                <td>@item2.Name</td>
                                 <td style="text-align:end">
                                 </td>
                             </tr>
@@ -146,7 +148,7 @@
                         {
                             <tr>
                                 <td>@item2.Id</td>
-                                <td>@item2.Type</td>
+                                <td>@item2.Name</td>
                                 <td style="text-align:end">
                                 </td>
                             </tr>
@@ -248,6 +250,11 @@
             Desc = (string?)inputs["desc"].Value
         });
 
+        if (!response.IsSuccessResponse)
+        {
+            return false;
+        }
+
 
         await OnInitializedAsync();
         StateHasChanged();
@@ -259,25 +266,88 @@
     private GenericModal createCategoryModal = default!;
     private List<ModalInput> createCategoryModalInputs = new List<ModalInput>()
     {
-        new ModalInput()
-        {
-            Name = "type", Label = "Type", DType = InputType.Text
-        }
+        new ModalInput() { Name = "name", Label = "Navn", DType = InputType.Text, Required = true },
+        new ModalInput() { Name = "desc", Label = "Beskrivelse", DType = InputType.TextArea },
     };
     async public Task OpenCreateCategoryModal() => await createCategoryModal.Show();
-    async public Task<bool> DoCreateCategory(Dictionary<string,ModalInput> inputs) => true;
+    async public Task<bool> DoCreateCategory(Dictionary<string, ModalInput> inputs)
+    {
+        inputs.Values.ToList().ForEach(e => e.Reset());
+
+        if (string.IsNullOrEmpty((string?)inputs["name"].Value))
+        {
+            inputs["name"].Error = "Er påkrævet";
+            return false;
+        }
+
+        var response = await requester.Post<DeviceType>("api/device_shared_categories", new CreateDeviceSharedCategory()
+            {
+                Name = (string?)inputs["name"].Value ?? "",
+                Desc = (string?)inputs["desc"].Value
+            });
+
+        if (!response.IsSuccessResponse)
+        {
+            return false;
+        }
+
+
+        await OnInitializedAsync();
+        StateHasChanged();
+
+        return true;
+    }
 
 
     private GenericModal createDataTypeModal = default!;
-    private List<ModalInput> createDataTypeModalInputs = new List<ModalInput>()
+    private List<ModalInput>? createDataTypeModalInputs = null;
+
+    async public Task OpenCreateDataTypeModal()
     {
-        new ModalInput()
-        {
-            Name = "type", Label = "Type", DType = InputType.Text
+        if(createDataTypeModalInputs == null)
+        {   
+            createDataTypeModalInputs = new List<ModalInput>()
+            {
+                new ModalInput() { Name = "name", Label = "Navn", DType = InputType.Text, Required = true },
+                new ModalInput() { Name = "categoryId", Label = "Kategori", DType = InputType.Select, Required = true, Options = Categories.Select(e => new Option(e.Name, e.Id.ToString())).ToList() },
+                new ModalInput() { Name = "desc", Label = "Beskrivelse", DType = InputType.TextArea },
+                new ModalInput() { Name = "dataType", Label = "DataType", DType = InputType.Text, Required=true },
+            };
+            StateHasChanged();
         }
-    };
-    async public Task OpenCreateDataTypeModal() => await createDataTypeModal.Show();
-    async public Task<bool> DoCreateDataType(Dictionary<string, ModalInput> inputs) => true;
+
+        await createDataTypeModal.Show();
+    }
+    async public Task<bool> DoCreateDataType(Dictionary<string, ModalInput> inputs)
+    {
+        inputs.Values.ToList().ForEach(e => e.Reset());
+
+        if (string.IsNullOrEmpty((string?)inputs["name"].Value))
+        {
+            inputs["name"].Error = "Er påkrævet";
+            return false;
+        }
+
+        var response = await requester.Post<DeviceType>("api/device_data_types", new CreateDeviceDataType()
+            {
+                Name = (string?)inputs["name"].Value ?? "",
+                Desc = (string?)inputs["desc"].Value,
+                CategoryId = int.Parse((string)inputs["categoryId"].Value),
+                DataType = (string)inputs["dataType"].Value
+            });
+
+
+        if (!response.IsSuccessResponse)
+        {
+            return false;
+        }
+
+
+        await OnInitializedAsync();
+        StateHasChanged();
+
+        return true;
+    }
 
 
     private GenericModal createInfoTypeModal = default!;
@@ -285,7 +355,7 @@
     {
         new ModalInput()
         {
-            Name = "type", Label = "Type", DType = InputType.Text
+            Name = "name", Label = "Navn", DType = InputType.Text
         }
     };
     async public Task OpenCreateInfoTypeModal() => await createInfoTypeModal.Show();
@@ -297,7 +367,7 @@
     {
         new ModalInput()
         {
-            Name = "type", Label = "Type", DType = InputType.Text
+            Name = "name", Label = "Navn", DType = InputType.Text
         }
     };
     async public Task OpenCreateEventTypeModal() => await createEventTypeModal.Show();

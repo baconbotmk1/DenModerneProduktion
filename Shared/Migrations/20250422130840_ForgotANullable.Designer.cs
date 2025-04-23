@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Shared;
 
@@ -11,9 +12,11 @@ using Shared;
 namespace Shared.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20250422130840_ForgotANullable")]
+    partial class ForgotANullable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -121,9 +124,6 @@ namespace Shared.Migrations
                         .HasColumnType("int");
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Identifier")
-                        .HasColumnType("longtext");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -319,38 +319,6 @@ namespace Shared.Migrations
                     b.HasIndex("CategoryId");
 
                     b.ToTable("DeviceInfoTypes");
-                });
-
-            modelBuilder.Entity("Shared.Models.DeviceMqttMap", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int?>("DataTypeId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("DeviceTypeId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("FieldName")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<int?>("InfoTypeId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DataTypeId");
-
-                    b.HasIndex("DeviceTypeId");
-
-                    b.HasIndex("InfoTypeId");
-
-                    b.ToTable("DeviceMqttMaps");
                 });
 
             modelBuilder.Entity("Shared.Models.DeviceRecording", b =>
@@ -1041,29 +1009,6 @@ namespace Shared.Migrations
                         .IsRequired();
 
                     b.Navigation("Category");
-                });
-
-            modelBuilder.Entity("Shared.Models.DeviceMqttMap", b =>
-                {
-                    b.HasOne("Shared.Models.DeviceDataType", "DataType")
-                        .WithMany()
-                        .HasForeignKey("DataTypeId");
-
-                    b.HasOne("Shared.Models.DeviceType", "DeviceType")
-                        .WithMany()
-                        .HasForeignKey("DeviceTypeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Shared.Models.DeviceInfoType", "InfoType")
-                        .WithMany()
-                        .HasForeignKey("InfoTypeId");
-
-                    b.Navigation("DataType");
-
-                    b.Navigation("DeviceType");
-
-                    b.Navigation("InfoType");
                 });
 
             modelBuilder.Entity("Shared.Models.DeviceRecording", b =>

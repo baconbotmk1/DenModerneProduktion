@@ -1,9 +1,11 @@
 ﻿using System;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-namespace Shared.Models
+
+namespace Shared.DTOs.DeviceData
 {
-	public class DeviceInfo : BaseModel
-    {
+	public class CreateDeviceData
+	{
         [Required]
         public string Value { get; set; }
 
@@ -12,14 +14,9 @@ namespace Shared.Models
 
         [Required]
         public int DeviceId { get; set; }
-        public Device Device { get; set; }
+
         [Required]
         public int TypeId { get; set; }
-		public DeviceInfoType Type { get; set; }
-
-		public DeviceInfo()
-		{
-		}
-	}
+    }
 }
 
