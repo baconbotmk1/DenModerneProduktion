@@ -9,6 +9,8 @@ namespace Shared.DTOs.Device
         [Required]
         public string Name { get; set; }
 
+        public string? Identifier { get; set; }
+
         [Required]
         public int TypeId { get; set; }
 

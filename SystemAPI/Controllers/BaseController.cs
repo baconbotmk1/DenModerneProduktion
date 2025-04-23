@@ -2,71 +2,18 @@
 
 namespace SystemAPI.Controllers
 {
-    public abstract class BaseController<T> : Controller where T : class
+    public abstract class BaseController : Controller
     {
-        private readonly bool ShowDebug;
-        public BaseController( IConfiguration configuration)
+        public BaseController( DataContext Context)
         {
-            ShowDebug = configuration.GetValue<bool>("ShowDebug");
+            context = Context;
         }
 
         protected DataContext context;
-        protected IRepository<T> repository;
-
-        [ApiExplorerSettings(IgnoreApi = true)]
-        public ActionResult HandleError(Exception ex)
-        {
-            Debug.WriteLine(ex.Message);
-            Debug.WriteLine(ex.GetType().Name);
-            Debug.WriteLine(ex.GetType().Namespace);
-
-            return StatusCode(500, ex.Message);
-
-            /*if (ShowDebug)
-            {
-                return StatusCode(500, ex.Message);
-            }
-            else
-            {
-                return StatusCode(500, "Internal Error");
-            }*/
-        }
-
-        [ApiExplorerSettings(IgnoreApi = true)]
-        public ActionResult<T> HandleException(Func<ActionResult<T>> func)
-        {
-            try
-            {
-                return func();
-            }
-            catch(Exception ex)
-            {
-                return HandleError(ex);
-            }
-        }
-
-        [ApiExplorerSettings(IgnoreApi = true)]
-        public ActionResult HandleExceptions(Func<ActionResult> func)
-        {
-            try
-            {
-                return func();
-            }
-            catch (Exception ex)
-            {
-                return HandleError(ex);
-            }
-        }
-
-        public BaseController(DataContext Context, IRepository<T> DIrepository)
-        {
-            context = Context;
-            repository = DIrepository;
-        }
 
         protected override void Dispose(bool disposing)
         {
-            repository.Dispose();
+            context.Dispose();
             base.Dispose(disposing);
         }
     }

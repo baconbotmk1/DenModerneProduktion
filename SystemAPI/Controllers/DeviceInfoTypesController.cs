@@ -5,7 +5,7 @@ namespace SystemAPI.Controllers
 {
     [ApiController]
     [Route("api/device_info_types")]
-    public class DeviceInfoTypesController : BaseController<DeviceInfoType>
+    public class DeviceInfoTypesController : BaseCRUDController<DeviceInfoType>
     {
         public DeviceInfoTypesController(DataContext Context, IRepository<DeviceInfoType> DIrepository) : base(Context, DIrepository)
         {

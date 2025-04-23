@@ -19,19 +19,29 @@ namespace SystemAPI.Services
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
+            await Task.Delay(2000);
+
+            Console.WriteLine("[MQTT-BGS] Starting background service");
+
             var factory = new MqttClientFactory();
             _mqttClient = factory.CreateMqttClient();
 
             IConfigurationSection mqttSection = _configuration.GetSection("Mqtt");
 
+            Console.WriteLine("[MQTT-BGS] Building settings...");
+
             var options = new MqttClientOptionsBuilder()
                 .WithTcpServer(mqttSection.GetValue<string>("Host"), mqttSection.GetValue<int>("Port"))
-                .WithClientId(mqttSection.GetValue<string>("ClientId"))
+                .WithTlsOptions(new MqttClientTlsOptions()
+                {
+                    UseTls = true
+                })
+                .WithCredentials(mqttSection.GetValue<string>("Username"), mqttSection.GetValue<string>("Password"))
                 .Build();
 
             _mqttClient.ConnectedAsync += async (MqttClientConnectedEventArgs e) =>
             {
-                Console.WriteLine("Connected to MQTT Broker.");
+                Console.WriteLine("[MQTT-BGS] Connected to MQTT Broker.");
                 await _mqttClient.SubscribeAsync("#");
             };
 
@@ -53,8 +63,8 @@ namespace SystemAPI.Services
                         return;
                     }
 
-                    Console.WriteLine($"Received: {topic} - {payload}");
-                    Console.WriteLine($"ZIgbee2MQTT - {identifier}");
+                    Console.WriteLine($"[MQTT-BGS] Received: {topic} - {payload}");
+                    Console.WriteLine($"[MQTT-BGS] ZIgbee2MQTT - {identifier}");
 
                     using var scope = _scopeFactory.CreateScope();
                     using (var db = scope.ServiceProvider.GetRequiredService<DataContext>())
@@ -85,7 +95,20 @@ namespace SystemAPI.Services
                                         if (info != null)
                                         {
                                             info.Value = keyValuePair.Value.ToString().ToLower();
+                                            info.Timestamp = DateTime.UtcNow;
                                             db.DeviceInfos.Update(info);
+                                            db.SaveChanges();
+                                        }
+                                        else
+                                        {
+                                            db.DeviceInfos.Add(new DeviceInfo()
+                                            {
+                                                DeviceId = device.Id,
+                                                Timestamp = DateTime.UtcNow,
+                                                TypeId = map.InfoTypeId.Value,
+                                                Value = keyValuePair.Value.ToString().ToLower(),
+
+                                            });
                                             db.SaveChanges();
                                         }
                                     }
@@ -108,6 +131,8 @@ namespace SystemAPI.Services
 
                 }
             };
+
+            Console.WriteLine("[MQTT-BGS] Connecting to broker...");
 
             await _mqttClient.ConnectAsync(options, stoppingToken);
         }

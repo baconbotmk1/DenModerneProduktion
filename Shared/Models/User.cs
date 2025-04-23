@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Security.Cryptography;
 using System.Text.Json.Serialization;
 
 namespace Shared.Models
@@ -10,7 +11,12 @@ namespace Shared.Models
 		public string Name { get; set; } = default!;
         public bool IsActive { get; set; } = false;
 
-		public string? ReferenceId { get; set; }
+		public string Username { get; set; }
+		public string? HashedPassword { get; set; }
+		public string? Salt { get; set; }
+		public string? ResetToken { get; set; }
+
+        public string? ReferenceId { get; set; }
 		public string? ReferenceType { get; set; }
 
         [InverseProperty("User")]

@@ -2,6 +2,8 @@
 @using DenModerneProduktion.Components.Helpers
 @using DenModerneProduktion.Services
 @using Shared.DTOs.DeviceDataType
+@using Shared.DTOs.DeviceEventType
+@using Shared.DTOs.DeviceInfoType
 @using Shared.DTOs.DeviceSharedCategory
 @using Shared.DTOs.DeviceType
 @using Shared.Models
@@ -351,25 +353,105 @@
 
 
     private GenericModal createInfoTypeModal = default!;
-    private List<ModalInput> createInfoTypeModalInputs = new List<ModalInput>()
+    private List<ModalInput>? createInfoTypeModalInputs = null;
+    async public Task OpenCreateInfoTypeModal()
     {
-        new ModalInput()
+        if (createInfoTypeModalInputs == null)
         {
-            Name = "name", Label = "Navn", DType = InputType.Text
+            createInfoTypeModalInputs = new List<ModalInput>()
+            {
+                new ModalInput() { Name = "name", Label = "Navn", DType = InputType.Text, Required = true },
+                new ModalInput() { Name = "categoryId", Label = "Kategori", DType = InputType.Select, Required = true, Options = Categories.Select(e => new Option(e.Name, e.Id.ToString())).ToList() },
+                new ModalInput() { Name = "desc", Label = "Beskrivelse", DType = InputType.TextArea },
+                new ModalInput() { Name = "dataType", Label = "DataType", DType = InputType.Text, Required=true },
+            };
+            StateHasChanged();
         }
-    };
-    async public Task OpenCreateInfoTypeModal() => await createInfoTypeModal.Show();
-    async public Task<bool> DoCreateInfoType(Dictionary<string, ModalInput> inputs) => true;
+
+        await createInfoTypeModal.Show();
+    }
+    async public Task<bool> DoCreateInfoType(Dictionary<string, ModalInput> inputs)
+    {
+        inputs.Values.ToList().ForEach(e => e.Reset());
+
+        if (string.IsNullOrEmpty((string?)inputs["name"].Value))
+        {
+            inputs["name"].Error = "Er påkrævet";
+            return false;
+        }
+
+        var response = await requester.Post<DeviceType>("api/device_info_types", new CreateDeviceInfoType()
+            {
+                Name = (string?)inputs["name"].Value ?? "",
+                Desc = (string?)inputs["desc"].Value,
+                CategoryId = int.Parse((string)inputs["categoryId"].Value),
+                DataType = (string)inputs["dataType"].Value
+            });
+
+
+        if (!response.IsSuccessResponse)
+        {
+            return false;
+        }
+
+
+        await OnInitializedAsync();
+        StateHasChanged();
+
+        return true;
+    }
 
 
     private GenericModal createEventTypeModal = default!;
-    private List<ModalInput> createEventTypeModalInputs = new List<ModalInput>()
+    private List<ModalInput>? createEventTypeModalInputs = new List<ModalInput>()
     {
         new ModalInput()
         {
             Name = "name", Label = "Navn", DType = InputType.Text
         }
     };
-    async public Task OpenCreateEventTypeModal() => await createEventTypeModal.Show();
-    async public Task<bool> DoCreateEventType(Dictionary<string, ModalInput> inputs) => true;
+    async public Task OpenCreateEventTypeModal()
+    {
+        if (createEventTypeModalInputs == null)
+        {
+            createEventTypeModalInputs = new List<ModalInput>()
+            {
+                new ModalInput() { Name = "name", Label = "Navn", DType = InputType.Text, Required = true },
+                new ModalInput() { Name = "categoryId", Label = "Kategori", DType = InputType.Select, Required = true, Options = Categories.Select(e => new Option(e.Name, e.Id.ToString())).ToList() },
+                new ModalInput() { Name = "desc", Label = "Beskrivelse", DType = InputType.TextArea },
+            };
+            StateHasChanged();
+        }
+
+        await createEventTypeModal.Show();
+    }
+    async public Task<bool> DoCreateEventType(Dictionary<string, ModalInput> inputs)
+    {
+        inputs.Values.ToList().ForEach(e => e.Reset());
+
+        if (string.IsNullOrEmpty((string?)inputs["name"].Value))
+        {
+            inputs["name"].Error = "Er påkrævet";
+            return false;
+        }
+
+        var response = await requester.Post<DeviceType>("api/device_event_types", new CreateDeviceEventType()
+            {
+                Name = (string?)inputs["name"].Value ?? "",
+                Desc = (string?)inputs["desc"].Value,
+                CategoryId = int.Parse((string)inputs["categoryId"].Value),
+            });
+
+
+        if (!response.IsSuccessResponse)
+        {
+            return false;
+        }
+
+
+        await OnInitializedAsync();
+        StateHasChanged();
+
+        return true;
+    }
 }
