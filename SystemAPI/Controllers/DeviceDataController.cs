@@ -83,7 +83,6 @@ namespace SystemAPI.Controllers
             });
         }
 
-
         [HttpGet("{device_id}/events")]
         public ActionResult<IEnumerable<DeviceEvent>> GetEvents(int device_id, [FromQuery] int skip = 0, int limit = 100, string order_by = "time_desc")
         {

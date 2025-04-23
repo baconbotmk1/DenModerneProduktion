@@ -59,6 +59,7 @@ else
     public string _Id { get; set; }
     public bool _IsLoading { get; set; } = true;
 
+    public List<Shared.Models.DeviceData> _RoomDeviceData { get; set; } = new();
     public Shared.Models.Room _Room { get; set; } = new();
     public double _MinValue { get; set; } = 18.2;
     public double _MaxValue { get; set; }
@@ -94,7 +95,16 @@ else
     {
         _IsLoading = true;
         StateHasChanged();
-        var response = await requester.Get<Shared.Models.Room>("api/rooms/" + _Id);
+        var response = await requester.Get<List<Shared.Models.DeviceData>>("api/rooms/" + _Id + "/data");
+        if (response.StatusCode != 200)
+        {
+            viewHelper.Alert(response.Message);
+            return;
+        }
+
+        _RoomDeviceData = ((Shared.Responses.AcceptedResponse<List<Shared.Models.DeviceData>>)response).Data;
+
+        response = await requester.Get<Shared.Models.Room>("api/rooms/" + _Id);
         if (response.StatusCode != 200)
         {
             viewHelper.Alert(response.Message);

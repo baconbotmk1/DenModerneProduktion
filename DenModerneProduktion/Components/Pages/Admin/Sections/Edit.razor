@@ -75,7 +75,7 @@
 
         if (newSection != null && newSection.Id != null)
         {
-            navigationManager.NavigateTo($"/admin/rooms/{newSection.Id}");
+            navigationManager.NavigateTo($"/admin/sections/{newSection.Id}");
             return;
         }
     }
@@ -84,7 +84,7 @@
     {
         viewHelper.ShowLoader("Opdatere lokale...");
 
-        var response = await requester.Put<Section>("api/rooms/" + SectionID, new CreateSection()
+        var response = await requester.Put<Section>("api/sections/" + SectionID, new CreateSection()
         {
             Name = Name,
             BuildingId = int.Parse(BygningsID)
