@@ -8,7 +8,7 @@
       },
       {
         "Path": "SystemAPI\\SystemAPI.csproj",
-        "Action": "StartWithoutDebugging"
+        "Action": "Start"
       }
     ]
   }

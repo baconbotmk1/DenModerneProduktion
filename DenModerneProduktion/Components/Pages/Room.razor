@@ -16,14 +16,14 @@ else
         <div class="js-room-header">
             <div class="js-room-header-selectors">
                 <div class="js-room-header-type-selector">
-                    <h4 @onclick="()=>ChangeType(0)"><Icon Name="IconName.ThermometerHigh" Size="IconSize.x4" /></h4>
-                    <h4 @onclick="()=>ChangeType(1)"><Icon Name="IconName.DropletFill" Size="IconSize.x4" /></h4>
-                    <h4 @onclick="()=>ChangeType(2)"><Icon Name="IconName.LightningFill" Size="IconSize.x4" /></h4>
+                    <h4 @onclick="()=>ChangeTypeAsync(2)"><Icon Name="IconName.ThermometerHigh" Size="IconSize.x4" /></h4>
+                    <h4 @onclick="()=>ChangeTypeAsync(3)"><Icon Name="IconName.DropletFill" Size="IconSize.x4" /></h4>
+                    <h4 @onclick="()=>ChangeTypeAsync(4)"><Icon Name="IconName.LightningFill" Size="IconSize.x4" /></h4>
                 </div>
                 <div class="js-room-header-period-selector">
-                    <h4 @onclick="()=>ChangePeriod(0)">D</h4>
-                    <h4 @onclick="()=>ChangePeriod(1)">W</h4>
-                    <h4 @onclick="()=>ChangePeriod(2)">M</h4>
+                    <h4 @onclick="()=>ChangePeriodAsync(0)">D</h4>
+                    <h4 @onclick="()=>ChangePeriodAsync(1)">W</h4>
+                    <h4 @onclick="()=>ChangePeriodAsync(2)">M</h4>
                 </div>
             </div>
             @if (_UserIsAdmin)
@@ -35,7 +35,7 @@ else
         </div>
         <div class="js-room-data">
             <div class="js-room-data-header">
-                <h4 class="js-room-data-current">{value}</h4>
+                <h4 class="js-room-data-current">@($"{_RoomDeviceData.First().Value}{DataSuffix[CurrentDataType]}")</h4>
                 <div class="js-room-data-limit">
                     <div class="js-room-data-limit-min">
                         <label for="js-room-data-limit-min-value">Minimum</label>
@@ -58,6 +58,9 @@ else
     [Parameter]
     public string _Id { get; set; }
     public bool _IsLoading { get; set; } = true;
+    public int CurrentDataType { get; set; } = 2;
+    public int CurrentDataPeriod { get; set; } = 0;
+    public List<string> DataSuffix { get; } = new() { "","","°", "%", "kWh" }; //Temp, humidity, energy
 
     public List<Shared.Models.DeviceData> _RoomDeviceData { get; set; } = new();
     public Shared.Models.Room _Room { get; set; } = new();
@@ -65,13 +68,15 @@ else
     public double _MaxValue { get; set; }
     public bool _UserIsAdmin { get; set; }
 
-    public void ChangePeriod(int index)
+    public async Task ChangePeriodAsync(int index)
     {
-
+        CurrentDataPeriod = index;
+        await GetThisRoomData();
     }
-    public void ChangeType(int index)
+    public async Task ChangeTypeAsync(int index)
     {
-
+        CurrentDataType = index;
+        await GetThisRoomData();
     }
 
     protected override async Task OnInitializedAsync()
@@ -95,7 +100,11 @@ else
     {
         _IsLoading = true;
         StateHasChanged();
-        var response = await requester.Get<List<Shared.Models.DeviceData>>("api/rooms/" + _Id + "/data");
+        string baseApiUri = "api/rooms/" + _Id + "/data?";
+        baseApiUri += $"deviceDataType={CurrentDataType}&";
+        baseApiUri += $"periodType={CurrentDataPeriod}";
+
+        var response = await requester.Get<List<Shared.Models.DeviceData>>(baseApiUri);
         if (response.StatusCode != 200)
         {
             viewHelper.Alert(response.Message);
