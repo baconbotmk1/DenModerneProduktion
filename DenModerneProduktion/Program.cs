@@ -1,5 +1,6 @@
 using DenModerneProduktion.Components;
 using DenModerneProduktion.Services;
+using Shared.Models;
 
 namespace DenModerneProduktion
 {
@@ -14,6 +15,14 @@ namespace DenModerneProduktion
                 .AddInteractiveServerComponents();
 
             builder.Services.AddHttpContextAccessor();
+            builder.Services.AddDistributedMemoryCache((options) =>
+            {
+
+            });
+            builder.Services.AddSession((options) =>
+            {
+
+            });
 
             builder.Services.AddBlazorBootstrap();
 
@@ -26,6 +35,7 @@ namespace DenModerneProduktion
             builder.Services.AddScoped<ViewHelper>();
 
             builder.Services.AddScoped<ApiRequester>();
+            builder.Services.AddScoped<UserSession>();
 
             var app = builder.Build();
 
@@ -40,6 +50,8 @@ namespace DenModerneProduktion
 
             app.UseStaticFiles();
             app.UseAntiforgery();
+
+            app.UseSession();
             
             app.UseStatusCodePagesWithRedirects("/NotFound");
 

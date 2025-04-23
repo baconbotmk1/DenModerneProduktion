@@ -5,7 +5,7 @@ namespace SystemAPI.Controllers
 {
     [ApiController]
     [Route("api/device_event_types")]
-    public class DeviceEventTypesController : BaseController<DeviceEventType>
+    public class DeviceEventTypesController : BaseCRUDController<DeviceEventType>
     {
         public DeviceEventTypesController(DataContext Context, IRepository<DeviceEventType> DIrepository) : base(Context, DIrepository)
         {

@@ -4,7 +4,7 @@ namespace SystemAPI.Controllers
 {
     [ApiController]
     [Route("api/access_cards")]
-    public class AccessCardsController : BaseController<AccessCard>
+    public class AccessCardsController : BaseCRUDController<AccessCard>
     {
         public AccessCardsController(DataContext Context, IRepository<AccessCard> DIrepository) : base(Context, DIrepository)
         {

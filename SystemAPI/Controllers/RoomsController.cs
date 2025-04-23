@@ -4,7 +4,7 @@ namespace SystemAPI.Controllers
 {
     [ApiController]
     [Route("api/rooms")]
-    public class RoomsController : BaseController<Room>
+    public class RoomsController : BaseCRUDController<Room>
     {
         public RoomsController(DataContext Context, IRepository<Room> DIrepository) : base(Context, DIrepository)
         {

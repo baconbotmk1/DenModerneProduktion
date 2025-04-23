@@ -4,7 +4,7 @@ namespace SystemAPI.Controllers
 {
     [ApiController]
     [Route("api/buildings")]
-    public class BuildingsController : BaseController<Building>
+    public class BuildingsController : BaseCRUDController<Building>
     {
         public BuildingsController(DataContext Context, IRepository<Building> DIrepository) : base(Context, DIrepository)
         {

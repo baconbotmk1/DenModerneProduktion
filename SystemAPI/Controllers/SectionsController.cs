@@ -6,7 +6,7 @@ namespace SystemAPI.Controllers
 {
     [ApiController]
     [Route("api/sections")]
-    public class SectionsController : BaseController<Section>
+    public class SectionsController : BaseCRUDController<Section>
     {
         public SectionsController(DataContext Context, IRepository<Section> DIrepository) : base(Context, DIrepository)
         {

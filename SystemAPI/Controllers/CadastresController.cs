@@ -3,7 +3,7 @@ namespace SystemAPI.Controllers
 {
     [ApiController]
     [Route("api/cadastres")]
-    public class CadastresController : BaseController<Cadastre>
+    public class CadastresController : BaseCRUDController<Cadastre>
     {
         public CadastresController(DataContext Context, IRepository<Cadastre> DIrepository) : base(Context, DIrepository)
         {

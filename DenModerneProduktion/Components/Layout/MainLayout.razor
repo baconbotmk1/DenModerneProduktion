@@ -1,4 +1,6 @@
-﻿@inherits LayoutComponentBase
+﻿@using DenModerneProduktion.Services
+@inherits LayoutComponentBase
+@inject UserSession session
 
 <div class="page">
     <div class="sidebar">
@@ -12,6 +14,7 @@
                 <div class="spinner-border"></div>
             </div>
         </div>
+        <h2>@session.Token</h2>
         <article class="content px-4">
             @Body
         </article>

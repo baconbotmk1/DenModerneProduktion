@@ -7,7 +7,7 @@ namespace SystemAPI.Controllers
 {
     [ApiController]
     [Route("api/users")]
-    public class UsersController : BaseController<User>
+    public class UsersController : BaseCRUDController<User>
     {
         public UsersController(DataContext Context, IRepository<User> DIrepository) : base(Context, DIrepository)
         {

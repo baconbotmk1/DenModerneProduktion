@@ -5,7 +5,7 @@ namespace SystemAPI.Controllers
 {
     [ApiController]
     [Route("api/device_shared_categories")]
-    public class DeviceSharedCategoriesController : BaseController<DeviceSharedCategory>
+    public class DeviceSharedCategoriesController : BaseCRUDController<DeviceSharedCategory>
     {
         public DeviceSharedCategoriesController(DataContext Context, IRepository<DeviceSharedCategory> DIrepository) : base(Context, DIrepository)
         {

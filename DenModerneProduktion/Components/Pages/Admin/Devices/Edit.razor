@@ -18,6 +18,7 @@
         </div>
         <div class="card-body">
             <InputWithValidation Title="Navn" @ref="NameField" ParentList="@Inputs" IsRequired="true" Type="text" Name="name" @bind-value="@Name" />
+            <InputWithValidation Title="Identifier" @ref="IdentifierField" ParentList="@Inputs" IsRequired="false" Type="text" Name="identifier" @bind-value="@Identifier" />
             <SelectWithValidation Options="Types.Select(e => new SelectWithValidation.Option() {Text = e.Name, Value = e.Id.ToString()})" Title="Type" @ref="TypeIdField" ParentList="@Inputs" @bind-Value="@TypeId" Name="typeId" IsRequired="true" />
             <SelectWithValidation Options="Rooms.Select(e => new SelectWithValidation.Option() {Text = e.Name, Value = e.Id.ToString()}).Prepend(SelectWithValidation.Option.None)" Title="Lokale" @ref="RoomIdField" ParentList="@Inputs" @bind-Value="@RoomId" Name="roomId" IsRequired="false" />
             <SelectWithValidation Options="Sections.Select(e => new SelectWithValidation.Option() {Text = e.Name, Value = e.Id.ToString()}).Prepend(SelectWithValidation.Option.None)" Title="Sektion" @ref="SectionIdField" ParentList="@Inputs" @bind-Value="@SectionId" Name="sectionId" IsRequired="false" />
@@ -135,6 +136,9 @@
     public string Name { get; set; } = "";
     public InputWithValidation NameField { get; set; }
 
+    public string Identifier { get; set; } = "";
+    public InputWithValidation IdentifierField { get; set; }
+
     public string TypeId { get; set; } = "";
     public SelectWithValidation TypeIdField { get; set; }
 
@@ -201,15 +205,16 @@
             {
                 Item = device;
                 Name = device.Name;
+                Identifier = device.Identifier ?? "";
                 TypeId = device.TypeId.ToString();
                 RoomId = device.RoomId.ToString();
                 SectionId = device.SectionId.ToString();
 
                 int id = Item.Id;
 
-                InfoList = (await requester.Get<List<DeviceInfo>>("api/device_info/" + id + "/info?limit=2")).TryGetData<List<DeviceInfo>>() ?? new();
-                DataList = (await requester.Get<List<DeviceData>>("api/device_info/" + id + "/data?limit=2")).TryGetData<List<DeviceData>>() ?? new();
-                EventList = (await requester.Get<List<DeviceEvent>>("api/device_info/" + id + "/events?limit=2")).TryGetData<List<DeviceEvent>>() ?? new();
+                InfoList = (await requester.Get<List<DeviceInfo>>("api/device_info/" + id + "/info?limit=10")).TryGetData<List<DeviceInfo>>() ?? new();
+                DataList = (await requester.Get<List<DeviceData>>("api/device_info/" + id + "/data?limit=10")).TryGetData<List<DeviceData>>() ?? new();
+                EventList = (await requester.Get<List<DeviceEvent>>("api/device_info/" + id + "/events?limit=10")).TryGetData<List<DeviceEvent>>() ?? new();
 
                 StateHasChanged();
             }
@@ -231,6 +236,7 @@
         var response = await requester.Post<Device>("api/devices", new CreateDevice()
         {
             Name = Inputs["name"].Value,
+            Identifier = string.IsNullOrEmpty(Inputs["identifier"].Value) ? null : (string)Inputs["identifier"].Value,
             TypeId = int.Parse(Inputs["typeId"].Value),
             RoomId = string.IsNullOrEmpty(Inputs["roomId"].Value) ? null : int.Parse(Inputs["roomId"].Value),
             SectionId = string.IsNullOrEmpty(Inputs["sectionId"].Value) ? null : int.Parse(Inputs["sectionId"].Value),
@@ -302,6 +308,7 @@
         var response = await requester.Put<Device>("api/devices/" + DeviceID, new CreateDevice()
         {
             Name = Inputs["name"].Value,
+            Identifier = string.IsNullOrEmpty(Inputs["identifier"].Value) ? null : (string)Inputs["identifier"].Value,
             TypeId = int.Parse(Inputs["typeId"].Value),
             RoomId = string.IsNullOrEmpty(Inputs["roomId"].Value) ? null : int.Parse(Inputs["roomId"].Value),
             SectionId = string.IsNullOrEmpty(Inputs["sectionId"].Value) ? null : int.Parse(Inputs["sectionId"].Value),
@@ -336,6 +343,7 @@
         if (updatedDevice != null)
         {
             Name = updatedDevice.Name;
+            Identifier = updatedDevice.Identifier ?? "";
             TypeId = updatedDevice.TypeId.ToString();
             RoomId = updatedDevice.RoomId.ToString();
             SectionId = updatedDevice.SectionId.ToString();
