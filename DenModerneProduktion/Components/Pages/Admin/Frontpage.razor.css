@@ -1,1 +1,65 @@
-﻿
+﻿.js-admin-index {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.js-alarm-list {
+    display: flex;
+}
+
+.js-alarm-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 25px;
+    border: 1px solid black;
+    padding: 20px 30px;
+    border-radius: 25px;
+    background-color: #c7c7c7;
+}
+
+    .js-alarm-card h2 {
+        margin-bottom: 15px;
+    }
+
+.js-alarm-card-list {
+    border: 1px black solid;
+    width: 300px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-radius: 15px;
+    background-color: white;
+    height: 375px;
+    overflow-y: scroll;
+}
+
+    .js-alarm-card-list p {
+        /*margin: 10px 0px;*/
+        width:100%;
+        margin:0px;
+        text-align:center;
+        padding:7.5px 0px;
+    }
+
+    .js-alarm-card-list p:nth-child(even) {
+        background-color:#efefef;
+    }
+
+.js-alarm-card-global-limit {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    margin-top: 20px;
+}
+.js-alarm-card-global-limit div{
+    display:flex;
+    margin:0px 10px;
+}
+
+.js-alarm-card-global-limit-max, .js-alarm-card-global-limit-min {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}

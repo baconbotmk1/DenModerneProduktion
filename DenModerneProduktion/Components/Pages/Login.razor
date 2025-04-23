@@ -1,0 +1,68 @@
+﻿@using DenModerneProduktion.Services
+@inject ApiRequester apiRequester;
+<PageTitle>Login</PageTitle>
+@page "/login"
+
+@if (IsLoading)
+{
+    <Spinner />
+}
+else{
+    <h3>Login</h3>
+    <EditForm Model="@loginModel" OnValidSubmit="HandleLogin">
+        <DataAnnotationsValidator />
+        <div class="form-group">
+            <label>Username</label>
+            <InputText @bind-Value="loginModel.Username" class="form-control" />
+            <ValidationMessage For="@(() => loginModel.Username)" />
+        </div>
+        <div class="form-group">
+            <label>Password</label>
+            <InputText @bind-Value="loginModel.Pwd" type="password" class="form-control" />
+            <ValidationMessage For="@(() => loginModel.Pwd)" />
+        </div>
+        <button disabled="@thinking" class="btn btn-primary">
+            Login
+        </button>
+    </EditForm>
+}
+@code {
+    public bool IsLoading = true;
+    private bool thinking = false;
+    [CascadingParameter]
+    public HttpContext? httpContext { get; set; }
+
+    private UserInfo loginModel = new UserInfo();
+    public bool _UserCreated { get; set; }
+    public bool _credentialsCorrect { get; set; }
+    public async Task HandleLogin()
+    {
+        thinking = true;
+        // if (credentialsCorrect)
+        // {
+        //     var response = await apiRequester.Post("api/login", loginModel);
+        //     if (response.StatusCode != 200)
+        //     {
+        //         viewHelper.Alert(response.Message);
+        //         return;
+        //     }
+
+        //     _User = ((Shared.Responses.AcceptedResponse<Shared.Models.User>)response).Data;
+        // }
+        thinking = false;
+        StateHasChanged();
+    }
+    public class UserInfo
+    {
+        public string Username { get; set; }
+        public string Pwd { get; set; }
+    }
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            IsLoading = false;
+            StateHasChanged();
+        }
+    }
+}

@@ -4,33 +4,45 @@
 
 @page "/lobby"
 <PageTitle>Lobby</PageTitle>
-
-<div class="js-lobby-container">
-    <h1>Lobby</h1>
-    <div class="js-lobby-map">Map</div>
-    <div class="js-lobby-list">
-        @foreach (var room in AccessibleRooms)
-        {
-            <div class="js-lobby-list-item">
-                <div class="js-lobby-list-item-info">
-                    <p class="js-lobby-list-item-info-title">@room.Name</p>
-                    <div class="js-lobby-list-item-info-data">
-                        <p class="js-lobby-list-item-info-data-temperature">Temperatur: <span>22,4&deg;</span></p>
-                        <p class="js-lobby-list-item-info-data-humidity">Fugtighed: <span>55%</span></p>
+@if (IsLoading)
+{
+    <Spinner Class="js-spinner" Size="SpinnerSize.ExtraLarge" />
+}
+else
+{
+    <div class="js-lobby-container">
+        <h1>Lobby</h1>
+        <div class="js-lobby-map">Map</div>
+        <div class="js-lobby-list">
+            @foreach (var room in AccessibleRooms)
+            {
+                <div class="js-lobby-list-item">
+                    <div class="js-lobby-list-item-info">
+                        <p class="js-lobby-list-item-info-title">@room.Name</p>
+                        <div class="js-lobby-list-item-info-data">
+                            <p class="js-lobby-list-item-info-data-temperature">Temperatur: <span>22,4&deg;</span></p>
+                            <p class="js-lobby-list-item-info-data-humidity">Fugtighed: <span>55%</span></p>
+                        </div>
                     </div>
+                    <div class="js-lobby-list-item-icon"><Icon Name="IconList[CustomCount++ % IconList.Count]" Size="IconSize.x4" Style="@($"color:#{GenerateHexColor()}")" /></div>
+                    <div class="js-lobby-list-item-accessible-timespan">08:00-16:00</div>
                 </div>
-                <div class="js-lobby-list-item-icon"><Icon Name="IconList[CustomCount++ % IconList.Count]" Size="IconSize.x4" Style="@($"color:#{GenerateHexColor()}")" /></div>
-                <div class="js-lobby-list-item-accessible-timespan">08:00-16:00</div>
-            </div>
-        }
+            }
+        </div>
     </div>
-</div>
+}
+
 @code {
     public int CustomCount { get; set; } = 0;
     public List<IconName> IconList { get; set; } = new() { IconName.CircleFill, IconName.TriangleFill, IconName.ExclamationSquareFill, IconName.ExclamationOctagonFill, IconName.SquareFill, IconName.BalloonFill, IconName.BatteryFull, IconName.BellFill, IconName.CheckSquareFill, IconName.CloudFill };
     public List<Shared.Models.Room> AccessibleRooms { get; set; } = new();
+    public bool IsLoading { get; set; } = true;
 
-
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+            IsLoading = false;
+    }
     protected override async Task OnInitializedAsync()
     {
         viewHelper.NavUpdate += async () => await GetAccessibleRoomsAsync();
@@ -38,6 +50,8 @@
     }
     private async Task GetAccessibleRoomsAsync()
     {
+        IsLoading = true;
+        StateHasChanged();
         var response = await requester.Get<List<Shared.Models.Room>>("api/rooms");
         if (response.StatusCode != 200)
         {
@@ -46,6 +60,7 @@
         }
 
         AccessibleRooms = ((Shared.Responses.AcceptedResponse<List<Shared.Models.Room>>)response).Data;
+        IsLoading = false;
         StateHasChanged();
     }
 

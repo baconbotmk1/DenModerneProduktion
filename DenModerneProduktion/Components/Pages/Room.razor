@@ -3,59 +3,66 @@
 @inject ViewHelper viewHelper
 @inject NavigationManager Navigation
 
-@page "/rooms/{id}"
+@page "/rooms/{_Id}"
 <PageTitle>Lokale</PageTitle>
-
-<div class="js-room-container">
-    <h1>@_Room.Name</h1>
-    <div class="js-room-header">
-        <div class="js-room-header-selectors">
-            <div class="js-room-header-type-selector">
-                <h4 @onclick="()=>ChangeType(0)"><Icon Name="IconName.ThermometerHigh" Size="IconSize.x4"/></h4>
-                <h4 @onclick="()=>ChangeType(1)"><Icon Name="IconName.DropletFill" Size="IconSize.x4"/></h4>
-                <h4 @onclick="()=>ChangeType(2)"><Icon Name="IconName.LightningFill" Size="IconSize.x4"/></h4>
-            </div>
-            <div class="js-room-header-period-selector">
-                <h4 @onclick="()=>ChangePeriod(0)">D</h4>
-                <h4 @onclick="()=>ChangePeriod(1)">W</h4>
-                <h4 @onclick="()=>ChangePeriod(2)">M</h4>
-            </div>
-        </div>
-        @if (UserIsAdmin)
-        {
-            <div class="js-room-header-admin">
-                <a href="@($"/admin/rooms/{id}")"><Icon Name="IconName.Gear" Size="IconSize.x2" Color="IconColor.Primary" /></a>
-            </div>
-        }
-    </div>
-    <div class="js-room-data">
-        <div class="js-room-data-header">
-            <h4 class="js-room-data-current">{value}</h4>
-            <div class="js-room-data-limit">
-                <div class="js-room-data-limit-min">
-                    <label for="js-room-data-limit-min-value">Minimum</label>
-                    <InputNumber id="js-room-data-limit-min-value" @bind-Value="MinValue" class="js-room-data-limit-min-input"></InputNumber>
+@if (_IsLoading)
+{
+    <Spinner Class="js-spinner" Size="SpinnerSize.ExtraLarge" />
+}
+else
+{
+    <div class="js-room-container">
+        <h1>@_Room.Name</h1>
+        <div class="js-room-header">
+            <div class="js-room-header-selectors">
+                <div class="js-room-header-type-selector">
+                    <h4 @onclick="()=>ChangeType(0)"><Icon Name="IconName.ThermometerHigh" Size="IconSize.x4" /></h4>
+                    <h4 @onclick="()=>ChangeType(1)"><Icon Name="IconName.DropletFill" Size="IconSize.x4" /></h4>
+                    <h4 @onclick="()=>ChangeType(2)"><Icon Name="IconName.LightningFill" Size="IconSize.x4" /></h4>
                 </div>
-                <div class="js-room-data-limit-max">
-                    <label for="js-room-data-limit-max-value">Maximum</label>
-                    <InputNumber id="js-room-data-limit-max-value" @bind-Value="MaxValue" class="js-room-data-limit-max-input"></InputNumber>
+                <div class="js-room-header-period-selector">
+                    <h4 @onclick="()=>ChangePeriod(0)">D</h4>
+                    <h4 @onclick="()=>ChangePeriod(1)">W</h4>
+                    <h4 @onclick="()=>ChangePeriod(2)">M</h4>
                 </div>
             </div>
+            @if (_UserIsAdmin)
+            {
+                <div class="js-room-header-admin">
+                    <a href="@($"/admin/rooms/{_Id}")"><Icon Name="IconName.Gear" Size="IconSize.x2" Color="IconColor.Primary" /></a>
+                </div>
+            }
         </div>
-        <div class="js-room-data-graph"></div>
+        <div class="js-room-data">
+            <div class="js-room-data-header">
+                <h4 class="js-room-data-current">{value}</h4>
+                <div class="js-room-data-limit">
+                    <div class="js-room-data-limit-min">
+                        <label for="js-room-data-limit-min-value">Minimum</label>
+                        <InputNumber id="js-room-data-limit-min-value" @bind-Value="_MinValue" class="js-room-data-limit-min-input" />
+                    </div>
+                    <div class="js-room-data-limit-max">
+                        <label for="js-room-data-limit-max-value">Maximum</label>
+                        <InputNumber id="js-room-data-limit-max-value" @bind-Value="_MaxValue" class="js-room-data-limit-max-input" />
+                    </div>
+                </div>
+            </div>
+            <div class="js-room-data-graph"></div>
+        </div>
     </div>
-</div>
+}
 
 
 
 @code {
     [Parameter]
-    public string id { get; set; }
+    public string _Id { get; set; }
+    public bool _IsLoading { get; set; } = true;
 
     public Shared.Models.Room _Room { get; set; } = new();
-    public double MinValue { get; set; } = 18.2;
-    public double MaxValue { get; set; }
-    public bool UserIsAdmin { get; set; }
+    public double _MinValue { get; set; } = 18.2;
+    public double _MaxValue { get; set; }
+    public bool _UserIsAdmin { get; set; }
 
     public void ChangePeriod(int index)
     {
@@ -69,9 +76,14 @@
     protected override async Task OnInitializedAsync()
     {
         await GetThisRoomData();
-        UserIsAdmin = CheckIfUserIsAdmin();
+        _UserIsAdmin = CheckIfUserIsAdmin();
         await OnLocationChangedAsync();
         Navigation.LocationChanged += async (object? sender, LocationChangedEventArgs e) => await OnLocationChangedAsync();
+    }
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+            _IsLoading = false;
     }
 
     private async Task OnLocationChangedAsync()
@@ -80,7 +92,9 @@
     }
     private async Task GetThisRoomData()
     {
-        var response = await requester.Get<Shared.Models.Room>("api/rooms/" + id);
+        _IsLoading = true;
+        StateHasChanged();
+        var response = await requester.Get<Shared.Models.Room>("api/rooms/" + _Id);
         if (response.StatusCode != 200)
         {
             viewHelper.Alert(response.Message);
@@ -88,6 +102,7 @@
         }
 
         _Room = ((Shared.Responses.AcceptedResponse<Shared.Models.Room>)response).Data;
+        _IsLoading = false;
         StateHasChanged();
     }
 
