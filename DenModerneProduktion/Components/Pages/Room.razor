@@ -3,6 +3,8 @@
 @inject ViewHelper viewHelper
 @inject NavigationManager Navigation
 @rendermode InteractiveServer
+@using Syncfusion.Blazor
+@using Syncfusion.Blazor.Charts
 
 @page "/rooms/{_Id}"
 <PageTitle>Lokale</PageTitle>
@@ -48,9 +50,24 @@ else
                     </div>
                 </div>
             </div>
-            <div class="container-fluid overflow-x-auto">
-                <LineChart @ref="lineChart" Width="800" />
-            </div>
+            <div class="control-section" align='center'>
+    <SfChart Width="80%">
+        <ChartPrimaryXAxis ValueType="Syncfusion.Blazor.Charts.ValueType.DateTime" EdgeLabelPlacement="EdgeLabelPlacement.Shift">
+            <ChartAxisMajorGridLines Width="0"></ChartAxisMajorGridLines>
+        </ChartPrimaryXAxis>
+        <ChartPrimaryYAxis Title="@Suffix" Minimum="0" Interval="5" Maximum="25" RangePadding="ChartRangePadding.None">
+            <ChartAxisLineStyle Width="0"></ChartAxisLineStyle>
+            <ChartAxisMajorTickLines Width="0"></ChartAxisMajorTickLines>
+        </ChartPrimaryYAxis>
+        <ChartSeriesCollection>
+            <ChartSeries DataSource="@Data" XName="X" Width="2"
+                         Opacity="1" YName="Y" Type="ChartSeriesType.Line">
+                <ChartMarker Visible="true" Width="7" Height="7" IsFilled="true" Shape="ChartShape.Circle">
+                </ChartMarker>
+            </ChartSeries>
+        </ChartSeriesCollection>
+    </SfChart>
+</div>
         </div>
     </div>
 }
@@ -58,10 +75,6 @@ else
 
 
 @code {
-    public LineChart lineChart { get; set; } = default!;
-    public LineChartOptions lineChartOptions { get; set; } = default!;
-    public ChartData chartData { get; set; } = default!;
-
     [Parameter]
     public string _Id { get; set; }
     public bool _IsLoading { get; set; } = true;
@@ -113,54 +126,10 @@ else
         await OnLocationChangedAsync();
         Navigation.LocationChanged += async (object? sender, LocationChangedEventArgs e) => await OnLocationChangedAsync();
     }
-    private void UpdateGraph()
-    {
-
-        chartData = new ChartData { Labels = GetDataLabels(), Datasets = GetDataSets() };
-        lineChartOptions = new()
-            {
-                IndexAxis = "x",
-                Interaction = new Interaction { Mode = InteractionMode.Index, Intersect = false },
-                Responsive = true,
-            };
-        lineChartOptions.Scales.Y!.Max = 23.5;
-        lineChartOptions.Scales.Y!.Min = 22.2;
-        StateHasChanged();
-    }
-    private List<IChartDataset> GetDataSets()
-    {
-        var datasets = new List<IChartDataset>();
-        datasets.Add(GetDataset());
-        return datasets;
-    }
-    private LineChartDataset GetDataset()
-    {
-        var data = _RoomDeviceData.Select(x => x.Value).ToList().Select(x => double.TryParse(x.Replace(".",","), out var result) ? (double?)result : null).ToList();
-
-        return new()
-            {
-                Data = data,
-                BackgroundColor = System.Drawing.Color.AliceBlue.ToRgbaString(),
-                BorderColor = System.Drawing.Color.AliceBlue.ToRgbString(),
-                PointRadius = new List<double> { 5 },
-                PointHoverRadius = new List<double> { 8 },
-            };
-    }
-    private List<string> GetDataLabels()
-    {
-        var labels = _RoomDeviceData.Select(x => x.Timestamp.ToString()).ToList();
-
-        return labels;
-    }
-
-
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
-        {
             _IsLoading = false;
-        }
-
     }
     private async Task OnLocationChangedAsync() => await GetData();
     #endregion
@@ -223,5 +192,22 @@ else
     }
     #endregion
 
+    public List<ChartData> Data = new List<ChartData>
+    {
+       new ChartData { X = new DateTime(2025, 01, 01), Y = 7.8 },
+       new ChartData { X = new DateTime(2025, 02, 01), Y = 10.3 },
+       new ChartData { X = new DateTime(2025, 03, 01), Y = 15.5 },
+       new ChartData { X = new DateTime(2025, 04, 01), Y = 17.5 },
+       new ChartData { X = new DateTime(2025, 05, 01), Y = 19.5 },
+       new ChartData { X = new DateTime(2025, 06, 01), Y = 23.0 },
+       new ChartData { X = new DateTime(2025, 07, 01), Y = 20.0 },
+       new ChartData { X = new DateTime(2025, 08, 01), Y = 19.0 },
+       new ChartData { X = new DateTime(2025, 09, 01), Y = 22.1 }
+    };
 
+    public class ChartData
+    {
+        public DateTime X { get; set; }
+        public double Y { get; set; }
+    }
 }

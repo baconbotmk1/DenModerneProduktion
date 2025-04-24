@@ -2,6 +2,7 @@ using DenModerneProduktion.Components;
 using DenModerneProduktion.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Shared.Models;
+using Syncfusion.Blazor;
 using System.Net.Http;
 
 namespace DenModerneProduktion
@@ -27,6 +28,7 @@ namespace DenModerneProduktion
             builder.Services.AddHttpContextAccessor();
 
             builder.Services.AddBlazorBootstrap();
+            builder.Services.AddSyncfusionBlazor();
 
             builder.Services.AddHttpClient("api", sp =>
             {
