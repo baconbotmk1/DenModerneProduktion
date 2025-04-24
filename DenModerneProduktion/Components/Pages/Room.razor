@@ -1,4 +1,5 @@
 ﻿@using DenModerneProduktion.Services
+@using DenModerneProduktion.Components.Pages.PageViews
 @inject ApiRequester requester
 @inject ViewHelper viewHelper
 @inject NavigationManager Navigation
@@ -48,9 +49,7 @@ else
                     </div>
                 </div>
             </div>
-            <div class="container-fluid overflow-x-auto">
-                <LineChart @ref="lineChart" Width="800" />
-            </div>
+            <Graph _RoomDeviceData="@_RoomDeviceData"></Graph>
         </div>
     </div>
 }
@@ -58,9 +57,6 @@ else
 
 
 @code {
-    public LineChart lineChart { get; set; } = default!;
-    public LineChartOptions lineChartOptions { get; set; } = default!;
-    public ChartData chartData { get; set; } = default!;
 
     [Parameter]
     public string _Id { get; set; }
@@ -113,46 +109,6 @@ else
         await OnLocationChangedAsync();
         Navigation.LocationChanged += async (object? sender, LocationChangedEventArgs e) => await OnLocationChangedAsync();
     }
-    private void UpdateGraph()
-    {
-
-        chartData = new ChartData { Labels = GetDataLabels(), Datasets = GetDataSets() };
-        lineChartOptions = new()
-            {
-                IndexAxis = "x",
-                Interaction = new Interaction { Mode = InteractionMode.Index, Intersect = false },
-                Responsive = true,
-            };
-        lineChartOptions.Scales.Y!.Max = 23.5;
-        lineChartOptions.Scales.Y!.Min = 22.2;
-        StateHasChanged();
-    }
-    private List<IChartDataset> GetDataSets()
-    {
-        var datasets = new List<IChartDataset>();
-        datasets.Add(GetDataset());
-        return datasets;
-    }
-    private LineChartDataset GetDataset()
-    {
-        var data = _RoomDeviceData.Select(x => x.Value).ToList().Select(x => double.TryParse(x.Replace(".",","), out var result) ? (double?)result : null).ToList();
-
-        return new()
-            {
-                Data = data,
-                BackgroundColor = System.Drawing.Color.AliceBlue.ToRgbaString(),
-                BorderColor = System.Drawing.Color.AliceBlue.ToRgbString(),
-                PointRadius = new List<double> { 5 },
-                PointHoverRadius = new List<double> { 8 },
-            };
-    }
-    private List<string> GetDataLabels()
-    {
-        var labels = _RoomDeviceData.Select(x => x.Timestamp.ToString()).ToList();
-
-        return labels;
-    }
-
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -160,7 +116,6 @@ else
         {
             _IsLoading = false;
         }
-
     }
     private async Task OnLocationChangedAsync() => await GetData();
     #endregion
