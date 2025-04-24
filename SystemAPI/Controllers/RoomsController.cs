@@ -1,4 +1,5 @@
-﻿using Shared.DTOs.Room;
+﻿using Microsoft.Extensions.DependencyModel;
+using Shared.DTOs.Room;
 
 namespace SystemAPI.Controllers
 {
@@ -38,7 +39,8 @@ namespace SystemAPI.Controllers
                     .ToList();
                 var fromTimestamp = DateTime.Now.AddDays(periodType == 0 ? -1 : periodType == 1 ? -7 : -30);
                 var data = context.DeviceDatas
-                    //.AsQueryable()
+                    .AsQueryable()
+                    .Include(x=>x.Type)
                     .Where(x => x.TypeId == deviceDataType && deviceIds.Contains(x.DeviceId))
                     .Where(x => x.Timestamp > fromTimestamp)
                     .OrderByDescending(e => e.Timestamp);
@@ -61,7 +63,11 @@ namespace SystemAPI.Controllers
         [HttpGet("{id}")]
         public ActionResult<Room> GetRoomByID(int id)
         {
-            Room? room = repository.GetById(id);
+            Room? room = context.Rooms
+                .AsQueryable()
+                .Include(x=>x.LimitValues)
+                .Where(x => x.Id == id)
+                .FirstOrDefault();
 
             if (room == null)
             {
@@ -88,6 +94,34 @@ namespace SystemAPI.Controllers
             repository.Save();
 
             return Ok(item);
+        }
+
+        [HttpPut("{id}/limit")]
+        public ActionResult<Room> UpdateOrCreateRoomLimit(int id, [FromBody] UpdateDataLimit data)
+        {
+            DeviceDataLimitValue? dDLV = context.DeviceDataLimit
+                .AsQueryable()
+                .Where(x => x.TypeId == data.DataTypeId && x.RoomId == id)
+                .FirstOrDefault();
+
+            if (dDLV == null)
+            {
+                context.DeviceDataLimit.Add(new()
+                {
+                    MaximumLimit = data.Max,
+                    MinimumLimit = data.Min,
+                    RoomId = id,
+                    TypeId = data.DataTypeId
+                });
+            }
+            else
+            {
+                data.Adapt(dDLV);
+                context.Attach(dDLV);
+            }
+            context.SaveChanges();
+
+            return Ok(dDLV);
         }
 
         [HttpDelete("{id}")]

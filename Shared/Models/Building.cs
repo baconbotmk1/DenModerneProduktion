@@ -1,5 +1,4 @@
-﻿using Shared.Models.Assignables.LimitValues;
-using System;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
 namespace Shared.Models
 {
@@ -13,7 +12,8 @@ namespace Shared.Models
 
 		public ICollection<Section> Sections { get; set; } = new List<Section>();
         public ICollection<Room> Rooms { get; set; } = new List<Room>(); 
-        public ICollection<BuildingLV> LimitValues { get; set; } = new List<BuildingLV>();
+        public ICollection<DeviceDataLimitValue> LimitValues { get; set; } = new List<DeviceDataLimitValue>();
+
 
 
 

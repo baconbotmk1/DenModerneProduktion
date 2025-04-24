@@ -2,6 +2,7 @@
 @inject ApiRequester requester
 @inject ViewHelper viewHelper
 @inject NavigationManager Navigation
+@rendermode InteractiveServer
 
 @page "/rooms/{_Id}"
 <PageTitle>Lokale</PageTitle>
@@ -35,15 +36,15 @@ else
         </div>
         <div class="js-room-data">
             <div class="js-room-data-header">
-                <h4 class="js-room-data-current">@($"{_RoomDeviceData.First().Value}{DataSuffix[CurrentDataType]}")</h4>
+                <h4 class="js-room-data-current">@($"{CurrentValue}{Suffix}")</h4>
                 <div class="js-room-data-limit">
                     <div class="js-room-data-limit-min">
                         <label for="js-room-data-limit-min-value">Minimum</label>
-                        <InputNumber id="js-room-data-limit-min-value" @bind-Value="_MinValue" class="js-room-data-limit-min-input" />
+                        <InputNumber id="js-room-data-limit-min-value" TValue="double?" Value="@_MinValue" ValueExpression="@(()=>_MinValue)" ValueChanged="@UpdateMinLimitValueAsync" class="js-room-data-limit-min-input" />
                     </div>
                     <div class="js-room-data-limit-max">
                         <label for="js-room-data-limit-max-value">Maximum</label>
-                        <InputNumber id="js-room-data-limit-max-value" @bind-Value="_MaxValue" class="js-room-data-limit-max-input" />
+                        <InputNumber id="js-room-data-limit-max-value" TValue="double?" Value="@_MaxValue" ValueExpression="@(()=>_MaxValue)" ValueChanged="@UpdateMaxLimitValueAsync" class="js-room-data-limit-max-input" />
                     </div>
                 </div>
             </div>
@@ -60,28 +61,47 @@ else
     public bool _IsLoading { get; set; } = true;
     public int CurrentDataType { get; set; } = 2;
     public int CurrentDataPeriod { get; set; } = 0;
-    public List<string> DataSuffix { get; } = new() { "","","°", "%", "kWh" }; //Temp, humidity, energy
+    public string Suffix { get; set; } = "";
 
     public List<Shared.Models.DeviceData> _RoomDeviceData { get; set; } = new();
     public Shared.Models.Room _Room { get; set; } = new();
-    public double _MinValue { get; set; } = 18.2;
-    public double _MaxValue { get; set; }
+    public string? CurrentValue { get; set; }
+    public double? _MinValue { get; set; } = 5;
+    public double? _MaxValue { get; set; }
     public bool _UserIsAdmin { get; set; }
-
+    
+    protected async Task UpdateMinLimitValueAsync(double? value)
+    {
+        var response = await requester.Put<Room>($"api/room/{_Id}/limit", new Shared.DTOs.Room.UpdateDataLimit()
+        {
+            Min = _MinValue,
+            Max = _MaxValue,
+            DataTypeId = CurrentDataType
+        });
+    }
+    protected async Task UpdateMaxLimitValueAsync(double? value)
+    {
+        var response = await requester.Put<Room>($"api/room/{_Id}/limit", new Shared.DTOs.Room.UpdateDataLimit()
+            {
+                Min = _MinValue,
+                Max = _MaxValue,
+                DataTypeId = CurrentDataType
+            });
+    }
     public async Task ChangePeriodAsync(int index)
     {
         CurrentDataPeriod = index;
-        await GetThisRoomData();
+        await GetData();
     }
     public async Task ChangeTypeAsync(int index)
     {
         CurrentDataType = index;
-        await GetThisRoomData();
+        await GetData();
     }
 
     protected override async Task OnInitializedAsync()
     {
-        await GetThisRoomData();
+        await GetData();
         _UserIsAdmin = CheckIfUserIsAdmin();
         await OnLocationChangedAsync();
         Navigation.LocationChanged += async (object? sender, LocationChangedEventArgs e) => await OnLocationChangedAsync();
@@ -92,15 +112,21 @@ else
             _IsLoading = false;
     }
 
-    private async Task OnLocationChangedAsync() => await GetThisRoomData();
-    private async Task GetThisRoomData()
+    private async Task OnLocationChangedAsync() => await GetData();
+    private async Task GetData()
     {
         _IsLoading = true;
         StateHasChanged();
         string baseApiUri = "api/rooms/" + _Id + "/data?";
         baseApiUri += $"deviceDataType={CurrentDataType}&";
         baseApiUri += $"periodType={CurrentDataPeriod}";
-
+        await GetDeviceDataAsync(baseApiUri);
+        await GetRoomDataAsync(baseApiUri);
+        _IsLoading = false;
+        StateHasChanged();
+    }
+    private async Task GetDeviceDataAsync(string baseApiUri)
+    {
         var response = await requester.Get<List<Shared.Models.DeviceData>>(baseApiUri);
         if (response.StatusCode != 200)
         {
@@ -109,7 +135,20 @@ else
         }
 
         _RoomDeviceData = ((Shared.Responses.AcceptedResponse<List<Shared.Models.DeviceData>>)response).Data;
-
+        if (_RoomDeviceData.Count > 0)
+        {
+            Suffix = _RoomDeviceData.FirstOrDefault().Type.Suffix;
+            CurrentValue = _RoomDeviceData.First().Value;
+        }
+        else
+        {
+            Suffix = "";
+            CurrentValue = "N/A";
+        }
+    }
+    private async Task GetRoomDataAsync(string baseApiUri)
+    {
+        var response = await requester.Get<List<Shared.Models.DeviceData>>(baseApiUri);
         response = await requester.Get<Shared.Models.Room>("api/rooms/" + _Id);
         if (response.StatusCode != 200)
         {
@@ -118,8 +157,6 @@ else
         }
 
         _Room = ((Shared.Responses.AcceptedResponse<Shared.Models.Room>)response).Data;
-        _IsLoading = false;
-        StateHasChanged();
     }
 
     private bool CheckIfUserIsAdmin()

@@ -1,5 +1,4 @@
-﻿using Shared.Models.Assignables.LimitValues;
-using System;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -15,8 +14,9 @@ namespace Shared.Models
 
         [Required]
         public int BuildingId { get; set; } = default!;
-        public Building Building { get; set; } = default!;
-        public ICollection<SectionLV> LimitValues { get; set; } = new List<SectionLV>();
+        public Building Building { get; set; } = default!;        
+        public ICollection<DeviceDataLimitValue> LimitValues { get; set; } = new List<DeviceDataLimitValue>();
+
     }
 }
 

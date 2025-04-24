@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using Shared.Models;
 using Pomelo.EntityFrameworkCore.MySql;
 using Shared.Models.Assignables.TimeLimit;
-using Shared.Models.Assignables.LimitValues;
 
 namespace Shared
 {
@@ -73,13 +72,6 @@ namespace Shared
                 .HasValue<UserRoomTL>("user_room")
                 .HasValue<UserSectionTL>("user_section")
                 .HasValue<UserDeviceTL>("user_device");
-
-            modelBuilder.Entity<LimitValueAssignment>()
-                .HasDiscriminator<string>("type")
-                .HasValue<RoomLV>("room")
-                .HasValue<SectionLV>("section")
-                .HasValue<BuildingLV>("building")
-                .HasValue<CadastreLV>("cadastre");
         }
     }
 }
