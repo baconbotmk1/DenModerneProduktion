@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Shared.Models.Assignables.TimeLimit;
+using System;
 namespace Shared.Models
 {
 	public class SecurityGroupSection : TimeLimitableModel
@@ -8,7 +9,7 @@ namespace Shared.Models
 		public int SectionId { get; set; }
 		public Section Section { get; set; }
 
-        public ICollection<Assignables.SecurityGroupSectionTL> TimeLimits { get; set; } = new List<Assignables.SecurityGroupSectionTL>();
+        public ICollection<SecurityGroupSectionTL> TimeLimits { get; set; } = new List<SecurityGroupSectionTL>();
 
         public SecurityGroupSection()
 		{

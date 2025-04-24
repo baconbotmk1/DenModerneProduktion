@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Shared.Models.Assignables.TimeLimit;
+using System;
 namespace Shared.Models
 {
 	public class UserRoom : TimeLimitableModel
@@ -8,7 +9,7 @@ namespace Shared.Models
 		public int RoomId { get; set; }
 		public Room Room { get; set; }
 
-        public ICollection<Assignables.UserRoomTL> TimeLimits { get; set; } = new List<Assignables.UserRoomTL>();
+        public ICollection<UserRoomTL> TimeLimits { get; set; } = new List<UserRoomTL>();
 
         public UserRoom()
 		{

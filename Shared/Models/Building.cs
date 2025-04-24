@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Shared.Models.Assignables.LimitValues;
+using System;
 using System.ComponentModel.DataAnnotations;
 namespace Shared.Models
 {
@@ -11,7 +12,9 @@ namespace Shared.Models
         public Cadastre Cadastre { get; set; }
 
 		public ICollection<Section> Sections { get; set; } = new List<Section>();
-        public ICollection<Room> Rooms { get; set; } = new List<Room>();
+        public ICollection<Room> Rooms { get; set; } = new List<Room>(); 
+        public ICollection<BuildingLV> LimitValues { get; set; } = new List<BuildingLV>();
+
 
 
         public Building()

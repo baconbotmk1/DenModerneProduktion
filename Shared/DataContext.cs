@@ -1,8 +1,9 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore;
 using Shared.Models;
-using Shared.Models.Assignables;
 using Pomelo.EntityFrameworkCore.MySql;
+using Shared.Models.Assignables.TimeLimit;
+using Shared.Models.Assignables.LimitValues;
 
 namespace Shared
 {
@@ -13,6 +14,7 @@ namespace Shared
         public DbSet<Cadastre> Cadastres { get; set; }
         public DbSet<Device> Devices { get; set; }
         public DbSet<DeviceData> DeviceDatas { get; set; }
+        public DbSet<DeviceDataLimitValue> DeviceDataLimit { get; set; }
         public DbSet<DeviceMqttMap> DeviceMqttMaps { get; set; }
         public DbSet<DeviceDataType> DeviceDataTypes { get; set; }
         public DbSet<DeviceEvent> DeviceEvents { get; set; }
@@ -71,6 +73,13 @@ namespace Shared
                 .HasValue<UserRoomTL>("user_room")
                 .HasValue<UserSectionTL>("user_section")
                 .HasValue<UserDeviceTL>("user_device");
+
+            modelBuilder.Entity<LimitValueAssignment>()
+                .HasDiscriminator<string>("type")
+                .HasValue<RoomLV>("room")
+                .HasValue<SectionLV>("section")
+                .HasValue<BuildingLV>("building")
+                .HasValue<CadastreLV>("cadastre");
         }
     }
 }

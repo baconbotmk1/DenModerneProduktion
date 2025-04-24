@@ -27,7 +27,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Migrations\" />
-    <Folder Include="Models\Assignables\" />
     <Folder Include="DTOs\SecurityGroup\" />
     <Folder Include="DTOs\Section\" />
     <Folder Include="DTOs\Building\" />

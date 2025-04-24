@@ -1,5 +1,5 @@
 ﻿using System;
-namespace Shared.Models.Assignables
+namespace Shared.Models.Assignables.TimeLimit
 {
 	public class UserSectionTL : TimeLimitAssignment
 	{
