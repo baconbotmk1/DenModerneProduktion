@@ -48,7 +48,9 @@ else
                     </div>
                 </div>
             </div>
-            <div class="js-room-data-graph"></div>
+            <div class="container-fluid overflow-x-auto">
+                <LineChart @ref="lineChart" Width="800" />
+            </div>
         </div>
     </div>
 }
@@ -56,6 +58,10 @@ else
 
 
 @code {
+    public LineChart lineChart { get; set; } = default!;
+    public LineChartOptions lineChartOptions { get; set; } = default!;
+    public ChartData chartData { get; set; } = default!;
+
     [Parameter]
     public string _Id { get; set; }
     public bool _IsLoading { get; set; } = true;
@@ -63,30 +69,30 @@ else
     public int CurrentDataPeriod { get; set; } = 0;
     public string Suffix { get; set; } = "";
 
-    public List<Shared.Models.DeviceData> _RoomDeviceData { get; set; } = new();
+    public List<Shared.Models.DeviceData> _RoomDeviceData { get; set; }
     public Shared.Models.Room _Room { get; set; } = new();
     public string? CurrentValue { get; set; }
-    public double? _MinValue { get; set; } = 5;
+    public double? _MinValue { get; set; }
     public double? _MaxValue { get; set; }
-    public bool _UserIsAdmin { get; set; }
-
+    public bool _UserIsAdmin { get; set; } = true;
+    #region Updaters
     protected async Task UpdateMinLimitValueAsync(double? value)
     {
         _MinValue = value;
         var response = await requester.Put<Room>($"api/rooms/{_Id}/limit", new Shared.DTOs.Room.UpdateDataLimit()
-        {
-            Min = _MinValue,
-            Max = _MaxValue,
-            DataTypeId = CurrentDataType
-        });
+            {
+                MinimumLimit = _MinValue,
+                MaximumLimit = _MaxValue,
+                DataTypeId = CurrentDataType
+            });
     }
     protected async Task UpdateMaxLimitValueAsync(double? value)
     {
         _MaxValue = value;
         var response = await requester.Put<Room>($"api/rooms/{_Id}/limit", new Shared.DTOs.Room.UpdateDataLimit()
             {
-                Min = _MinValue,
-                Max = _MaxValue,
+                MinimumLimit = _MinValue,
+                MaximumLimit = _MaxValue,
                 DataTypeId = CurrentDataType
             });
     }
@@ -100,21 +106,65 @@ else
         CurrentDataType = index;
         await GetData();
     }
-
+    #endregion
+    #region Events
     protected override async Task OnInitializedAsync()
     {
-        await GetData();
-        _UserIsAdmin = CheckIfUserIsAdmin();
         await OnLocationChangedAsync();
         Navigation.LocationChanged += async (object? sender, LocationChangedEventArgs e) => await OnLocationChangedAsync();
     }
-    protected override void OnAfterRender(bool firstRender)
+    private void UpdateGraph()
     {
-        if (firstRender)
-            _IsLoading = false;
+
+        chartData = new ChartData { Labels = GetDataLabels(), Datasets = GetDataSets() };
+        lineChartOptions = new()
+            {
+                IndexAxis = "x",
+                Interaction = new Interaction { Mode = InteractionMode.Index, Intersect = false },
+                Responsive = true,
+            };
+        lineChartOptions.Scales.Y!.Max = 23.5;
+        lineChartOptions.Scales.Y!.Min = 22.2;
+        StateHasChanged();
+    }
+    private List<IChartDataset> GetDataSets()
+    {
+        var datasets = new List<IChartDataset>();
+        datasets.Add(GetDataset());
+        return datasets;
+    }
+    private LineChartDataset GetDataset()
+    {
+        var data = _RoomDeviceData.Select(x => x.Value).ToList().Select(x => double.TryParse(x.Replace(".",","), out var result) ? (double?)result : null).ToList();
+
+        return new()
+            {
+                Data = data,
+                BackgroundColor = System.Drawing.Color.AliceBlue.ToRgbaString(),
+                BorderColor = System.Drawing.Color.AliceBlue.ToRgbString(),
+                PointRadius = new List<double> { 5 },
+                PointHoverRadius = new List<double> { 8 },
+            };
+    }
+    private List<string> GetDataLabels()
+    {
+        var labels = _RoomDeviceData.Select(x => x.Timestamp.ToString()).ToList();
+
+        return labels;
     }
 
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _IsLoading = false;
+        }
+
+    }
     private async Task OnLocationChangedAsync() => await GetData();
+    #endregion
+    #region Data grabbers
     private async Task GetData()
     {
         _IsLoading = true;
@@ -159,10 +209,19 @@ else
         }
 
         _Room = ((Shared.Responses.AcceptedResponse<Shared.Models.Room>)response).Data;
+        var limit = _Room.LimitValues.Where(x => x.TypeId == CurrentDataType).FirstOrDefault();
+        if (limit != null)
+        {
+            _MaxValue = limit.MaximumLimit;
+            _MinValue = limit.MinimumLimit;
+        }
+        else
+        {
+            _MaxValue = null;
+            _MinValue = null;
+        }
     }
+    #endregion
 
-    private bool CheckIfUserIsAdmin()
-    {
-        return true;
-    }
+
 }

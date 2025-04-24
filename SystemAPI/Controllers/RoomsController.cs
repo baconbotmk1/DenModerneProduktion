@@ -108,8 +108,8 @@ namespace SystemAPI.Controllers
             {
                 context.DeviceDataLimit.Add(new()
                 {
-                    MaximumLimit = data.Max,
-                    MinimumLimit = data.Min,
+                    MaximumLimit = data.MaximumLimit,
+                    MinimumLimit = data.MinimumLimit,
                     RoomId = id,
                     TypeId = data.DataTypeId
                 });

@@ -9,8 +9,8 @@ namespace Shared.DTOs.Room
 {
     public class UpdateDataLimit
     {
-        public double? Min { get; set; }
-        public double? Max { get; set; }
+        public double? MinimumLimit { get; set; }
+        public double? MaximumLimit { get; set; }
         [Required]
         public int DataTypeId { get; set; }
     }
