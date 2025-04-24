@@ -69,10 +69,11 @@ else
     public double? _MinValue { get; set; } = 5;
     public double? _MaxValue { get; set; }
     public bool _UserIsAdmin { get; set; }
-    
+
     protected async Task UpdateMinLimitValueAsync(double? value)
     {
-        var response = await requester.Put<Room>($"api/room/{_Id}/limit", new Shared.DTOs.Room.UpdateDataLimit()
+        _MinValue = value;
+        var response = await requester.Put<Room>($"api/rooms/{_Id}/limit", new Shared.DTOs.Room.UpdateDataLimit()
         {
             Min = _MinValue,
             Max = _MaxValue,
@@ -81,7 +82,8 @@ else
     }
     protected async Task UpdateMaxLimitValueAsync(double? value)
     {
-        var response = await requester.Put<Room>($"api/room/{_Id}/limit", new Shared.DTOs.Room.UpdateDataLimit()
+        _MaxValue = value;
+        var response = await requester.Put<Room>($"api/rooms/{_Id}/limit", new Shared.DTOs.Room.UpdateDataLimit()
             {
                 Min = _MinValue,
                 Max = _MaxValue,
