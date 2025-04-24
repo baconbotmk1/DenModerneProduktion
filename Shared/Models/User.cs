@@ -15,6 +15,7 @@ namespace Shared.Models
 		public string? HashedPassword { get; set; }
 		public string? Salt { get; set; }
 		public string? ResetToken { get; set; }
+		public string? ResetState { get; set; }
 
         public string? ReferenceId { get; set; }
 		public string? ReferenceType { get; set; }

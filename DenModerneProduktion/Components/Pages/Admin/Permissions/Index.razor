@@ -10,11 +10,13 @@
 <GenericCRUDListView DeleteMessage="DeleteMessage" Link="admin/permissions" APIEndpoint="api/permissions" TType="Permission" Title="Rettigheder" Subtitle="Disse er de rettigheder som en sikkerhedsgruppe kan få tildelt og som kræves for at kunne få adgang til visse funktioner.">
     <Headers>
         <th>ID</th>
+        <th>Slug</th>
         <th>Navn</th>
         <th>Beskrivelse</th>
     </Headers>
     <Rows>
         <td>@context.Id</td>
+        <td>@context.Slug</td>
         <td>@context.Name</td>
         <td>@context.Desc</td>
     </Rows>

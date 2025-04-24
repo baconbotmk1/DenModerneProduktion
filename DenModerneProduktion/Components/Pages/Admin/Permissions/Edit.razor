@@ -15,6 +15,10 @@
     </div>
     <div class="card-body">
         <div class="mb-2">
+            <span class="form-label">Slug</span>
+            <input @bind-value="Slug" required name="slug" placeholder="Slug" type="text" class="form-control" />
+        </div>
+        <div class="mb-2">
             <span class="form-label">Navn</span>
             <input @bind-value="Name" required name="name" placeholder="Navn" type="text" class="form-control" />
         </div>
@@ -33,6 +37,7 @@
     [Parameter]
     public string ID { get; set; }
 
+    public string Slug { get; set; } = "";
     public string Name { get; set; } = "";
     public string Desc { get; set; } = "";
 
@@ -49,6 +54,7 @@
             if (permission != null)
             {
                 Name = permission.Name;
+                Slug = permission.Slug;
                 Desc = permission.Desc;
             }
             else
@@ -67,6 +73,7 @@
         var response = await requester.Post<Permission>("api/permissions", new CreatePermissionDTO()
         {
             Name = Name,
+            Slug = Slug,
             Desc = Desc
         });
 
@@ -92,6 +99,7 @@
         var response = await requester.Put<Permission>("api/permissions/" + PermissionID, new CreatePermissionDTO()
         {
             Name = Name,
+            Slug = Slug,
             Desc = Desc
         });
 
@@ -102,6 +110,7 @@
         if (updatedPermission != null)
         {
             Name = updatedPermission.Name;
+            Slug = updatedPermission.Slug;
             Desc = updatedPermission.Desc;
         }
     }

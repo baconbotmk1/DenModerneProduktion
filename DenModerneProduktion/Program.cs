@@ -1,6 +1,8 @@
 using DenModerneProduktion.Components;
 using DenModerneProduktion.Services;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Shared.Models;
+using System.Net.Http;
 
 namespace DenModerneProduktion
 {
@@ -14,23 +16,22 @@ namespace DenModerneProduktion
             builder.Services.AddRazorComponents()
                 .AddInteractiveServerComponents();
 
+            builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+                .AddCookie(options =>
+                {
+                    options.LoginPath = "/login";
+                });
+            builder.Services.AddAuthorization();
+            builder.Services.AddCascadingAuthenticationState();
+
             builder.Services.AddHttpContextAccessor();
-            builder.Services.AddDistributedMemoryCache((options) =>
-            {
-
-            });
-            builder.Services.AddSession((options) =>
-            {
-
-            });
 
             builder.Services.AddBlazorBootstrap();
 
-            builder.Services.AddScoped(sp =>
-                new HttpClient
-                {
-                    BaseAddress = new Uri(builder.Configuration.GetSection("API").GetValue<string>("Host") ?? ""),
-                });
+            builder.Services.AddHttpClient("api", sp =>
+            {
+                sp.BaseAddress = new Uri(builder.Configuration.GetSection("API").GetValue<string>("Host") ?? "");
+            });
 
             builder.Services.AddScoped<ViewHelper>();
 
@@ -51,7 +52,8 @@ namespace DenModerneProduktion
             app.UseStaticFiles();
             app.UseAntiforgery();
 
-            app.UseSession();
+            app.UseAuthentication();
+            app.UseAuthorization();
             
             app.UseStatusCodePagesWithRedirects("/NotFound");
 

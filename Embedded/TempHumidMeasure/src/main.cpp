@@ -1,13 +1,9 @@
 #include <Arduino.h>
-
 #include <Adafruit_Sensor.h>
 #include <DHT.h>
 #include <DHT_U.h>
-
 #include <ArduinoMqttClient.h>
-
 #include <WiFiNINA.h>
-
 #include <ArduinoJson.h>
 
 #include "arduino_secrets.h"
@@ -20,27 +16,25 @@
 
 DHT_Unified dht(DHTPIN, DHTTYPE);
 
-char ssid[] = SECRET_SSID;
-char pass[] = SECRET_PASS;
-
-bool fakeWindowState = false;
-unsigned long previousWindowState = 0;
-
-
 WiFiSSLClient wifiClient;
 MqttClient mqttClient(wifiClient);
+
+char ssid[] = SECRET_SSID;
+char pass[] = SECRET_PASS;
 
 const char broker[] = MQTT_HOST;
 int        port     = MQTT_PORT;
 const char username[] = MQTT_USERNAME;
 const char password[] = MQTT_PASSWORD;
 
+bool fakeWindowState = false;
+unsigned long previousWindowState = 0;
 const long interval = INTERVAL;
 unsigned long previousMillis = 0;
-
 uint32_t delayMS;
 
 String macAddress = "";
+
 String getMacAddressString() {
   if(macAddress == "")
   {
@@ -61,7 +55,10 @@ String getMacAddressString() {
   return macAddress;
 }
 
+bool started = false;
+
 void setup() {
+  started = false;
 
   Serial.begin(9600);
 
@@ -115,9 +112,17 @@ void setup() {
   }
 
   Serial.println("Connected to broker!");
+
+  started = true;
 }
 
 void loop() {
+  if(!started)
+  {
+    delay(50);
+    return;
+  }
+
   mqttClient.poll();
 
   unsigned long currentMillis = millis();

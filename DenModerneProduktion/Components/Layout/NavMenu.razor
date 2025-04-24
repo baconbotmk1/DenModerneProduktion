@@ -1,15 +1,29 @@
 ﻿@using System.Diagnostics
 @using DenModerneProduktion.Services
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
 @inject NavigationManager Navigation
 @inject IHttpContextAccessor httpContextAccessor
 @inject ApiRequester requester
 @inject ViewHelper viewHelper
+@inject UserSession userSession
+
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
 <div class="top-row ps-3 navbar navbar-dark">
     <div class="">
-            <NavLink class="js-login-btn" href="@($"login")" Match="NavLinkMatch.All">
-                Login
-            </NavLink>
+        <AuthorizeView>
+            <Authorized>
+                <NavLink class="js-login-btn" href="@($"logout")" Match="NavLinkMatch.All">
+                    Logout
+                </NavLink>
+            </Authorized>
+            <NotAuthorized>
+                <NavLink class="js-login-btn" href="@($"login")" Match="NavLinkMatch.All">
+                    Login
+                </NavLink>
+            </NotAuthorized>
+        </AuthorizeView>
     </div>
 </div>
 
@@ -95,6 +109,8 @@
 </div>
 
 @code {
+    private ClaimsPrincipal user;
+
     public HttpContext? httpContext => httpContextAccessor.HttpContext;
 
     public List<Shared.Models.Room> AccessibleRooms { get; set; } = new();
@@ -106,6 +122,19 @@
 
     protected override async Task OnInitializedAsync()
     {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        user = authState.User;
+
+        if (user.Identity.IsAuthenticated)
+        {
+            var username = user.Identity.Name;
+            Console.WriteLine($"Logged in as: {username}");
+        }
+        else
+        {
+            Console.WriteLine("User not logged in.");
+        }
+
         OnLocationChanged();
         Navigation.LocationChanged += (object? sender, LocationChangedEventArgs e) => OnLocationChanged();
         viewHelper.NavUpdate += async () => await GetAccessibleRoomsAsync();

@@ -51,6 +51,18 @@ public class Program
 
         builder.Services.AddHostedService<MqttRecorderService>();
 
+        builder.Services.AddScoped(sp =>
+                new HttpClient
+                {
+                    BaseAddress = new Uri(builder.Configuration.GetSection("API").GetValue<string>("Host") ?? ""),
+                });
+
+        builder.Services.AddHttpClient("mailer", (options) =>
+        {   
+            options.DefaultRequestHeaders.Add("Authorization", "Bearer " + builder.Configuration.GetSection("Mailer").GetValue<string>("AuthToken"));
+            options.DefaultRequestHeaders.Add("Content-Type", "application/json");
+        });
+
         var app = builder.Build();
 
         // Configure the HTTP request pipeline.

@@ -4,6 +4,7 @@ using Shared.DTOs.Auth;
 using Shared.Migrations;
 using System.Security.Cryptography;
 using System.Text;
+using SystemAPI.Helpers;
 
 namespace SystemAPI.Controllers
 {
@@ -17,16 +18,82 @@ namespace SystemAPI.Controllers
 
 
         [HttpPost("login")]
-        public ActionResult<LoginResult> Post([FromBody] LoginPost data)
+        public ActionResult<LoginResult> TryLogin([FromBody] LoginPost data)
         {
-            //byte[] data = hashAlgorithm.ComputeHash(Encoding.UTF8.GetBytes(input));
-
-            if (!context.Users.Any(e => e.Username.ToLower() == data.username.ToLower()))
+            User? user = context.Users.FirstOrDefault(e => e.Username.ToLower() == data.username.ToLower());
+            if (user == null)
             {
                 return NotFound();
             }
 
-            return Ok(new LoginResult());
+            if(user.HashedPassword == null || user.Salt == null)
+            {
+                return NotFound();
+            }
+
+            byte[] hashedPasswordBytes = Convert.FromBase64String(user.HashedPassword);
+            byte[] saltBytes = Convert.FromBase64String(user.Salt);
+
+            if (!CryptoHelper.ComparePasswordWithHash(data.password, hashedPasswordBytes, saltBytes))
+            {
+                return NotFound();
+            }
+
+            List<Permission> permissions = user.SecurityGroups.SelectMany(e => e.Permissions)
+                    .Distinct()
+                    .ToList();
+
+            return Ok(new LoginResult(user, permissions));
+        }
+
+
+        [HttpPost("reset_password")]
+        public ActionResult<StartPasswordResetResult> Post([FromBody] StartPasswordResetPost data)
+        {
+            User? user = context.Users.FirstOrDefault(e => e.Username.ToLower() == data.username.ToLower());
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            string token = CryptoHelper.GenerateSaltString();
+            string state = CryptoHelper.GenerateSaltString();
+
+            user.ResetToken = token;
+            user.ResetState = state;
+            context.Attach(user);
+            context.SaveChanges();
+
+            return Ok(new ConfirmPasswordResetResult() {
+                state = state,
+                username = data.username,
+            });
+        }
+
+
+        [HttpPost("reset_password/{token}")]
+        public ActionResult Post(string token, [FromBody] ConfirmPasswordResetPost data)
+        {
+            User? user = context.Users.FirstOrDefault(e => e.Username.ToLower() == data.username.ToLower() && e.ResetState == data.state && e.ResetToken == token);
+            if (user == null)
+            {
+                return Ok();
+            }
+
+            byte[] salt = user.Salt != null ? Convert.FromBase64String(user.Salt) : CryptoHelper.GenerateSalt();
+
+            if (user.Salt == null)
+            {
+                user.Salt = Convert.ToBase64String(salt);
+            }
+            user.ResetToken = null;
+            user.ResetState = null;
+            user.HashedPassword = Convert.ToBase64String(CryptoHelper.HashPassword(data.password, salt));
+
+            context.Attach(user);
+            context.SaveChanges();
+
+            return Ok();
         }
     }
 }

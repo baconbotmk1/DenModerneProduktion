@@ -7,6 +7,7 @@ namespace Shared.Models
 {
 	public class Permission : BaseModel
     {
+        public string Slug { get; set; }
         public string Name { get; set; }
 		public string Desc { get; set; }
 

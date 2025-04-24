@@ -8,9 +8,9 @@ namespace DenModerneProduktion.Services
     {
         private readonly HttpClient _client;
 
-        public ApiRequester(HttpClient client)
+        public ApiRequester(IHttpClientFactory clientFactory)
         {
-            _client = client;
+            _client = clientFactory.CreateClient("api");
         }
 
 

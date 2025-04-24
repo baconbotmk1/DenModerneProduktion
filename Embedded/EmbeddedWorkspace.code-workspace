@@ -1,0 +1,15 @@
+{
+	"folders": [
+		{
+			"path": "RFIDScanner"
+		},
+		{
+			"path": "TempHumidMeasure"
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"string_view": "cpp"
+		}
+	}
+}

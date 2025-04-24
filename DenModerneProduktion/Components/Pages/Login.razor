@@ -1,7 +1,26 @@
 ﻿@using DenModerneProduktion.Services
+@using System.Diagnostics
 @inject ApiRequester apiRequester;
+@inject NavigationManager navigationManager;
+
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Authentication.Cookies
+@using Microsoft.AspNetCore.Components.Authorization
+@inject NavigationManager Navigation
+@inject IHttpContextAccessor HttpContextAccessor
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Identity
+@using Shared.Models
+
+@inject UserSession userSession
+
 <PageTitle>Login</PageTitle>
 @page "/login"
+
+@layout DenModerneProduktion.Components.Layout.StaticSsrLayout
 
 @if (IsLoading)
 {
@@ -9,7 +28,7 @@
 }
 else{
     <h3>Login</h3>
-    <EditForm Model="@loginModel" OnValidSubmit="HandleLogin">
+    <EditForm Model="@loginModel" FormName="Login" OnValidSubmit="HandleLogin">
         <DataAnnotationsValidator />
         <div class="form-group">
             <label>Username</label>
@@ -21,40 +40,63 @@ else{
             <InputText @bind-Value="loginModel.Pwd" type="password" class="form-control" />
             <ValidationMessage For="@(() => loginModel.Pwd)" />
         </div>
+        @if (ErrorMessage != "")
+        {
+            <Alert Class="mt-3" Color="AlertColor.Danger"> <Icon Name="IconName.ExclamationTriangleFill" class="me-2"></Icon>@ErrorMessage</Alert>
+        }
         <button disabled="@thinking" class="btn btn-primary">
             Login
         </button>
     </EditForm>
 }
 @code {
-    public bool IsLoading = true;
+    public bool IsLoading = false;
     private bool thinking = false;
-    [CascadingParameter]
-    public HttpContext? httpContext { get; set; }
 
-    private UserInfo loginModel = new UserInfo();
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    private string ErrorMessage = "";
+
+    [SupplyParameterFromForm]
+    public UserInfo loginModel { get; set; } = new();
+
     public bool _UserCreated { get; set; }
     public bool _credentialsCorrect { get; set; }
     public async Task HandleLogin()
     {
-        thinking = true;
-        // if (credentialsCorrect)
-        // {
-        //     var response = await apiRequester.Post("api/login", loginModel);
-        //     if (response.StatusCode != 200)
-        //     {
-        //         viewHelper.Alert(response.Message);
-        //         return;
-        //     }
+        ErrorMessage = "";
 
-        //     _User = ((Shared.Responses.AcceptedResponse<Shared.Models.User>)response).Data;
-        // }
+        thinking = true;
+
+        try
+        {
+            bool loggedIn = await userSession.Login(loginModel.Username, loginModel.Pwd);
+
+            if (loggedIn)
+            {
+                navigationManager.Refresh(true);
+            }
+        }
+        catch(Exception ex)
+        {
+            Debug.WriteLine(ex.Message);
+            Debug.WriteLine(ex);
+            return;
+        }
+
+        ErrorMessage = "Brugeren findes ikke eller adgangskoden er forkert";
+
+        Console.WriteLine(loginModel);
+
         thinking = false;
         StateHasChanged();
     }
     public class UserInfo
     {
+        [Required(AllowEmptyStrings = false)]
         public string Username { get; set; }
+        [Required(AllowEmptyStrings = false)]
         public string Pwd { get; set; }
     }
     protected override void OnAfterRender(bool firstRender)
