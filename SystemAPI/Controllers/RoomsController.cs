@@ -27,7 +27,7 @@ namespace SystemAPI.Controllers
         /// <param name="periodType">This parameter tells what period is used. 1 = daily, 2 = weekly, 3 = monthly</param>
         /// <returns></returns>
         [HttpGet("{room_id}/data")]
-        public ActionResult<IEnumerable<DeviceData>> GetDataByRoomId(int room_id, [FromQuery] int deviceDataType = 2, int periodType = 2)
+        public ActionResult<IEnumerable<DeviceData>> GetDataByRoomId(int room_id, [FromQuery] int deviceDataType = 2, [FromQuery] int periodType = 2)
         {
             return HandleExceptions(() =>
             {
@@ -36,13 +36,13 @@ namespace SystemAPI.Controllers
                     .Where(x => x.RoomId == room_id)
                     .Select(x => x.Id)
                     .ToList();
-
+                var fromTimestamp = DateTime.Now.AddDays(periodType == 0 ? -1 : periodType == 1 ? -7 : -30);
                 var data = context.DeviceDatas
-                    .AsQueryable()
+                    //.AsQueryable()
                     .Where(x => x.TypeId == deviceDataType && deviceIds.Contains(x.DeviceId))
-                    .OrderByDescending(e => e.Timestamp).ToList();
-
-                return Ok(data);
+                    .Where(x => x.Timestamp > fromTimestamp)
+                    .OrderByDescending(e => e.Timestamp);
+                return Ok(data.ToList());
             });
         }
 
