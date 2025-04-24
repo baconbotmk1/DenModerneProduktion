@@ -92,7 +92,7 @@ namespace SystemAPI.Controllers
             return Ok();
         }
 
-        [HttpPut("{id}/add_permission/{permission_id}")]
+        [HttpPost("{id}/permission/{permission_id}")]
         public ActionResult AddPermission( int id, int permission_id )
         {
             SecurityGroup? securityGroup = context.SecurityGroups.Find(id);
@@ -125,7 +125,7 @@ namespace SystemAPI.Controllers
         }
 
 
-        [HttpDelete("{id}/remove_permission/{permission_id}")]
+        [HttpDelete("{id}/permission/{permission_id}")]
         public ActionResult RemovePermission(int id, int permission_id)
         {
             SecurityGroup? securityGroup = context.SecurityGroups.Find(id);

@@ -12,8 +12,6 @@
 @inject ApiRequester requester
 @inject ViewHelper viewHelper
 
-
-
 <Tabs>
     <Tab Title="Enhedstyper" IsActive="true">
         <Content>
@@ -221,6 +219,8 @@
         {
             DeviceTypes = new List<DeviceType>();
         }
+
+        StateHasChanged();
 
         viewHelper.HideLoader();
     }

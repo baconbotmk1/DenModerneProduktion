@@ -37,11 +37,15 @@
             </NavLink>
         </div>
 
+        <AuthorizeView Policy="@Permissions.ViewAdminPanel">
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="Lobby">
                 <Icon Name="IconName.LaptopFill" Size="IconSize.x4" class="js-nav-icon"/> Lobby
             </NavLink>
         </div>
+        </AuthorizeView>
+
+        <AuthorizeView>
         @if (_ShowAdminMenu)
         {
             <div class="nav-item px-3">
@@ -90,6 +94,7 @@
                 }
             </div>
         }
+        </AuthorizeView>
     </nav>
     <div class="js-nav-rooms">
         <h3>Lokaler</h3>

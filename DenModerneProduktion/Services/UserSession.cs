@@ -141,6 +141,11 @@ namespace DenModerneProduktion.Services
                     new Claim("permissions", JsonSerializer.Serialize(Permissions)),
                 };
 
+                foreach (var permission in Permissions)
+                {
+                    claims.Add(new Claim("permission", permission.Slug));
+                }
+
                 var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
                 var user = new ClaimsPrincipal(identity);
 
