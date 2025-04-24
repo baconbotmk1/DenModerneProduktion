@@ -10,6 +10,7 @@ namespace Shared.Models
         public string DataType { get; set; }
 
         public string? Desc { get; set; }
+        public string? Suffix { get; set; }
 
         [Required]
         public int CategoryId { get; set; }

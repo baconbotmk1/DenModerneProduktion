@@ -314,6 +314,7 @@
                 new ModalInput() { Name = "categoryId", Label = "Kategori", DType = InputType.Select, Required = true, Options = Categories.Select(e => new Option(e.Name, e.Id.ToString())).ToList() },
                 new ModalInput() { Name = "desc", Label = "Beskrivelse", DType = InputType.TextArea },
                 new ModalInput() { Name = "dataType", Label = "DataType", DType = InputType.Text, Required=true },
+                new ModalInput() { Name = "suffix", Label = "Suffix", DType = InputType.Text, Required=true },
             };
             StateHasChanged();
         }
@@ -335,7 +336,8 @@
                 Name = (string?)inputs["name"].Value ?? "",
                 Desc = (string?)inputs["desc"].Value,
                 CategoryId = int.Parse((string)inputs["categoryId"].Value),
-                DataType = (string)inputs["dataType"].Value
+                DataType = (string)inputs["dataType"].Value,
+                Suffix = (string)inputs["suffix"].Value
             });
 
 

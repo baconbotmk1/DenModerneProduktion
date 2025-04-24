@@ -92,10 +92,7 @@ else
             _IsLoading = false;
     }
 
-    private async Task OnLocationChangedAsync()
-    {
-        await GetThisRoomData();
-    }
+    private async Task OnLocationChangedAsync() => await GetThisRoomData();
     private async Task GetThisRoomData()
     {
         _IsLoading = true;

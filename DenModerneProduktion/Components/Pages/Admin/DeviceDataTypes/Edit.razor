@@ -17,6 +17,7 @@
         </div>
         <div class="card-body">
             <InputWithValidation @ref="NameField" ParentList="@Inputs" IsRequired="@true" Type="text" Name="name" @bind-value="@Name" />
+            <InputWithValidation @ref="SuffixField" ParentList="@Inputs" IsRequired="@true" Type="text" Name="suffix" @bind-value="@Suffix" />
         </div>
         <div class="card-footer">
             <button @onclick="() => Create()" class="@(UserID == 0 ? "" : "d-none") float-end btn btn-sm btn-success">Opret</button>
@@ -51,7 +52,10 @@
     public User? Item { get; set; }
 
     public string Name { get; set; } = "";
+    public string Suffix { get; set; } = "";
+
     public InputWithValidation NameField { get; set; }
+    public InputWithValidation SuffixField { get; set; }
 
     public int UserID => Int32.TryParse(id, out int res) ? res : 0;
 

@@ -13,6 +13,8 @@ namespace Shared.DTOs.DeviceDataType
 
         public string? Desc { get; set; }
 
+        public string? Suffix { get; set; }
+
         [Required]
         public int CategoryId { get; set; }
     }
