@@ -1,5 +1,6 @@
 ﻿@using DenModerneProduktion.Services
 @using DenModerneProduktion.Components.Pages.PageViews
+@using System.Globalization
 @inject ApiRequester requester
 @inject ViewHelper viewHelper
 @inject NavigationManager Navigation
@@ -49,7 +50,9 @@ else
                     </div>
                 </div>
             </div>
-            <Graph _RoomDeviceData="@_RoomDeviceData"></Graph>
+            <div class="js-room-data-graph">
+                <Graph GraphDatas="@GraphData"></Graph>
+            </div>
         </div>
     </div>
 }
@@ -66,6 +69,7 @@ else
     public string Suffix { get; set; } = "";
 
     public List<Shared.Models.DeviceData> _RoomDeviceData { get; set; }
+    public List<PageModels.GraphData> GraphData { get; set; } = new();
     public Shared.Models.Room _Room { get; set; } = new();
     public string? CurrentValue { get; set; }
     public double? _MinValue { get; set; }
@@ -81,6 +85,7 @@ else
                 MaximumLimit = _MaxValue,
                 DataTypeId = CurrentDataType
             });
+        await GetData();
     }
     protected async Task UpdateMaxLimitValueAsync(double? value)
     {
@@ -91,6 +96,7 @@ else
                 MaximumLimit = _MaxValue,
                 DataTypeId = CurrentDataType
             });
+        await GetData();
     }
     public async Task ChangePeriodAsync(int index)
     {
@@ -101,6 +107,30 @@ else
     {
         CurrentDataType = index;
         await GetData();
+    }
+    public void HandleDataProccessing()
+    {
+        int[] entryCount = new int[] { 24, 28, 30 };
+        int hoursSpan = CurrentDataPeriod == 0 ? 1 : CurrentDataPeriod == 1 ? 6 : 24;
+        for (int i = 0; i > entryCount[CurrentDataPeriod]*-1; i--)
+        {
+            var fromDateTime = DateTime.Now.AddHours(hoursSpan * (i-1));
+            var toDateTime =  DateTime.Now.AddHours(hoursSpan * i);
+            List<double> values = _RoomDeviceData.Where(x => x.Timestamp > fromDateTime && x.Timestamp <= toDateTime).Select(x=>double.Parse(x.Value.Replace(".",","))).ToList();
+            if (values.Count != 0)
+            {
+                var value = double.Parse(values.Average().ToString("0.0"));
+                var pattern = CurrentDataPeriod == 0 ? "dd/MM HH:mm" : CurrentDataPeriod == 1 ? "dd/MM HH:mm" : "dd/MM";
+
+                GraphData.Add(new()
+                    {
+                        Value = value,
+                        Timestamp = toDateTime.ToString(pattern, CultureInfo.InvariantCulture),
+                        Color = (value < _MinValue || value > _MaxValue) ? "rgba(220, 53, 69, 1)" : "rgba(100, 100, 100, 1)"
+                    });
+            }
+        }
+        GraphData.Reverse();
     }
     #endregion
     #region Events
@@ -127,8 +157,8 @@ else
         string baseApiUri = "api/rooms/" + _Id + "/data?";
         baseApiUri += $"deviceDataType={CurrentDataType}&";
         baseApiUri += $"periodType={CurrentDataPeriod}";
-        await GetDeviceDataAsync(baseApiUri);
         await GetRoomDataAsync(baseApiUri);
+        await GetDeviceDataAsync(baseApiUri);
         _IsLoading = false;
         StateHasChanged();
     }
@@ -142,10 +172,13 @@ else
         }
 
         _RoomDeviceData = ((Shared.Responses.AcceptedResponse<List<Shared.Models.DeviceData>>)response).Data;
+
+        GraphData = new();
         if (_RoomDeviceData.Count > 0)
         {
             Suffix = _RoomDeviceData.FirstOrDefault().Type.Suffix;
             CurrentValue = _RoomDeviceData.First().Value;
+            HandleDataProccessing();
         }
         else
         {

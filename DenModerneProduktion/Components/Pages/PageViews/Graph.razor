@@ -1,10 +1,9 @@
-﻿<div class="container-fluid overflow-x-auto">
-    <LineChart @ref="lineChart" Width="800" />
+﻿<div class="js-graph">
+    <LineChart @ref="lineChart" />
 </div>
-
 @code {
     [Parameter]
-    public List<Shared.Models.DeviceData> _RoomDeviceData { get; set; }
+    public List<PageModels.GraphData> GraphDatas { get; set; }
     public LineChart lineChart { get; set; } = default!;
     public LineChartOptions lineChartOptions { get; set; } = default!;
     public ChartData chartData { get; set; } = default!;
@@ -22,7 +21,6 @@
             await lineChart.InitializeAsync(chartData, lineChartOptions);
         }
     }
-
     private void UpdateGraph()
     {
 
@@ -45,21 +43,23 @@
     }
     private LineChartDataset GetDataset()
     {
-        var data = _RoomDeviceData.Select(x => x.Value).ToList().Select(x => double.TryParse(x.Replace(".", ","), out var result) ? (double?)result : null).ToList();
-        MaxY = data.Max()+0.5;
-        MinY = data.Min()-0.5;
-        return new()
+        // var data = GraphDatas.Select(x => x.Value).ToList().Select(x => double.TryParse(x.Replace(".", ","), out var result) ? (double?)result : null).ToList();
+        var data = GraphDatas.Select(x => (double?)x.Value).ToList();
+        List<string> dataColor = GraphDatas.Select(x => x.Color).ToList();
+        MaxY = data.Max()+1;
+        MinY = data.Min()-1;
+        LineChartDataset lineChartDataset = new()
             {
                 Data = data,
-                BackgroundColor = System.Drawing.Color.AliceBlue.ToRgbaString(),
-                BorderColor = System.Drawing.Color.AliceBlue.ToRgbString(),
                 PointRadius = new List<double> { 5 },
                 PointHoverRadius = new List<double> { 8 },
+                PointBackgroundColor = dataColor
             };
+        return lineChartDataset;
     }
     private List<string> GetDataLabels()
     {
-        var labels = _RoomDeviceData.Select(x => x.Timestamp.ToString()).ToList();
+        var labels = GraphDatas.Select(x => x.Timestamp).ToList();
 
         return labels;
     }
