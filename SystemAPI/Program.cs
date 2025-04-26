@@ -49,8 +49,6 @@ public class Program
         builder.Services.AddScoped<IRepository<DeviceType>, GenericRepository<DeviceType>>();
         builder.Services.AddScoped<IRepository<Device>, GenericRepository<Device>>();
 
-        builder.Services.AddHostedService<MqttRecorderService>();
-
         builder.Services.AddScoped(sp =>
                 new HttpClient
                 {
