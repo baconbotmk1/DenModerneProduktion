@@ -214,16 +214,36 @@ namespace Shared.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<double>("MaximumLimit")
+                    b.Property<int?>("BuildingId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("CadastreId")
+                        .HasColumnType("int");
+
+                    b.Property<double?>("MaximumLimit")
                         .HasColumnType("double");
 
-                    b.Property<double>("MinimumLimit")
+                    b.Property<double?>("MinimumLimit")
                         .HasColumnType("double");
+
+                    b.Property<int?>("RoomId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("SectionId")
+                        .HasColumnType("int");
 
                     b.Property<int>("TypeId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BuildingId");
+
+                    b.HasIndex("CadastreId");
+
+                    b.HasIndex("RoomId");
+
+                    b.HasIndex("SectionId");
 
                     b.HasIndex("TypeId");
 
@@ -764,6 +784,29 @@ namespace Shared.Migrations
                     b.ToTable("TimeLimitWeekDayTimes");
                 });
 
+            modelBuilder.Entity("Shared.Models.UnknownMqttDevices", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("FirstFoundAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Identifier")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime>("LastFoundAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("UnknownMqttDevices");
+                });
+
             modelBuilder.Entity("Shared.Models.User", b =>
                 {
                     b.Property<int>("Id")
@@ -1104,11 +1147,35 @@ namespace Shared.Migrations
 
             modelBuilder.Entity("Shared.Models.DeviceDataLimitValue", b =>
                 {
-                    b.HasOne("Shared.Models.DeviceDataType", "Type")
+                    b.HasOne("Shared.Models.Building", "Building")
                         .WithMany()
+                        .HasForeignKey("BuildingId");
+
+                    b.HasOne("Shared.Models.Cadastre", "Cadastre")
+                        .WithMany("LimitValues")
+                        .HasForeignKey("CadastreId");
+
+                    b.HasOne("Shared.Models.Room", "Room")
+                        .WithMany()
+                        .HasForeignKey("RoomId");
+
+                    b.HasOne("Shared.Models.Section", "Section")
+                        .WithMany()
+                        .HasForeignKey("SectionId");
+
+                    b.HasOne("Shared.Models.DeviceDataType", "Type")
+                        .WithMany("LimitValues")
                         .HasForeignKey("TypeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Building");
+
+                    b.Navigation("Cadastre");
+
+                    b.Navigation("Room");
+
+                    b.Navigation("Section");
 
                     b.Navigation("Type");
                 });
@@ -1443,7 +1510,7 @@ namespace Shared.Migrations
             modelBuilder.Entity("Shared.Models.Assignables.LimitValues.CadastreLV", b =>
                 {
                     b.HasOne("Shared.Models.Cadastre", "Cadastre")
-                        .WithMany("LimitValues")
+                        .WithMany()
                         .HasForeignKey("CadastreId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1562,6 +1629,11 @@ namespace Shared.Migrations
                     b.Navigation("Events");
 
                     b.Navigation("Infos");
+                });
+
+            modelBuilder.Entity("Shared.Models.DeviceDataType", b =>
+                {
+                    b.Navigation("LimitValues");
                 });
 
             modelBuilder.Entity("Shared.Models.DeviceSharedCategory", b =>

@@ -41,6 +41,7 @@ namespace Shared
         public DbSet<UserRoom> UserRooms { get; set; }
         public DbSet<UserSection> UserSections { get; set; }
         public DbSet<UserSecurityGroup> UserSecurityGroups { get; set; }
+        public DbSet<UnknownMqttDevices> UnknownMqttDevices { get; set; }
 
 
         public string DbPath { get; }

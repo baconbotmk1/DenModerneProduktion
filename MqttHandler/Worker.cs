@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Globalization;
+using System.Text;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using MQTTnet;
@@ -13,6 +14,7 @@ public class Worker : BackgroundService
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly IConfiguration _configuration;
     private IMqttClient _mqttClient;
+    private bool? _canSaveUnknown;
 
     private DateTime? _lastDataUpdate;
 
@@ -58,16 +60,18 @@ public class Worker : BackgroundService
             var topic = e.ApplicationMessage.Topic;
             var payload = Encoding.UTF8.GetString(e.ApplicationMessage.Payload);
 
-            //Console.WriteLine($"Received: {topic} - {payload}");
+            Console.WriteLine($"\n[MQTT-BGS] Got message");
 
             string identifier = topic;
 
             if(_lastDataUpdate == null || (DateTime.UtcNow - _lastDataUpdate) >= TimeSpan.FromMinutes(10))
             {
-                UpdateData();
+                await UpdateData();
             }
 
-            if (identifier.Contains("zigbee2mqtt/"))
+            Console.WriteLine($"[MQTT-BGS] Received: {topic} - {payload}");
+
+            if (identifier.Contains("zigbee2mqtt"))
             {
                 string[] splitted = identifier.Split('/');
                 identifier = splitted[1];
@@ -96,9 +100,11 @@ public class Worker : BackgroundService
         await base.StopAsync(cancellationToken);
     }
 
-    public void UpdateData()
+    public async Task UpdateData()
     {
         _lastDataUpdate = DateTime.UtcNow;
+
+        Console.WriteLine("\n[MQTT-BGS] Updating data...");
 
         using var scope = _scopeFactory.CreateScope();
         using var context = scope.ServiceProvider.GetRequiredService<DataContext>();
@@ -127,6 +133,29 @@ public class Worker : BackgroundService
             .ToDictionary(e => e.Id);
 
         _savedDeviceMqttMaps = context.DeviceMqttMaps.AsQueryable().ToList();
+
+        Console.WriteLine("[MQTT-BGS] Data updated\n");
+    }
+
+    public bool CheckCanSaveUnknown()
+    {
+        using var scope = _scopeFactory.CreateScope();
+        using var db = scope.ServiceProvider.GetRequiredService<DataContext>();
+
+        try
+        {
+            db.UnknownMqttDevices.AsQueryable().Count();
+        }
+        catch(MySqlConnector.MySqlException ex)
+        {
+            return false;
+        }
+        catch (Exception ex)
+        {
+            return false;
+        }
+
+        return true;
     }
 
 
@@ -134,11 +163,43 @@ public class Worker : BackgroundService
     {
         using var scope = _scopeFactory.CreateScope();
         using var db = scope.ServiceProvider.GetRequiredService<DataContext>();
+
+        DateTime currentTime = DateTime.UtcNow;
         
         Device? device = db.Devices.FirstOrDefault(e => e.Identifier != null && e.Identifier.ToLower() == identifier.ToLower());
         if (device == null)
         {
-            Console.WriteLine($"[MQTT-BGS] Unknown Zigbee2MQTT - {identifier} - {payload}");
+            if(_canSaveUnknown == null)
+            {
+                _canSaveUnknown = CheckCanSaveUnknown();
+            }
+
+            Console.WriteLine($"[MQTT-BGS] Unknown Zigbee2MQTT ({(_canSaveUnknown.Value ? "Reported" : "Can't report")}) - {identifier} - {payload}");
+
+            if(_canSaveUnknown.Value)
+            {
+                var checkIfExists = db.UnknownMqttDevices
+                    .AsQueryable()
+                    .FirstOrDefault(e => e.Identifier.ToLower() == identifier.ToLower());
+
+                if(checkIfExists != null)
+                {
+                    checkIfExists.LastFoundAt = currentTime;
+                    checkIfExists.LastPayload = payload;
+                    await db.SaveChangesAsync();
+                    return;
+                }
+
+                db.UnknownMqttDevices.Add(new UnknownMqttDevices()
+                {
+                    Identifier = identifier,
+                    FirstFoundAt = currentTime,
+                    LastFoundAt = currentTime,
+                    LastPayload = payload
+                });
+                await db.SaveChangesAsync();
+            }
+
             return;
         }
 
@@ -184,14 +245,48 @@ public class Worker : BackgroundService
 
             if (map.DataTypeId != null && map.DataTypeId > 0)
             {
-                db.DeviceDatas.Add(new DeviceData()
+                var newDeviceData = new DeviceData()
                 {
                     DeviceId = device.Id,
                     Timestamp = DateTime.UtcNow,
                     TypeId = map.DataTypeId.Value,
                     Value = keyValuePair.Value.ToString().ToLower(),
-                });
+                };
+                db.DeviceDatas.Add(newDeviceData);
                 await db.SaveChangesAsync();
+
+                if (_savedDataTypeLimits.ContainsKey(map.DataTypeId.Value) && double.TryParse(keyValuePair.Value.ToString(), NumberStyles.Any, CultureInfo.InvariantCulture, out double value))
+                {
+                    double? min = _savedDataTypeLimits[map.DataTypeId.Value].Minimum;
+                    double? max = _savedDataTypeLimits[map.DataTypeId.Value].Maximum;
+
+                    if(min != null && value <= min.Value)
+                    {
+                        db.DeviceEvents.Add(new DeviceEvent()
+                        {
+                            DeviceId = device.Id,
+                            Timestamp = DateTime.UtcNow,
+                            TypeId = 1,
+                            DeviceDataId = newDeviceData.Id,
+                        });
+
+                        await db.SaveChangesAsync();
+                    }
+
+                    if (max != null && value >= max.Value)
+                    {
+                        db.DeviceEvents.Add(new DeviceEvent()
+                        {
+                            DeviceId = device.Id,
+                            Timestamp = DateTime.UtcNow,
+                            TypeId = 2,
+                            DeviceDataId = newDeviceData.Id,
+                        });
+
+                        await db.SaveChangesAsync();
+                    }
+
+                }
             }
         }
     }
