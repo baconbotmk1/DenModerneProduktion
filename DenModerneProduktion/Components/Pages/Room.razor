@@ -19,14 +19,14 @@ else
         <div class="js-room-header">
             <div class="js-room-header-selectors">
                 <div class="js-room-header-type-selector">
-                    <h4 @onclick="()=>ChangeTypeAsync(2)"><Icon Name="IconName.ThermometerHigh" Size="IconSize.x4" /></h4>
-                    <h4 @onclick="()=>ChangeTypeAsync(3)"><Icon Name="IconName.DropletFill" Size="IconSize.x4" /></h4>
-                    <h4 @onclick="()=>ChangeTypeAsync(4)"><Icon Name="IconName.LightningFill" Size="IconSize.x4" /></h4>
+                    <h4 @onclick="()=>ChangeTypeAsync(2)" class="@(CurrentDataType == 2 ? "js-active" : "") js-selector-btn"><Icon Name="IconName.ThermometerHigh" Size="IconSize.x4" /></h4>
+                    <h4 @onclick="()=>ChangeTypeAsync(3)" class="@(CurrentDataType == 3 ? "js-active" : "") js-selector-btn"><Icon Name="IconName.DropletFill" Size="IconSize.x4" /></h4>
+                    <h4 @onclick="()=>ChangeTypeAsync(4)" class="@(CurrentDataType == 4 ? "js-active" : "") js-selector-btn"><Icon Name="IconName.LightningFill" Size="IconSize.x4" /></h4>
                 </div>
                 <div class="js-room-header-period-selector">
-                    <h4 @onclick="()=>ChangePeriodAsync(0)">D</h4>
-                    <h4 @onclick="()=>ChangePeriodAsync(1)">W</h4>
-                    <h4 @onclick="()=>ChangePeriodAsync(2)">M</h4>
+                    <h4 @onclick="()=>ChangePeriodAsync(0)" class="@(CurrentDataPeriod == 0 ? "js-active" : "") js-selector-btn">D</h4>
+                    <h4 @onclick="()=>ChangePeriodAsync(1)" class="@(CurrentDataPeriod == 1 ? "js-active" : "") js-selector-btn">W</h4>
+                    <h4 @onclick="()=>ChangePeriodAsync(2)" class="@(CurrentDataPeriod == 2 ? "js-active" : "") js-selector-btn">M</h4>
                 </div>
             </div>
             @if (_UserIsAdmin)

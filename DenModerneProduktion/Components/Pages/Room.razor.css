@@ -1,53 +1,71 @@
-﻿.js-room-data-graph{
-    margin:auto;
+﻿.js-room-data-graph {
+    margin: auto;
     width: 80%;
 }
-.js-room-container{
-    display:flex;
-    flex-direction:column;
-    align-items:center;
+
+.js-room-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
-.js-room-header{
-    display:flex;
-    justify-content:space-between;
-    width:80%;
+
+.js-room-header {
+    display: flex;
+    justify-content: space-between;
+    width: 80%;
 }
+
 .js-room-header-type-selector, .js-room-header-period-selector {
     display: flex;
-    margin-right:20px;
+    margin-right: 20px;
 }
-    .js-room-header-type-selector h4, .js-room-header-period-selector h4 {
-        border: solid 1px black;
-        text-align: center;
-        align-content: center;
-        justify-content: center;
-        width: 50px;
-        height: 50px;
+
+.js-selector-btn {
+    border: solid 2px black;
+    text-align: center;
+    align-content: center;
+    justify-content: center;
+    width: 50px;
+    height: 50px;
+    background-color: var(--js-color-secondary);
+    color: var(--js-color-white-font);
+}
+
+    .js-selector-btn:first-child {
+        border-right: none;
+        border-radius: 25% 0% 0% 25%;
     }
-        .js-room-header-type-selector h4:first-child, .js-room-header-period-selector h4:first-child {
-            border-right: none;
-            border-radius: 25% 0% 0% 25%;
-        }
-        .js-room-header-type-selector h4:last-child, .js-room-header-period-selector h4:last-child {
-            border-left: none;
-            border-radius: 0% 25% 25% 0%;
-        }
-        .js-room-header-type-selector h4:hover, .js-room-header-period-selector h4:hover{
-            cursor: pointer;
-        }
+
+    .js-selector-btn:last-child {
+        border-left: none;
+        border-radius: 0% 25% 25% 0%;
+    }
+
+    .js-selector-btn:hover {
+        cursor: pointer;
+        background-color: var(--js-color-hover);
+    }
+
+.js-active {
+    background-color: var(--js-color-active);
+}
+
 .js-room-header-selectors {
     display: flex;
     flex-direction: row;
 }
-.js-room-data-header{
-    display:flex;
-    justify-content:space-between;
-    align-items:end;
-    margin-bottom:10px;
+
+.js-room-data-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: end;
+    margin-bottom: 10px;
 }
-.js-room-data-limit{
-    display:flex;
+
+.js-room-data-limit {
+    display: flex;
 }
+
 .js-room-data-limit-min, .js-room-data-limit-max {
     display: flex;
     flex-direction: column;
@@ -56,6 +74,6 @@
 }
 
 
-.js-room-data{
-    width:80%;
+.js-room-data {
+    width: 80%;
 }

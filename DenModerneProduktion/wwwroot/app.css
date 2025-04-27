@@ -1,5 +1,12 @@
-:root{
+:root {
     --js-nav-height: 4rem;
+    --js-color-primary: #F2EFE7;
+    --js-color-secondary: #9ACBD0;
+    --js-color-accent-1: #48A6A7;
+    --js-color-accent-2: #006A71;
+    --js-color-hover: #86B8BD;
+    --js-color-active: #6FA1A7;
+    --js-color-white-font: #F2F2F2;
 }
 
 html, body {
@@ -56,8 +63,11 @@ h1:focus {
 
 
 /*#region Own Code*/
+main {
+    background-color: var(--js-color-primary);
+}
 .js-nav-icon {
-    color: #c2ffdf;
+    color: var(--js-color-secondary);
 }
 
 .js-alarm-card-global-limit-max input, .js-alarm-card-global-limit-min input, .js-room-data-limit-min-input, .js-room-data-limit-max-input {
@@ -71,14 +81,19 @@ h1:focus {
     top:50%;
     left:50%;
 }
-.js-login-btn{
-    background-color:#c2ffdf;
-    border:1px solid black;
-    color:black;
-    text-decoration:none;
-    padding:7.5px 22px;
-    font-size:22px;
-    border-radius:15px;
+.js-login-btn {
+    background-color: var(--js-color-secondary);
+    border: 1px solid black;
+    color: var(--js-color-white-font);
+    text-align:center;
+    font-weight:700;
+    text-decoration: none;
+    padding: 5px 22px;
+    font-size: 22px;
+    border-radius: 15px;
+}
+.js-login-btn:hover {
+    background-color: var(--js-color-hover);
 }
 .navbar {
     height: var(--js-nav-height) !important;
