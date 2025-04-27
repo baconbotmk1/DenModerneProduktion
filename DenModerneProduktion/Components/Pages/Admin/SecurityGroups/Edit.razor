@@ -1,5 +1,6 @@
 ﻿@page "/admin/security_groups/{id}"
 @using System.Diagnostics
+@using DenModerneProduktion.Components.Helpers
 @using DenModerneProduktion.Services
 @using Shared.DTOs.SecurityGroup
 @using Shared.Models
@@ -7,8 +8,10 @@
 @inject ViewHelper viewHelper
 @inject NavigationManager navigationManager
 <PageTitle>Sikkerhedsgrupper</PageTitle>
+@rendermode InteractiveServer
 
-<div class="card w-50">
+<div class="d-flex flex-row">
+<div class="card w-50 me-5">
     <div class="card-header">
         <h3>@(SecurityGroupID == 0 ? "Ny Sikkerhedsgruppe" : "Sikkerhedsgruppe #" + SecurityGroupID)</h3>
 
@@ -28,8 +31,31 @@
         <button @onclick="() => Update()" class="@(SecurityGroupID != 0 ? "" : "d-none") float-end btn btn-sm btn-primary">Gem</button>
     </div>
 </div>
+@if (SecurityGroupID != 0)
+{
+    <div class="card w-50">
+        <div class="card-header">
+            <h3>Rettigheder</h3>
+
+        </div>
+        <div class="card-body">
+            @foreach (SecurityGroupPermission grp in (Item.SecurityGroupPermissions ?? new List<SecurityGroupPermission>()))
+            {
+
+            }
+        </div>
+        <div class="card-footer">
+            <button @onclick="() => BeginAddingPermission()" class="@(SecurityGroupID != 0 ? "" : "d-none") float-end btn btn-sm btn-primary">Tilføj rettighed</button>
+        </div>
+    </div>
+}
+</div>
+
+<GenericModal @ref="AddPermissionModal" Title="Tilføj Rettighed" Inputs="addPermissionInputs" OnSubmitAsync="HandleModalSubmit" />
 
 @code {
+    public SecurityGroup Item { get; set; } = new SecurityGroup();
+
     [Parameter]
     public string id { get; set; }
 
@@ -38,6 +64,11 @@
 
     public int SecurityGroupID => Int32.TryParse(id, out int res) ? res : 0;
 
+    public List<Permission> AllPermissions { get; set; } = new List<Permission>();
+
+    public List<Permission> RemainingPermissions => AllPermissions.Where(e => !(Item ?? new SecurityGroup()).SecurityGroupPermissions.Select(e2 => e2.PermissionId).Contains(e.Id)).ToList();
+
+
     protected override async Task OnInitializedAsync()
     {
         if (SecurityGroupID != 0)
@@ -45,6 +76,16 @@
             var response = await requester.Get<SecurityGroup>("api/security_groups/" + SecurityGroupID);
 
             SecurityGroup? securityGroup = response is AcceptedResponse<SecurityGroup> ? ((AcceptedResponse<SecurityGroup>)response).Data : null;
+
+            var response2 = await requester.Get<List<Permission>>("api/permissions");
+
+            if (response.Status >= 400 || response2.Status >= 400)
+            {
+                viewHelper.Alert("Noget gik galt, genindlæs siden og prøv igen...");
+                return;
+            }
+
+            AllPermissions = response2.TryGetData<List<Permission>>() ?? new List<Permission>();
 
             if (securityGroup != null)
             {
@@ -70,6 +111,16 @@
         });
 
         SecurityGroup? newSecurityGroup = response is AcceptedResponse<SecurityGroup> ? ((AcceptedResponse<SecurityGroup>)response).Data : null;
+
+        var response2 = await requester.Get<List<Permission>>("api/permissions");
+
+        if (response.Status >= 400 || response2.Status >= 400)
+        {
+            viewHelper.Alert("Noget gik galt, genindlæs siden og prøv igen...");
+            return;
+        }
+
+        AllPermissions = response2.TryGetData<List<Permission>>() ?? new List<Permission>();
 
         viewHelper.HideLoader();
 
@@ -98,6 +149,51 @@
         {
             name = updatedSecurityGroup.Name;
             desc = updatedSecurityGroup.Desc;
+        }
+    }
+
+
+    private GenericModal AddPermissionModal;
+    private List<ModalInput> addPermissionInputs { get; set; } = new List<ModalInput>();
+
+    private async Task BeginAddingPermission()
+    {
+        addPermissionInputs = new List<ModalInput>()
+        {
+            //new ModalInput { Name = "name", Label = "Name", DType = InputType.Text },
+            //new ModalInput { Name = "age", Label = "Age", DType = InputType.Number },
+            //new ModalInput { Name = "dob", Label = "Date of Birth", DType = InputType.Date },
+            /*new ModalInput
+            {
+                Name = "color", Label = "Favorite Color", DType = InputType.Select,
+                Options = new List<Option> { new Option("Red"), new Option("Green"), new Option("Blue","blue"), new Option("Purple", "1") }
+            },*/
+            new ModalInput
+            {
+                Name = "permission", Label = "Rettighed", DType = InputType.Select,
+                Options = RemainingPermissions.OrderByDescending(e => e.Name).Select(e => new Option(e.Name, e.Id.ToString())).ToList()
+            }
+        };
+
+        await AddPermissionModal.Show();
+    }
+
+    private async Task<bool> HandleModalSubmit(Dictionary<string, ModalInput> inputs)
+    {
+
+        string permission = (string)inputs["permission"].Value ?? "";
+
+        var response = await requester.Post($"api/security_groups/{SecurityGroupID}/permission/" + permission, null);
+
+        if (response.IsSuccessResponse)
+        {
+            return true;
+        }
+        else
+        {
+            inputs["permission"].Error = "[ERROR] " + response.Status.ToString() + ": " + response.Message;
+
+            return false;
         }
     }
 }

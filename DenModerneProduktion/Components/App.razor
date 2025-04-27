@@ -38,9 +38,32 @@
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
 
-    private IComponentRenderMode? RenderModeForPage =>
-        HttpContext.GetEndpoint()?.Metadata.GetMetadata<RenderModeAttribute>()?
-            .Mode;
+    public static List<string> NonInteractivePaths { get; set; } = new List<string>
+    {
+        "/login",
+        "/register",
+        "/forgotpassword",
+        "/resetpassword",
+        "/confirmemail",
+        "/confirmemailchange"
+    };
+
+    private IComponentRenderMode? RenderModeForPage
+    {
+        get {
+            if (NonInteractivePaths.Any(p => HttpContext.Request.Path.StartsWithSegments(p)))
+            {
+                return null;
+            }
+
+            if (HttpContext.GetEndpoint()?.Metadata.GetMetadata<RenderModeAttribute>() != null)
+            {
+                return HttpContext.GetEndpoint()?.Metadata.GetMetadata<RenderModeAttribute>()!.Mode;
+            }
+
+            return RenderMode.InteractiveServer;
+        }
+    }
 
     protected override async Task OnInitializedAsync()
     {

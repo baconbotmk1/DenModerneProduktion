@@ -16,6 +16,8 @@ namespace Shared.Models
         public int CategoryId { get; set; }
 		public DeviceSharedCategory Category { get; set; }
 
+        public ICollection<DeviceDataLimitValue> LimitValues { get; set; } = new List<DeviceDataLimitValue>();
+
 
         public string GetSlug() => Category.Name + " - " + Name;
 

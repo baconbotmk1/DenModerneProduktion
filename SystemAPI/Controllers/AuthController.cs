@@ -20,7 +20,13 @@ namespace SystemAPI.Controllers
         [HttpPost("login")]
         public ActionResult<LoginResult> TryLogin([FromBody] LoginPost data)
         {
-            User? user = context.Users.FirstOrDefault(e => e.Username.ToLower() == data.username.ToLower());
+            User? user = context.Users
+                .AsQueryable()
+                .Include(e => e.UserSecurityGroups)
+                    .ThenInclude(e2 => e2.SecurityGroup)
+                        .ThenInclude(e3 => e3.SecurityGroupPermissions)
+                            .ThenInclude(e4 => e4.Permission)
+                .FirstOrDefault(e => e.Username.ToLower() == data.username.ToLower());
             if (user == null)
             {
                 return NotFound();

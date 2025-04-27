@@ -9,6 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DenModerneProduktion", "Den
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SystemAPI", "SystemAPI\SystemAPI.csproj", "{05256796-150E-45F1-AA75-BC5F51796CA4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MqttHandler", "MqttHandler\MqttHandler.csproj", "{3D9A07BF-80C9-49D7-94D4-FDD6615B5606}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -34,6 +36,12 @@ Global
 		{05256796-150E-45F1-AA75-BC5F51796CA4}.MultipleStartup|Any CPU.Build.0 = MultipleStartup|Any CPU
 		{05256796-150E-45F1-AA75-BC5F51796CA4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{05256796-150E-45F1-AA75-BC5F51796CA4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3D9A07BF-80C9-49D7-94D4-FDD6615B5606}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3D9A07BF-80C9-49D7-94D4-FDD6615B5606}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3D9A07BF-80C9-49D7-94D4-FDD6615B5606}.MultipleStartup|Any CPU.ActiveCfg = Debug|Any CPU
+		{3D9A07BF-80C9-49D7-94D4-FDD6615B5606}.MultipleStartup|Any CPU.Build.0 = Debug|Any CPU
+		{3D9A07BF-80C9-49D7-94D4-FDD6615B5606}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3D9A07BF-80C9-49D7-94D4-FDD6615B5606}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

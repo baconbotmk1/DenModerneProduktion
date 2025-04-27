@@ -1,6 +1,7 @@
 using DenModerneProduktion.Components;
 using DenModerneProduktion.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Shared.Models;
 using System.Net.Http;
 
@@ -23,6 +24,24 @@ namespace DenModerneProduktion
                 });
             builder.Services.AddAuthorization();
             builder.Services.AddCascadingAuthenticationState();
+
+            builder.Services.AddAuthorization(async options =>
+            {
+                var allPermissions = new List<string>
+                {
+                    Permissions.ViewAdminPanel,
+                    Permissions.ViewUsers,
+                    Permissions.EditUsers,
+                };
+
+                foreach (var permission in allPermissions)
+                {
+                    options.AddPolicy(permission, policy =>
+                        policy.Requirements.Add(new PermissionRequirement(permission)));
+                }
+            });
+
+            builder.Services.AddSingleton<IAuthorizationHandler, PermissionHandler>();
 
             builder.Services.AddHttpContextAccessor();
 

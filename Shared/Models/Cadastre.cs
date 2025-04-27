@@ -9,7 +9,6 @@ namespace Shared.Models
         public ICollection<Building> Buildings { get; set; } = new List<Building>(); 
         public ICollection<DeviceDataLimitValue> LimitValues { get; set; } = new List<DeviceDataLimitValue>();
 
-
         public Cadastre()
 		{
 		}
