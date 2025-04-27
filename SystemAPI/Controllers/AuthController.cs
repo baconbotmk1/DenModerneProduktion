@@ -63,10 +63,12 @@ namespace SystemAPI.Controllers
             }
 
             string token = CryptoHelper.GenerateSaltString();
-            string state = CryptoHelper.GenerateSaltString();
+            string state = CryptoHelper.GenerateSaltString(); //Delete?
 
             user.ResetToken = token;
-            user.ResetState = state;
+
+            //Send reset token as email.
+
             context.Attach(user);
             context.SaveChanges();
 
@@ -80,7 +82,7 @@ namespace SystemAPI.Controllers
         [HttpPost("reset_password/{token}")]
         public ActionResult Post(string token, [FromBody] ConfirmPasswordResetPost data)
         {
-            User? user = context.Users.FirstOrDefault(e => e.Username.ToLower() == data.username.ToLower() && e.ResetState == data.state && e.ResetToken == token);
+            User? user = context.Users.FirstOrDefault(e => e.ResetToken == token);
             if (user == null)
             {
                 return Ok();
@@ -93,7 +95,7 @@ namespace SystemAPI.Controllers
                 user.Salt = Convert.ToBase64String(salt);
             }
             user.ResetToken = null;
-            user.ResetState = null;
+            user.ResetState = null; //delete?
             user.HashedPassword = Convert.ToBase64String(CryptoHelper.HashPassword(data.password, salt));
 
             context.Attach(user);
