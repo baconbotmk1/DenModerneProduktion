@@ -2,6 +2,7 @@
 using Shared.DTOs.AccessCard;
 using Shared.DTOs.Auth;
 using Shared.Migrations;
+using Shared.Models;
 using System.Security.Cryptography;
 using System.Text;
 using SystemAPI.Helpers;
@@ -12,8 +13,10 @@ namespace SystemAPI.Controllers
     [Route("api/auth")]
     public class AuthController : BaseController
     {
-        public AuthController(DataContext Context) : base(Context)
+        private readonly IConfiguration _configuration;
+        public AuthController(DataContext Context, IConfiguration configuration) : base(Context)
         {
+            _configuration = configuration;
         }
 
 
@@ -32,7 +35,7 @@ namespace SystemAPI.Controllers
                 return NotFound();
             }
 
-            if(user.HashedPassword == null || user.Salt == null)
+            if (user.HashedPassword == null || user.Salt == null)
             {
                 return NotFound();
             }
@@ -67,12 +70,26 @@ namespace SystemAPI.Controllers
 
             user.ResetToken = token;
 
-            //Send reset token as email.
+            IConfigurationSection hostingSection = _configuration.GetSection("Hosting");
+            var url = hostingSection.GetValue<string>("Url");
+            var port = hostingSection.GetValue<int?>("Port");
+            var completeUrl = url + (port != null ? $":{port}" : "") + "/forgotpassword/" + token;
+
+
+            IConfigurationSection emailSection = _configuration.GetSection("Email");
+            var mail = emailSection.GetValue<string>("Mail");
+            var password = emailSection.GetValue<string>("Password");
+            var smtp = emailSection.GetValue<string>("Smtp");
+            var smtpPort = emailSection.GetValue<int>("Port");
+            var useSSL = emailSection.GetValue<bool>("UseSSL");
+
+            MailHelper.SendResetLink(mail, user.Username, smtp, smtpPort, completeUrl, password, useSSL);
 
             context.Attach(user);
             context.SaveChanges();
 
-            return Ok(new ConfirmPasswordResetResult() {
+            return Ok(new ConfirmPasswordResetResult()
+            {
                 state = state,
                 username = data.username,
             });
@@ -85,9 +102,8 @@ namespace SystemAPI.Controllers
             User? user = context.Users.FirstOrDefault(e => e.ResetToken == token);
             if (user == null)
             {
-                return Ok();
+                return NotFound();
             }
-
             byte[] salt = user.Salt != null ? Convert.FromBase64String(user.Salt) : CryptoHelper.GenerateSalt();
 
             if (user.Salt == null)
@@ -98,8 +114,18 @@ namespace SystemAPI.Controllers
             user.ResetState = null; //delete?
             user.HashedPassword = Convert.ToBase64String(CryptoHelper.HashPassword(data.password, salt));
 
+
             context.Attach(user);
             context.SaveChanges();
+
+            IConfigurationSection emailSection = _configuration.GetSection("Email");
+            var mail = emailSection.GetValue<string>("Mail");
+            var password = emailSection.GetValue<string>("Password");
+            var smtp = emailSection.GetValue<string>("Smtp");
+            var smtpPort = emailSection.GetValue<int>("Port");
+            var useSSL = emailSection.GetValue<bool>("UseSSL");
+
+            MailHelper.SendConfirmReset(mail, user.Username, smtp, smtpPort, password, useSSL);
 
             return Ok();
         }
