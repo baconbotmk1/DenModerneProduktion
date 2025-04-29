@@ -111,7 +111,6 @@ namespace SystemAPI.Controllers
                 user.Salt = Convert.ToBase64String(salt);
             }
             user.ResetToken = null;
-            user.ResetState = null; //delete?
             user.HashedPassword = Convert.ToBase64String(CryptoHelper.HashPassword(data.password, salt));
 
 
