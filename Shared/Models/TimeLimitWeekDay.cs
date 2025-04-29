@@ -9,7 +9,7 @@ namespace Shared.Models
 		public Days Day { get; set; }
 
 		[InverseProperty("WeekDay")]
-		public ICollection<TimeLimitWeekDayTime> Times { get; } = new List<TimeLimitWeekDayTime>();
+		public ICollection<TimeLimitWeekDayTime> Times { get; set; } = new List<TimeLimitWeekDayTime>();
 
 		public int WeekId { get; set; }
 		public TimeLimitWeek Week { get; set; }

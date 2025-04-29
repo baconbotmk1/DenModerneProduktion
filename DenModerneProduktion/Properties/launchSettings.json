@@ -21,7 +21,7 @@
     "https": {
       "commandName": "Project",
       "launchBrowser": true,
-      "launchUrl": "admin/users/1",
+      "launchUrl": "admin/security_groups",
       "applicationUrl": "https://localhost:7064;http://localhost:5089",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"

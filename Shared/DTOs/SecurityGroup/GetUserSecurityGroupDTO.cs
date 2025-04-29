@@ -13,7 +13,7 @@ namespace Shared.DTOs.SecurityGroup
 
         [JsonIgnore]
         [NotMapped]
-        public override ICollection<UserSecurityGroup> UserSecurityGroups { get; } = new List<UserSecurityGroup>();
+        public override ICollection<UserSecurityGroup> UserSecurityGroups { get; set; } = new List<UserSecurityGroup>();
     }
 }
 

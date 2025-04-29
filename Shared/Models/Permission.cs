@@ -11,9 +11,9 @@ namespace Shared.Models
         public string Name { get; set; }
 		public string Desc { get; set; }
 
+        //[JsonIgnore]
         [InverseProperty("Permission")]
-        [JsonIgnore]
-        public ICollection<SecurityGroupPermission> SecurityGroupPermissions { get; } = new List<SecurityGroupPermission>();
+        public ICollection<SecurityGroupPermission> SecurityGroupPermissions { get; set; } = new List<SecurityGroupPermission>();
 
         [NotMapped]
         public IEnumerable<SecurityGroup> SecurityGroups => SecurityGroupPermissions.Select(e => e.SecurityGroup);
