@@ -72,20 +72,11 @@ else{
 
         thinking = true;
 
-        try
-        {
-            bool loggedIn = await userSession.Login(loginModel.Username, loginModel.Pwd);
+        bool loggedIn = await userSession.Login(loginModel.Username, loginModel.Pwd);
 
-            if (loggedIn)
-            {
-                navigationManager.NavigateTo("/");
-            }
-        }
-        catch(Exception ex)
+        if (loggedIn)
         {
-            Debug.WriteLine(ex.Message);
-            Debug.WriteLine(ex);
-            return;
+            navigationManager.NavigateTo("/");
         }
 
         ErrorMessage = "Brugeren findes ikke eller adgangskoden er forkert";

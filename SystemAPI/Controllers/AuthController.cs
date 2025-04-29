@@ -57,7 +57,7 @@ namespace SystemAPI.Controllers
 
 
         [HttpPost("reset_password")]
-        public ActionResult<StartPasswordResetResult> Post([FromBody] StartPasswordResetPost data)
+        public ActionResult Post([FromBody] StartPasswordResetPost data)
         {
             User? user = context.Users.FirstOrDefault(e => e.Username.ToLower() == data.username.ToLower());
             if (user == null)
@@ -88,11 +88,7 @@ namespace SystemAPI.Controllers
             context.Attach(user);
             context.SaveChanges();
 
-            return Ok(new ConfirmPasswordResetResult()
-            {
-                state = state,
-                username = data.username,
-            });
+            return Ok(new object { });
         }
 
 
@@ -126,7 +122,7 @@ namespace SystemAPI.Controllers
 
             MailHelper.SendConfirmReset(mail, user.Username, smtp, smtpPort, password, useSSL);
 
-            return Ok();
+            return Ok(new object { });
         }
     }
 }
