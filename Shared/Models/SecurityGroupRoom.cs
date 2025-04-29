@@ -1,7 +1,7 @@
 ﻿using System;
 namespace Shared.Models
 {
-	public class SecurityGroupRoom : TimeLimitableModel
+	public class SecurityGroupRoom : BaseModel
     {
 		public int SecurityGroupId { get; set; }
 		public SecurityGroup SecurityGroup { get; set; }

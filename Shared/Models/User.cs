@@ -6,7 +6,7 @@ using System.Text.Json.Serialization;
 
 namespace Shared.Models
 {
-	public class User : TimeLimitableModel
+	public class User : BaseModel
     {
 		public string Name { get; set; } = default!;
         public bool IsActive { get; set; } = false;

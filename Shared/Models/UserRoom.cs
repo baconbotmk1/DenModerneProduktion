@@ -1,7 +1,7 @@
 ﻿using System;
 namespace Shared.Models
 {
-	public class UserRoom : TimeLimitableModel
+	public class UserRoom : BaseModel
     {
 		public int UserId { get; set; }
 		public User User { get; set; }

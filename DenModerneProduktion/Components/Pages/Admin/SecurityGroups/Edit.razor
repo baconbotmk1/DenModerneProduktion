@@ -34,90 +34,93 @@
     </div>
     @if (SecurityGroupID != 0)
     {
-    <div class="col-xl-6 col-12 md-4 md-xl-0">
-        <div class="card w-100">
-            <div class="card-header">
-                <h3>Rettigheder</h3>
+        <div class="col-xl-6 col-12 md-4 md-xl-0">
+            <div class="card w-100">
+                <div class="card-header">
+                    <h3>Rettigheder</h3>
 
+                </div>
+                <div class="card-body">
+                    <table class="w-100 table">
+                        @foreach (Permission permission in (Item.SecurityGroupPermissions.Count() > 0 ? Item.SecurityGroupPermissions.Select(e => e.Permission) : new List<Permission>()))
+                        {
+                            <tr>
+                                <td>@permission.Id</td>
+                                <td>@permission.Name</td>
+                                <td>
+                                    <div class="float-end">
+                                        <button class="btn btn-sm btn-danger">
+                                            <Icon Name="IconName.Trash" Color="IconColor.White" Size="IconSize.x5" class="js-nav-icon" @onclick="async ()=>await ConfirmDelete(ReferenceType.Permission, permission.Id)" />
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </table>
+                </div>
+                <div class="card-footer">
+                    <button @onclick="() => BeginAddingPermission()" class="@(SecurityGroupID != 0 ? "" : "d-none") float-end btn btn-sm btn-primary">Tilføj rettighed</button>
+                </div>
             </div>
-            <div class="card-body">
-                <table class="w-100 table">
-                    @foreach (Permission permission in (Item.SecurityGroupPermissions.Count() > 0 ? Item.SecurityGroupPermissions.Select(e => e.Permission) : new List<Permission>()))
-                    {
-                        <tr>
-                            <td>@permission.Id</td>
-                            <td>@permission.Name</td>
-                            <td>
-                                <div class="float-end">
-                                    <button class="btn btn-sm btn-danger">
-                                        <Icon Name="IconName.Trash" Color="IconColor.White" Size="IconSize.x5" class="js-nav-icon" @onclick="async ()=>await ConfirmDelete(ReferenceType.Permission, permission.Id)" />
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    }
-                </table>
+            <div class="card w-100 mt-4">
+                <div class="card-header">
+                    <h3>Brugere</h3>
+
+                </div>
+                <div class="card-body">
+                    <table class="w-100 table">
+                        @foreach (User user in (Item.UserSecurityGroups.Count() > 0 ? Item.UserSecurityGroups.Select(e => e.User) : new List<User>()))
+                        {
+                            <tr>
+                                <td>@user.Id</td>
+                                <td>@user.Name</td>
+                                <td>
+                                    <div class="float-end">
+                                        <button class="btn btn-sm btn-danger">
+                                            <Icon Name="IconName.Trash" Color="IconColor.White" Size="IconSize.x5" class="js-nav-icon" @onclick="async ()=>await ConfirmDelete(ReferenceType.User, user.Id)" />
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </table>
+                </div>
+                <div class="card-footer">
+                    <button @onclick="() => BeginAddingUser()" class="@(SecurityGroupID != 0 ? "" : "d-none") float-end btn btn-sm btn-primary">Tilføj bruger</button>
+                </div>
             </div>
-            <div class="card-footer">
-                <button @onclick="() => BeginAddingPermission()" class="@(SecurityGroupID != 0 ? "" : "d-none") float-end btn btn-sm btn-primary">Tilføj rettighed</button>
+
+            <div class="card w-100 mt-4">
+                <div class="card-header">
+                    <h3>Lokaler</h3>
+
+                </div>
+                <div class="card-body">
+                    <table class="w-100 table">
+                        @foreach (SecurityGroupRoom room in (Item.SecurityGroupRooms.Count() > 0 ? Item.SecurityGroupRooms : new List<SecurityGroupRoom>()))
+                        {
+                            <tr>
+                                <td>@room.Room.Id</td>
+                                <td>@room.Room.Name</td>
+                                <td>
+                                    <div class="float-end">
+                                        <button class="btn btn-sm btn-primary">
+                                            <Icon Name="IconName.Wrench" Color="IconColor.White" Size="IconSize.x5" class="js-nav-icon" @onclick="async () => await OpenRoomEdit(room)" />
+                                        </button>
+                                        <button class="btn btn-sm btn-danger">
+                                            <Icon Name="IconName.Trash" Color="IconColor.White" Size="IconSize.x5" class="js-nav-icon" @onclick="async ()=>await ConfirmDelete(ReferenceType.Room, room.Room.Id)" />
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </table>
+                </div>
+                <div class="card-footer">
+                    <button @onclick="async () => {editRoomId = null;roomUseRestriction = false;timeLimits = new List<TimeLimit>() { new TimeLimit() };await RoomModal.ShowAsync();}" class="@(SecurityGroupID != 0 ? "" : "d-none") float-end btn btn-sm btn-primary">Tilføj lokale</button>
+                </div>
             </div>
         </div>
-        <div class="card w-100 mt-4">
-            <div class="card-header">
-                <h3>Brugere</h3>
-
-            </div>
-            <div class="card-body">
-                <table class="w-100 table">
-                    @foreach (User user in (Item.UserSecurityGroups.Count() > 0 ? Item.UserSecurityGroups.Select(e => e.User) : new List<User>()))
-                    {
-                        <tr>
-                            <td>@user.Id</td>
-                            <td>@user.Name</td>
-                            <td>
-                                <div class="float-end">
-                                    <button class="btn btn-sm btn-danger">
-                                        <Icon Name="IconName.Trash" Color="IconColor.White" Size="IconSize.x5" class="js-nav-icon" @onclick="async ()=>await ConfirmDelete(ReferenceType.User, user.Id)" />
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    }
-                </table>
-            </div>
-            <div class="card-footer">
-                <button @onclick="() => BeginAddingUser()" class="@(SecurityGroupID != 0 ? "" : "d-none") float-end btn btn-sm btn-primary">Tilføj bruger</button>
-            </div>
-        </div>
-
-        <div class="card w-100 mt-4">
-            <div class="card-header">
-                <h3>Lokaler</h3>
-
-            </div>
-            <div class="card-body">
-                <table class="w-100 table">
-                    @foreach (Room room in (Item.SecurityGroupRooms.Count() > 0 ? Item.SecurityGroupRooms.Select(e => e.Room) : new List<Room>()))
-                    {
-                        <tr>
-                            <td>@room.Id</td>
-                            <td>@room.Name</td>
-                            <td>
-                                <div class="float-end">
-                                    <button class="btn btn-sm btn-danger">
-                                        <Icon Name="IconName.Trash" Color="IconColor.White" Size="IconSize.x5" class="js-nav-icon" @onclick="async ()=>await ConfirmDelete(ReferenceType.Room, room.Id)" />
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    }
-                </table>
-            </div>
-            <div class="card-footer">
-                <button @onclick="() => BeginAdding(ReferenceType.Room)" class="@(SecurityGroupID != 0 ? "" : "d-none") float-end btn btn-sm btn-primary">Tilføj lokale</button>
-            </div>
-        </div>
-    </div>
     }
 </div>
 
@@ -126,213 +129,345 @@
 <GenericModal @ref="AddUserModal" SubmitText="Tilføj" Title="Tilføj Bruger" Inputs="addUserInputs" OnSubmitAsync="HandleUserModalSubmit" />
 <ConfirmModal @ref="ConfirmModalRef" />
 
+<Modal @ref="RoomModal" Title="@(editRoomId == null ? "Tilføj lokale" : "Opdater lokale #" + editRoomId)">
+    <BodyTemplate>
+        @if(RoomModalError != "")
+        {
+            <Alert Color="AlertColor.Danger">@RoomModalError</Alert>
+        }
+        @if (editRoomId == null)
+        {
+            <InputSelect class="form-select mb-4" @bind-Value="addRoomValue">
+                <option disabled value="0" selected>Vælg et rum</option>
+                @foreach(Room room in RemainingRooms)
+                {
+                    <option value="@room.Id">@room.Name</option>
+                }
+            </InputSelect>
+        }
+        <div class="user-select-none">
+            <CheckboxInput Label="Tilføj adgangsbegrænsning?" @bind-Value="roomUseRestriction" />
+        </div>
+        @if (roomUseRestriction)
+        {
+            <MultipleTimeLimitInputs Class="mt-2" TimeLimits="timeLimits" />
+        }
+    </BodyTemplate>
+    <FooterTemplate>
+        <Button Color="ButtonColor.Secondary" @onclick="async () => await RoomModal.HideAsync()">Annuller</Button>
+        @if (editRoomId != null)
+        {
+            <Button Color="ButtonColor.Primary" @onclick="async () => await EditRoom(editRoomId.Value, timeLimits)">Opdater lokale</Button>
+        }
+        else
+        {
+            <Button Color="ButtonColor.Primary" @onclick="async () => await AddRoom(addRoomValue, timeLimits)">Opret lokale</Button>
+        }
+
+    </FooterTemplate>
+</Modal>
+
+<style>
+    select:has(> option:checked:disabled) {
+        font-style: italic;
+        color: gray;
+    }
+</style>
+
 @code {
-            public SecurityGroup Item { get; set; } = new SecurityGroup();
+    public SecurityGroup Item { get; set; } = new SecurityGroup();
 
-            [Parameter]
-            public string id { get; set; }
+    public int? editRoomId { get; set; } = null;
+    public int addRoomValue { get; set; }
+    public bool roomUseRestriction { get; set; } = false;
+    public string RoomModalError { get; set; } = "";
+    public List<TimeLimit> timeLimits { get; set; } = new List<TimeLimit>() { new TimeLimit() };
+    private Modal RoomModal = default!;
 
-            public string name { get; set; } = "";
-            public string desc { get; set; } = "";
+    [Parameter]
+    public string id { get; set; }
 
-            public int SecurityGroupID => Int32.TryParse(id, out int res) ? res : 0;
+    public string name { get; set; } = "";
+    public string desc { get; set; } = "";
 
-            public List<Permission> AllPermissions { get; set; } = new List<Permission>();
-            public List<User> AllUsers { get; set; } = new List<User>();
+    public int SecurityGroupID => Int32.TryParse(id, out int res) ? res : 0;
 
-            public List<Permission> RemainingPermissions => AllPermissions.Where(e => !(Item ?? new SecurityGroup()).SecurityGroupPermissions.Select(e2 => e2.PermissionId).Contains(e.Id)).ToList();
-            public List<User> RemainingUsers => AllUsers.Where(e => !(Item ?? new SecurityGroup()).UserSecurityGroups.Select(e2 => e2.UserId).Contains(e.Id)).ToList();
+    public List<Permission> AllPermissions { get; set; } = new List<Permission>();
+    public List<User> AllUsers { get; set; } = new List<User>();
+    public List<Room> AllRooms { get; set; } = new List<Room>();
 
-            private ConfirmModal ConfirmModalRef;
+    public List<Permission> RemainingPermissions => AllPermissions.Where(e => !(Item ?? new SecurityGroup()).SecurityGroupPermissions.Select(e2 => e2.PermissionId).Contains(e.Id)).ToList();
+    public List<User> RemainingUsers => AllUsers.Where(e => !(Item ?? new SecurityGroup()).UserSecurityGroups.Select(e2 => e2.UserId).Contains(e.Id)).ToList();
+    public List<Room> RemainingRooms => AllRooms.Where(e => !(Item ?? new SecurityGroup()).SecurityGroupRooms.Select(e2 => e2.RoomId).Contains(e.Id)).ToList();
 
-            private GenericModal AddNewModal;
-            private List<ModalInput> AddNewModalInputs { get; set; } = new List<ModalInput>();
+    private ConfirmModal ConfirmModalRef;
 
-            protected override async Task OnInitializedAsync()
-            {
-                await LoadPage();
-            }
+    private GenericModal AddNewModal;
+    private List<ModalInput> AddNewModalInputs { get; set; } = new List<ModalInput>();
 
-            async public Task LoadPage()
-            {
-                var response = await requester.Get<SecurityGroup>("api/security_groups/" + SecurityGroupID);
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadPage();
+    }
 
-                if (response.Status >= 400)
-                {
-                    viewHelper.Alert("Noget gik galt, genindlæs siden og prøv igen...");
-                    return;
-                }
+    async public Task LoadPage()
+    {
+        var response = await requester.Get<SecurityGroup>("api/security_groups/" + SecurityGroupID);
 
-                SecurityGroup? securityGroup = response is AcceptedResponse<SecurityGroup> ? ((AcceptedResponse<SecurityGroup>)response).Data : null;
-                if(securityGroup == null)
-                {
-                    navigationManager.NavigateTo("admin/security_groups", true);
-                }
+        if (response.Status >= 400)
+        {
+            viewHelper.Alert("Noget gik galt, genindlæs siden og prøv igen...");
+            return;
+        }
 
-                if(AllPermissions.Count() == 0)
-                {
-                    var response2 = await requester.Get<List<Permission>>("api/permissions");
-                    AllPermissions = response2.TryGetData<List<Permission>>() ?? new List<Permission>();
-                }
+        SecurityGroup? securityGroup = response is AcceptedResponse<SecurityGroup> ? ((AcceptedResponse<SecurityGroup>)response).Data : null;
+        if(securityGroup == null)
+        {
+            navigationManager.NavigateTo("admin/security_groups", true);
+        }
 
-                if (AllUsers.Count() == 0)
-                {
-                    var response3 = await requester.Get<List<User>>("api/users");
-                    AllUsers = response3.TryGetData<List<User>>() ?? new List<User>();
-                }
+        if(AllPermissions.Count() == 0)
+        {
+            var response2 = await requester.Get<List<Permission>>("api/permissions");
+            AllPermissions = response2.TryGetData<List<Permission>>() ?? new List<Permission>();
+        }
 
+        if (AllUsers.Count() == 0)
+        {
+            var response3 = await requester.Get<List<User>>("api/users");
+            AllUsers = response3.TryGetData<List<User>>() ?? new List<User>();
+        }
 
-                Item = securityGroup!;
-                name = securityGroup!.Name;
-                desc = securityGroup!.Desc ?? "";
-
-                StateHasChanged();
-            }
-
-
-            async public Task Create()
-            {
-                viewHelper.ShowLoader("Opretter sikkerhedsgruppe...");
-
-                var response = await requester.Post<SecurityGroup>("api/security_groups", new CreateSecurityGroupDTO()
-                {
-                    Name = name,
-                    Desc = desc
-                });
-
-                SecurityGroup? newSecurityGroup = response is AcceptedResponse<SecurityGroup> ? ((AcceptedResponse<SecurityGroup>)response).Data : null;
-
-                var response2 = await requester.Get<List<Permission>>("api/permissions");
-
-                if (response.Status >= 400 || response2.Status >= 400)
-                {
-                    viewHelper.Alert("Noget gik galt, genindlæs siden og prøv igen...");
-                    return;
-                }
-
-                AllPermissions = response2.TryGetData<List<Permission>>() ?? new List<Permission>();
-
-                viewHelper.HideLoader();
-
-                if (newSecurityGroup != null && newSecurityGroup.Id != null)
-                {
-                    navigationManager.NavigateTo($"/admin/security_groups/{newSecurityGroup.Id}");
-                    return;
-                }
-            }
-
-            async public Task Update()
-            {
-                viewHelper.ShowLoader("Opdatere sikkerhedsgruppe...");
-
-                var response = await requester.Put<SecurityGroup>("api/security_groups/" + SecurityGroupID, new CreateSecurityGroupDTO()
-                {
-                    Name = name,
-                    Desc = desc
-                });
-
-                await LoadPage();
-
-                viewHelper.HideLoader();
-            }
-
-            public enum ReferenceType
-            {
-                Permission = 1,
-                User = 2,
-                Section = 3,
-                Room = 4
-            }
-
-            public async Task ConfirmDelete(ReferenceType type, int id )
-            {
-                switch (type)
-                {
-                    case ReferenceType.User:
-                        ConfirmModalRef
-                            .SetConfirmAction(async () =>
-                            {
-                                var userResponse = await requester.Delete($"api/users/{id}/security_group/" + SecurityGroupID);
-                                if (userResponse.IsSuccessResponse)
-                                {
-                                    await LoadPage();
-                                }
-                            })
-                            .SetTitle($"Slet {id}?");
-
-                        await ConfirmModalRef.Show();
-                        break;
-                    case ReferenceType.Permission:
-                        ConfirmModalRef
-                            .SetConfirmAction(async () =>
-                            {
-                                var permissionResponse = await requester.Delete($"api/security_groups/{SecurityGroupID}/permission/" + id);
-                                if (permissionResponse.IsSuccessResponse)
-                                {
-                                    await LoadPage();
-                                }
-                            })
-                            .SetTitle($"Slet {id}?");
-
-                        await ConfirmModalRef.Show();
-                        break;
-
-                    case ReferenceType.Section:
-                        ConfirmModalRef
-                            .SetConfirmAction(async () =>
-                            {
-                                var sectionResponse = await requester.Delete($"api/security_groups/{SecurityGroupID}/section/" + id);
-                                if (sectionResponse.IsSuccessResponse)
-                                {
-                                    await LoadPage();
-                                }
-                            })
-                            .SetTitle($"Slet {id}?");
-
-                        await ConfirmModalRef.Show();
-                        break;
-
-                    case ReferenceType.Room:
-                        ConfirmModalRef
-                            .SetConfirmAction(async () =>
-                            {
-                                var roomResponse = await requester.Delete($"api/security_groups/{SecurityGroupID}/room/" + id);
-                                if (roomResponse.IsSuccessResponse)
-                                {
-                                    await LoadPage();
-                                }
-                            })
-                        .SetTitle($"Slet {id}?");
-
-                        await ConfirmModalRef.Show();
-                        break;
-                }
-            }
+        if (AllRooms.Count() == 0)
+        {
+            var response4 = await requester.Get<List<Room>>("api/rooms");
+            AllRooms = response4.TryGetData<List<Room>>() ?? new List<Room>();
+        }
 
 
-            private GenericModal AddPermissionModal;
-            private List<ModalInput> addPermissionInputs { get; set; } = new List<ModalInput>();
+        Item = securityGroup!;
+        name = securityGroup!.Name;
+        desc = securityGroup!.Desc ?? "";
 
-            private async Task BeginAddingPermission()
-            {
-                addPermissionInputs = new List<ModalInput>()
+        StateHasChanged();
+    }
+
+
+    async public Task Create()
+    {
+        viewHelper.ShowLoader("Opretter sikkerhedsgruppe...");
+
+        var response = await requester.Post<SecurityGroup>("api/security_groups", new CreateSecurityGroupDTO()
+        {
+            Name = name,
+            Desc = desc
+        });
+
+        SecurityGroup? newSecurityGroup = response is AcceptedResponse<SecurityGroup> ? ((AcceptedResponse<SecurityGroup>)response).Data : null;
+
+        var response2 = await requester.Get<List<Permission>>("api/permissions");
+
+        if (response.Status >= 400 || response2.Status >= 400)
+        {
+            viewHelper.Alert("Noget gik galt, genindlæs siden og prøv igen...");
+            return;
+        }
+
+        AllPermissions = response2.TryGetData<List<Permission>>() ?? new List<Permission>();
+
+        viewHelper.HideLoader();
+
+        if (newSecurityGroup != null && newSecurityGroup.Id != null)
+        {
+            navigationManager.NavigateTo($"/admin/security_groups/{newSecurityGroup.Id}");
+            return;
+        }
+    }
+
+    async public Task Update()
+    {
+        viewHelper.ShowLoader("Opdatere sikkerhedsgruppe...");
+
+        var response = await requester.Put<SecurityGroup>("api/security_groups/" + SecurityGroupID, new CreateSecurityGroupDTO()
+        {
+            Name = name,
+            Desc = desc
+        });
+
+        await LoadPage();
+
+        viewHelper.HideLoader();
+    }
+
+    public enum ReferenceType
+    {
+        Permission = 1,
+        User = 2,
+        Section = 3,
+        Room = 4
+    }
+
+    public async Task ConfirmDelete(ReferenceType type, int id )
+    {
+        switch (type)
+        {
+            case ReferenceType.User:
+                ConfirmModalRef
+                    .SetConfirmAction(async () =>
+                    {
+                        var userResponse = await requester.Delete($"api/users/{id}/security_group/" + SecurityGroupID);
+                        if (userResponse.IsSuccessResponse)
+                        {
+                            await LoadPage();
+                        }
+                    })
+                    .SetTitle($"Slet {id}?");
+
+                await ConfirmModalRef.Show();
+                break;
+            case ReferenceType.Permission:
+                ConfirmModalRef
+                    .SetConfirmAction(async () =>
+                    {
+                        var permissionResponse = await requester.Delete($"api/security_groups/{SecurityGroupID}/permission/" + id);
+                        if (permissionResponse.IsSuccessResponse)
+                        {
+                            await LoadPage();
+                        }
+                    })
+                    .SetTitle($"Slet {id}?");
+
+                await ConfirmModalRef.Show();
+                break;
+
+            case ReferenceType.Section:
+                ConfirmModalRef
+                    .SetConfirmAction(async () =>
+                    {
+                        var sectionResponse = await requester.Delete($"api/security_groups/{SecurityGroupID}/section/" + id);
+                        if (sectionResponse.IsSuccessResponse)
+                        {
+                            await LoadPage();
+                        }
+                    })
+                    .SetTitle($"Slet {id}?");
+
+                await ConfirmModalRef.Show();
+                break;
+
+            case ReferenceType.Room:
+                ConfirmModalRef
+                    .SetConfirmAction(async () =>
+                    {
+                        var roomResponse = await requester.Delete($"api/security_groups/{SecurityGroupID}/room/" + id);
+                        if (roomResponse.IsSuccessResponse)
+                        {
+                            await LoadPage();
+                        }
+                    })
+                .SetTitle($"Slet {id}?");
+
+                await ConfirmModalRef.Show();
+                break;
+        }
+    }
+
+
+    private GenericModal AddPermissionModal;
+    private List<ModalInput> addPermissionInputs { get; set; } = new List<ModalInput>();
+
+    private async Task BeginAddingPermission()
+    {
+        addPermissionInputs = new List<ModalInput>()
+    {
+    new ModalInput
+    {
+        Name = "permission", Label = "Rettighed", DType = InputType.Select,
+        Options = RemainingPermissions.OrderByDescending(e => e.Name).Select(e => new Option(e.Name, e.Id.ToString())).ToList()
+    }
+    };
+
+        await AddPermissionModal.Show();
+    }
+
+    private async Task<bool> HandleModalSubmit(Dictionary<string, ModalInput> inputs)
+    {
+
+        string permission = (string)inputs["permission"].Value ?? "";
+
+        var response = await requester.Post($"api/security_groups/{SecurityGroupID}/permission/" + permission, null);
+
+        if (response.IsSuccessResponse)
+        {
+            await LoadPage();
+            return true;
+        }
+        else
+        {
+            inputs["permission"].Error = "[ERROR] " + response.Status.ToString() + ": " + response.Message;
+
+            return false;
+        }
+    }
+
+
+    private GenericModal AddUserModal;
+    private List<ModalInput> addUserInputs { get; set; } = new List<ModalInput>();
+
+    private async Task BeginAddingUser()
+    {
+        addUserInputs = new List<ModalInput>()
         {
             new ModalInput
             {
-                Name = "permission", Label = "Rettighed", DType = InputType.Select,
-                Options = RemainingPermissions.OrderByDescending(e => e.Name).Select(e => new Option(e.Name, e.Id.ToString())).ToList()
+                Name = "user", Label = "Bruger", DType = InputType.Select,
+                Options = RemainingUsers.OrderByDescending(e => e.Name).Select(e => new Option(e.Name, e.Id.ToString())).ToList()
             }
         };
 
-                await AddPermissionModal.Show();
-            }
+        await AddUserModal.Show();
+    }
 
-            private async Task<bool> HandleModalSubmit(Dictionary<string, ModalInput> inputs)
+    private async Task<bool> HandleUserModalSubmit(Dictionary<string, ModalInput> inputs)
+    {
+        string user_id = (string)inputs["user"].Value ?? "";
+
+        var response = await requester.Post($"api/users/{user_id}/security_group/" + SecurityGroupID, null);
+
+        if (response.IsSuccessResponse)
+        {
+            await LoadPage();
+            return true;
+        }
+        else
+        {
+            inputs["user"].Error = "[ERROR] " + response.Status.ToString() + ": " + response.Message;
+
+            return false;
+        }
+    }
+
+    public async Task BeginAdding( ReferenceType type )
+    {
+        if(type == ReferenceType.Permission)
+        {
+        }
+
+        if (type == ReferenceType.User)
+        {
+        }
+
+        if (type == ReferenceType.Section)
+        {
+        }
+
+        if (type == ReferenceType.Room)
+        {
+            AddNewModal.OnSubmitAsync = async (Dictionary<string, ModalInput> inputs) =>
             {
+                string room_id = (string)inputs["room"].Value ?? "";
 
-                string permission = (string)inputs["permission"].Value ?? "";
-
-                var response = await requester.Post($"api/security_groups/{SecurityGroupID}/permission/" + permission, null);
+                var response = await requester.Post($"api/security_groups/{SecurityGroupID}/room/" + room_id, null);
 
                 if (response.IsSuccessResponse)
                 {
@@ -341,106 +476,90 @@
                 }
                 else
                 {
-                    inputs["permission"].Error = "[ERROR] " + response.Status.ToString() + ": " + response.Message;
+                    inputs["room"].Error = "[ERROR] " + response.Status.ToString() + ": " + response.Message;
 
                     return false;
                 }
-            }
-
-
-            private GenericModal AddUserModal;
-            private List<ModalInput> addUserInputs { get; set; } = new List<ModalInput>();
-
-            private async Task BeginAddingUser()
-            {
-                addUserInputs = new List<ModalInput>()
+            };
+            AddNewModal.Title = "Tilføj nyt lokale";
+            AddNewModalInputs = new List<ModalInput>()
             {
                 new ModalInput
                 {
-                    Name = "user", Label = "Bruger", DType = InputType.Select,
+                    Name = "room", Label = "Lokale", DType = InputType.Select,
                     Options = RemainingUsers.OrderByDescending(e => e.Name).Select(e => new Option(e.Name, e.Id.ToString())).ToList()
-                }
+                },
+                new ModalInput
+                {
+                    Name = "add_timelimit", Label = "Tilføj begrænsning?", DType = InputType.Bool
+                },
+                new ModalInput
+                {
+                    Name = "room2", Label = "Lokale2", DType = InputType.Select,
+                    Options = RemainingUsers.OrderByDescending(e => e.Name).Select(e => new Option(e.Name, e.Id.ToString())).ToList(),
+                    ShouldRenderModal = (Dictionary<string,ModalInput> inputs) => inputs["add_timelimit"] != null && inputs["add_timelimit"].Value != null && (bool)(inputs["add_timelimit"].Value!) == true
+                },
             };
 
-                await AddUserModal.Show();
-            }
+            AddNewModal.Update();
 
-            private async Task<bool> HandleUserModalSubmit(Dictionary<string, ModalInput> inputs)
-            {
-                string user_id = (string)inputs["user"].Value ?? "";
-
-                var response = await requester.Post($"api/users/{user_id}/security_group/" + SecurityGroupID, null);
-
-                if (response.IsSuccessResponse)
-                {
-                    await LoadPage();
-                    return true;
-                }
-                else
-                {
-                    inputs["user"].Error = "[ERROR] " + response.Status.ToString() + ": " + response.Message;
-
-                    return false;
-                }
-            }
-
-            public async Task BeginAdding( ReferenceType type )
-            {
-                if(type == ReferenceType.Permission)
-                {
-                }
-
-                if (type == ReferenceType.User)
-                {
-                }
-
-                if (type == ReferenceType.Section)
-                {
-                }
-
-                if (type == ReferenceType.Room)
-                {
-                    AddNewModal.OnSubmitAsync = async (Dictionary<string, ModalInput> inputs) =>
-                    {
-                        string room_id = (string)inputs["room"].Value ?? "";
-
-                        var response = await requester.Post($"api/security_groups/{SecurityGroupID}/room/" + room_id, null);
-
-                        if (response.IsSuccessResponse)
-                        {
-                            await LoadPage();
-                            return true;
-                        }
-                        else
-                        {
-                            inputs["room"].Error = "[ERROR] " + response.Status.ToString() + ": " + response.Message;
-
-                            return false;
-                        }
-                    };
-                    AddNewModal.Title = "Tilføj nyt lokale";
-                    AddNewModalInputs = new List<ModalInput>()
-                    {
-                        new ModalInput
-                        {
-                            Name = "room", Label = "Lokale", DType = InputType.Select,
-                            Options = RemainingUsers.OrderByDescending(e => e.Name).Select(e => new Option(e.Name, e.Id.ToString())).ToList()
-                        },
-                        new ModalInput
-                        {
-                            Name = "add_timelimit", Label = "Tilføj begrænsning?", DType = InputType.Bool
-                        },
-                        new ModalInput
-                        {
-                            Name = "room2", Label = "Lokale2", DType = InputType.Select,
-                            Options = RemainingUsers.OrderByDescending(e => e.Name).Select(e => new Option(e.Name, e.Id.ToString())).ToList(),
-                            ShouldRenderModal = (Dictionary<string,ModalInput> inputs) => inputs["add_timelimit"] != null && inputs["add_timelimit"].Value != null && (bool)(inputs["add_timelimit"].Value!) == true
-                        },
-                    };
-
-                    AddNewModal.Update();
-
-                    await AddNewModal.Show();
-                }
-            }
+            await AddNewModal.Show();
+        }
     }
+
+    public async Task OpenRoomEdit( SecurityGroupRoom room )
+    {
+        editRoomId = room.Id;
+
+        roomUseRestriction = room.TimeLimits.Count > 0;
+        timeLimits = room.TimeLimits.ToList();
+        
+        await RoomModal.ShowAsync();
+    }
+
+    public async Task AddRoom(int _room_id, List<TimeLimit> _timeLimits)
+    {
+        if(_room_id == 0)
+        {
+            return;
+        }
+
+        var response = await requester.Post($"api/security_groups/{SecurityGroupID}/room/" + _room_id, roomUseRestriction ? _timeLimits : null);
+        Console.WriteLine(response.GetType().Name);
+        if (response.IsSuccessResponse)
+        {
+            await LoadPage();
+        }
+        else if(response.GetType() == typeof(ErrorResponse))
+        {
+            string message = ((ErrorResponse)response).Title;
+            RoomModalError = "Fejl: " + (message != "" ? message : "Igen besked");
+            return;
+        }
+
+        await RoomModal.HideAsync();
+    }
+    
+    public async Task EditRoom(int _room_id, List<TimeLimit> _timeLimits)
+    {
+        if(_room_id == 0)
+        {
+            return;
+        }
+
+        var response = await requester.Put($"api/security_groups/{SecurityGroupID}/room_link/" + _room_id, roomUseRestriction ? _timeLimits : null);
+        Console.WriteLine(response.GetType().Name);
+        if (response.IsSuccessResponse)
+        {
+            await LoadPage();
+        }
+        else if(response.GetType() == typeof(ErrorResponse))
+        {
+            string message = ((ErrorResponse)response).Title;
+            RoomModalError = "Fejl: " + (message != "" ? message : "Igen besked");
+            return;
+        }
+
+        await RoomModal.HideAsync();
+    }
+}

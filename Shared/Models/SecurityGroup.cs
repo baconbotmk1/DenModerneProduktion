@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 
 namespace Shared.Models
 {
-	public class SecurityGroup : TimeLimitableModel
+	public class SecurityGroup : BaseModel
     {
         public string Name { get; set; } = default!;
         public string? Desc { get; set; } = default;
@@ -21,6 +21,10 @@ namespace Shared.Models
         //[JsonIgnore]
         [InverseProperty("SecurityGroup")]
         public virtual ICollection<SecurityGroupRoom> SecurityGroupRooms { get; set; } = new List<SecurityGroupRoom>();
+
+        //[JsonIgnore]
+        [InverseProperty("SecurityGroup")]
+        public virtual ICollection<TimeLimit> TimeLimits { get; set; } = new List<TimeLimit>();
     }
 }
 

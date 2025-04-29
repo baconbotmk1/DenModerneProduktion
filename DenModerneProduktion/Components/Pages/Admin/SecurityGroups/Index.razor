@@ -1,11 +1,13 @@
 ﻿@page "/admin/security_groups"
 @using DenModerneProduktion.Components.Helpers
 @using DenModerneProduktion.Services
+@using Microsoft.AspNetCore.Authorization
 @using Shared.Models
 @using Shared.DTOs.SecurityGroup
 @using System.Diagnostics
 @inject ApiRequester requester
 @inject ViewHelper viewHelper
+@attribute [Authorize]
 <PageTitle>Sikkerhedsgrupper</PageTitle>
 
 <GenericCRUDListView DeleteMessage="DeleteMessage" Link="admin/security_groups" APIEndpoint="api/security_groups" TType="SecurityGroup" Title="Sikkerhedsgrupper" Subtitle="Disse er sikkerhedsgrupper som brugere kan være del af. Det er også dem som får adgang til lokaler, sektioner og enheder.">

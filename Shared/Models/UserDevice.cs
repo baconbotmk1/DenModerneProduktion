@@ -4,7 +4,7 @@ namespace Shared.Models
 	/// <summary>
 	/// A User is given access to a door through it's Device.
 	/// </summary>
-	public class UserDevice : TimeLimitableModel
+	public class UserDevice : BaseModel
     {
 		public int UserId { get; set; }
 		public User User { get; set; }

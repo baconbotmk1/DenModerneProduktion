@@ -5,7 +5,6 @@ namespace Shared.Models
 {
 	public class TimeLimitWeekDay : BaseModel
     {
-		public string Name { get; set; }
 		public Days Day { get; set; }
 
 		[InverseProperty("WeekDay")]

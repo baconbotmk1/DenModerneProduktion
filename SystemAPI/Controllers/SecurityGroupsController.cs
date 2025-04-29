@@ -24,6 +24,8 @@ namespace SystemAPI.Controllers
                         .ThenInclude(e => e.Permission)
                     .Include(e => e.UserSecurityGroups)
                         .ThenInclude(e => e.User)
+                    .Include(e => e.SecurityGroupRooms)
+                        .ThenInclude(e => e.Room)
                     .ToList();
 
                 return Ok(data);
@@ -44,6 +46,17 @@ namespace SystemAPI.Controllers
                         .ThenInclude(e => e.Permission)
                     .Include(e => e.UserSecurityGroups)
                         .ThenInclude(e => e.User)
+                    .Include(e => e.SecurityGroupRooms)
+                        .ThenInclude(e => e.TimeLimits)
+                            .ThenInclude(e => e.Weeks)
+                                .ThenInclude(e => e.Days)
+                                    .ThenInclude(e => e.Times)
+                    .Include(e => e.SecurityGroupRooms)
+                        .ThenInclude(e => e.Room)
+                    .Include(e => e.TimeLimits)
+                        .ThenInclude(e => e.Weeks)
+                            .ThenInclude(e => e.Days)
+                                .ThenInclude(e => e.Times)
                 .FirstOrDefault(e => e.Id == id);
 
             if(securityGroup == null)
@@ -166,6 +179,123 @@ namespace SystemAPI.Controllers
 
             return Ok();
         }
+
+
+        [HttpPost("{id}/room/{room_id}")]
+        public ActionResult AddRoom(int id, int room_id, [FromBody] List<TimeLimit>? timeLimits )
+        {
+            SecurityGroup? securityGroup = context.SecurityGroups.Find(id);
+
+            if (securityGroup == null)
+            {
+                return NotFound("Security Group not found");
+            }
+
+            Room? room = context.Rooms.Find(room_id);
+            if (room == null)
+            {
+                return NotFound("Room not found");
+            }
+
+            if (context.SecurityGroupRooms.Count(e => e.RoomId == room_id && e.SecurityGroupId == id) > 0)
+            {
+                return NotFound("Security Group already has that Room");
+            }
+
+            context.SecurityGroupRooms.Add(new SecurityGroupRoom()
+            {
+                RoomId = room_id,
+                SecurityGroupId = id,
+                TimeLimits = timeLimits != null ? timeLimits : new List<TimeLimit>()
+            });
+
+            context.SaveChanges();
+
+            return Ok();
+        }
+
+
+        [HttpPut("{id}/room_link/{room_link_id}")]
+        public ActionResult EditRoom(int id, int room_link_id, [FromBody] List<TimeLimit>? timeLimits)
+        {
+            SecurityGroup? securityGroup = context.SecurityGroups.Find(id);
+
+            if (securityGroup == null)
+            {
+                return NotFound("Security Group not found");
+            }
+
+            SecurityGroupRoom? link = context.SecurityGroupRooms.FirstOrDefault(e => e.Id == room_link_id && e.SecurityGroupId == id);
+            if (link == null)
+            {
+                return NotFound("Security Group does not have that Room");
+            }
+
+            List<int> Ids = context.TimeLimits.Where(e => e.SecurityGroupRoomId == link.Id).Select(e => e.Id).ToList();
+
+            if (timeLimits != null)
+            {
+                foreach (var item in timeLimits)
+                {
+                    if(Ids.Contains(item.Id))
+                    {
+                        Ids.Remove(item.Id);
+                    }
+
+                    item.SecurityGroupRoomId = link.Id;
+                    context.Update(item);
+                }
+            }
+
+            if(Ids.Count > 0)
+            {
+                context.TimeLimits.AsQueryable().Where(e => Ids.Contains(e.Id)).ExecuteDelete();
+            }
+
+            context.SaveChanges();
+
+            return Ok();
+        }
+
+
+        [HttpDelete("{id}/room/{room_id}")]
+        public ActionResult RemoveRoom(int id, int room_id)
+        {
+            SecurityGroup? securityGroup = context.SecurityGroups.Find(id);
+
+            if (securityGroup == null)
+            {
+                return NotFound("Security Group not found");
+            }
+
+            Room? room = context.Rooms.Find(room_id);
+            if (room == null)
+            {
+                return NotFound("Room not found");
+            }
+
+            SecurityGroupRoom? link = context.SecurityGroupRooms
+                .Include(e => e.TimeLimits)
+                    .ThenInclude(e => e.Weeks)
+                        .ThenInclude(e => e.Days)
+                            .ThenInclude(e => e.Times)
+                .FirstOrDefault(e => e.RoomId == room_id && e.SecurityGroupId == id);
+            if (link == null)
+            {
+                return NotFound("Security Group does not have that Room");
+            }
+
+            if (context.Entry(link).State == EntityState.Detached)
+            {
+                context.Attach(link);
+            }
+
+            context.Remove(link);
+            context.SaveChanges();
+
+            return Ok();
+        }
+
 
         protected override void Dispose(bool disposing)
         {

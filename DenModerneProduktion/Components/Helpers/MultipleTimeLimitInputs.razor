@@ -1,0 +1,40 @@
+﻿@using Shared.Models
+@using System.Diagnostics
+@inject IJSRuntime JS
+
+<div class="@Class">
+
+    <Accordion>
+        @foreach (TimeLimit timeLimit in TimeLimits)
+        {
+            <AccordionItem Title="@("Begrænsning #" + (TimeLimits.ToList().IndexOf(timeLimit)+1) + (!string.IsNullOrEmpty(timeLimit.Name) ? " - " + timeLimit.Name : ""))">
+                <Content>
+                    <input class="form-control mb-2" type="text" @bind-value="timeLimit.Name" />
+                    <TimeLimitInputs TimeLimit="timeLimit" />
+
+                    <div style="margin-left: auto;width: fit-content;">
+                        <button class="btn btn-sm btn-outline-danger mt-2 ms-auto me-0" @onclick="() => TimeLimits.Remove(timeLimit)">Slet begrænsning</button>
+                    </div>
+                </Content>
+            </AccordionItem>
+        }
+    </Accordion>
+
+    <button class="btn btn-sm btn-outline-primary w-100 mt-2" @onclick="() => TimeLimits.Add(new TimeLimit())">Tilføj begrænsning</button>
+
+</div>
+
+@code {
+    [Parameter] public List<TimeLimit> TimeLimits { get; set; } = new List<TimeLimit>();
+    [Parameter] public string Class { get; set; } = "";
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        base.OnAfterRender(firstRender);
+    }
+}
