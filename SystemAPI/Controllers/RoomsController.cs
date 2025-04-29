@@ -40,7 +40,7 @@ namespace SystemAPI.Controllers
                 var fromTimestamp = DateTime.Now.AddDays(periodType == 0 ? -1 : periodType == 1 ? -7 : -30);
                 var data = context.DeviceDatas
                     .AsQueryable()
-                    .Include(x=>x.Type)
+                    .Include(x => x.Type)
                     .Where(x => x.TypeId == deviceDataType && deviceIds.Contains(x.DeviceId))
                     .Where(x => x.Timestamp > fromTimestamp)
                     .OrderByDescending(e => e.Timestamp);

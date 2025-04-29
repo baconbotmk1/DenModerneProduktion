@@ -1,5 +1,4 @@
-﻿using Shared.Models.Assignables.TimeLimit;
-using System;
+﻿using System;
 namespace Shared.Models
 {
 	/// <summary>
@@ -12,7 +11,7 @@ namespace Shared.Models
 		public int DeviceId { get; set; }
 		public Device Device { get; set; }
 
-        public ICollection<UserDeviceTL> TimeLimits { get; set; } = new List<UserDeviceTL>();
+        public ICollection<TimeLimit> TimeLimits { get; set; } = new List<TimeLimit>();
 
         public UserDevice()
 		{

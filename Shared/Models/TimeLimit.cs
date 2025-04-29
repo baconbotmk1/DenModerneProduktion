@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using Shared.Models.Assignables.TimeLimit;
 
 namespace Shared.Models
 {
@@ -14,8 +13,6 @@ namespace Shared.Models
 		public DateTime? ToDate { get; set; }
 
 		public ICollection<TimeLimitWeek> Weeks { get; set; } = new List<TimeLimitWeek>();
-
-        public ICollection<TimeLimitAssignment> Assignments { get; set; } = new List<TimeLimitAssignment>();
 
         public TimeLimit()
 		{

@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Shared.DTOs.User;
 using Swashbuckle.AspNetCore.Filters;
 using SystemAPI.SwaggerExamples;
@@ -27,7 +28,7 @@ namespace SystemAPI.Controllers
                                 .ThenInclude(e => e.Permission)
                     .Include(e => e.AccessCards)
                     .Include(e => e.UserRooms)
-                        .ThenInclude(e=>e.Room)
+                        .ThenInclude(e => e.Room)
                     .ToList();
 
                 return Ok(data);
@@ -64,7 +65,7 @@ namespace SystemAPI.Controllers
                     .Include(e => e.AccessCards)
                     .Include(e => e.UserRooms)
                         .ThenInclude(e => e.Room)
-                    .First(e=>e.Id == id);
+                    .First(e => e.Id == id);
 
                 if (data == null)
                 {
@@ -95,7 +96,7 @@ namespace SystemAPI.Controllers
 
                 return Ok(item);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Debug.WriteLine(ex.GetType().Name);
                 Debug.WriteLine(ex.GetType().Namespace);
@@ -194,6 +195,77 @@ namespace SystemAPI.Controllers
             context.SaveChanges();
 
             return Ok(new object { });
+        }
+        [HttpGet("{id}/rooms")]
+        public ActionResult<IEnumerable<Room>> GetUserRooms(int id)
+        {
+            List<Room> data = new();
+            var viewAllPermission = context.Permissions.FirstOrDefault(x => x.Slug == "rooms_view_all");
+
+            if (viewAllPermission != null)
+            {
+                var hasViewAllPermission = context.UserSecurityGroups
+                    .Include(x => x.SecurityGroup)
+                        .ThenInclude(x => x.SecurityGroupPermissions)
+                            .ThenInclude(x => x.Permission)
+                    .Where(x => x.UserId == id && x.SecurityGroup.SecurityGroupPermissions.Where(y => y.Permission.Slug == "rooms_view_all").Count() > 0)
+                    .Count() > 0;
+                if (hasViewAllPermission)
+                {
+                    data = context.Rooms.ToList();
+                    return Ok(data);
+                }
+            }
+
+            var accessibleRoomsData = context.UserRooms
+                .AsQueryable()
+                .Include(x => x.User)
+                .Include(x => x.Room)
+                .Where(x => x.UserId == id)
+                .ToList();
+
+            data = context.Rooms.Where(x => accessibleRoomsData.Select(y => y.RoomId).Contains(x.Id)).ToList();
+
+            return Ok(data);
+        }
+
+        [HttpGet("{id}/rooms/data")]
+        public ActionResult<IEnumerable<Room>> GetRoomsWithDataByUserId(int id)
+        {
+            List<Room> data = new();
+            bool hasViewAllPermission = false;
+            var viewAllPermission = context.Permissions.FirstOrDefault(x => x.Slug == "rooms_view_all");
+
+            if (viewAllPermission != null)
+            {
+                hasViewAllPermission = context.UserSecurityGroups
+                    .Include(x => x.SecurityGroup)
+                        .ThenInclude(x => x.SecurityGroupPermissions)
+                            .ThenInclude(x => x.Permission)
+                    .Where(x => x.UserId == id && x.SecurityGroup.SecurityGroupPermissions.Where(y => y.Permission.Slug == "rooms_view_all").Count() > 0)
+                    .Count() > 0;
+            }
+
+            var accessibleRoomsData = context.UserRooms
+                .AsQueryable()
+                .Include(x => x.User)
+                .Include(x => x.Room)
+                .Where(x => x.UserId == id)
+                .Select(x=>x.RoomId)
+                .ToList();
+
+            data = context.Rooms
+                .Include(x => x.Devices)
+                    .ThenInclude(x => x.Data)
+                        .ThenInclude(x => x.Type)
+                .Include(x => x.TimeLimits)
+                    .ThenInclude(x => x.Weeks)
+                        .ThenInclude(x => x.Days)
+                            .ThenInclude(x => x.Times)
+                .Where(x => hasViewAllPermission ? true : accessibleRoomsData.Contains(x.Id))
+                .ToList();
+
+            return Ok(data);
         }
 
         [HttpPost("{id}/room/{room_id}")]
