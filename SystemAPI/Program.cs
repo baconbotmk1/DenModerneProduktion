@@ -1,4 +1,6 @@
 ﻿
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using Shared;
 using Shared.Models;
@@ -17,6 +19,11 @@ public class Program
         var builder = WebApplication.CreateBuilder(args);
 
         MapsterConfig.RegisterMappings();
+
+        builder.Services.AddCors(o => o.AddPolicy("Test", builder =>
+        {
+            builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
+        }));
 
         // Add services to the container.
 
@@ -61,6 +68,12 @@ public class Program
             options.DefaultRequestHeaders.Add("Content-Type", "application/json");
         });
 
+        builder.Services.Configure<FormOptions>(options =>
+        {
+            options.ValueLengthLimit = int.MaxValue; //not recommended value
+            options.MultipartBodyLengthLimit = long.MaxValue; //not recommended value
+        });
+
         var app = builder.Build();
 
         // Configure the HTTP request pipeline.
@@ -69,6 +82,8 @@ public class Program
             app.UseSwagger();
             app.UseSwaggerUI();
         }
+
+        app.UseCors("Test");
 
         app.UseHttpsRedirection();
 

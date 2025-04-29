@@ -1,5 +1,5 @@
 ﻿<div class="js-graph">
-    <LineChart @ref="lineChart" />
+    <LineChart Height="500" @ref="lineChart" />
 </div>
 @code {
     [Parameter]
@@ -30,9 +30,11 @@
                 IndexAxis = "x",
                 Interaction = new Interaction { Mode = InteractionMode.Index, Intersect = false },
                 Responsive = true,
+                MaintainAspectRatio = false,
             };
         lineChartOptions.Scales.Y!.Max = MaxY;
         lineChartOptions.Scales.Y!.Min = MinY;
+
         StateHasChanged();
     }
     private List<IChartDataset> GetDataSets()

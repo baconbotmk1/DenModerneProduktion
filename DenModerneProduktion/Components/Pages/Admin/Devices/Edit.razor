@@ -9,6 +9,7 @@
 @inject ApiRequester requester
 @inject ViewHelper viewHelper
 @inject NavigationManager navigationManager
+@inject IJSRuntime js
 
 <div class="d-flex flex-row">
     <div class="card w-50 me-5">
@@ -28,6 +29,29 @@
             <button @onclick="() => Update()" class="@(DeviceID != 0 ? "" : "d-none") float-end btn btn-sm btn-primary">Gem</button>
         </div>
     </div>
+    @if (Item != null && Item.Id != 0 && Item.Type.Name == "Kamera")
+    {
+        <div class="card w-50 me-5">
+            <div class="card-header">
+                <h3>Video</h3>
+
+            </div>
+            <div class="card-body">
+                @if(InfoList.Any(e => e.Type.Name == "RTSP Link"))
+                {
+                    <video data-state="paused" id="video" width="800"></video>
+                }
+                else
+                {
+                    <span class="fst-italic">Ingen feed</span>
+                }
+            </div>
+            <div class="card-footer">
+                <button @onclick="() => Create()" class="@(DeviceID == 0 ? "" : "d-none") float-end btn btn-sm btn-success">Opret</button>
+                <button @onclick="() => Update()" class="@(DeviceID != 0 ? "" : "d-none") float-end btn btn-sm btn-primary">Gem</button>
+            </div>
+        </div>
+    }
 </div>
 
 @if(DeviceID != 0)
@@ -133,6 +157,8 @@
     public string id { get; set; }
     public Device? Item { get; set; }
 
+    public static int? _linkTypeId;
+
     public string Name { get; set; } = "";
     public InputWithValidation NameField { get; set; }
 
@@ -222,6 +248,14 @@
             {
                 navigationManager.NavigateTo("admin/devices");
             }
+        }
+    }
+
+   protected override void OnAfterRender(bool first)
+    {
+        if(first)
+        {
+            js.InvokeVoidAsync("loadFeed", new object[] { (InfoList.FirstOrDefault(e => e.Type.Name == "")?.Value ?? "RTSP Link") });
         }
     }
 

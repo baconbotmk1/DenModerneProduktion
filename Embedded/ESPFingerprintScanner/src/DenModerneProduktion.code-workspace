@@ -1,0 +1,25 @@
+{
+	"folders": [
+		{
+			"path": "../../.."
+		},
+		{
+			"name": "ESPFingerprintScanner",
+			"path": ".."
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"__locale": "cpp",
+			"string": "cpp",
+			"string_view": "cpp",
+			"deque": "cpp",
+			"fstream": "cpp",
+			"vector": "cpp",
+			"*.tcc": "cpp",
+			"istream": "cpp",
+			"sstream": "cpp",
+			"streambuf": "cpp"
+		}
+	}
+}
