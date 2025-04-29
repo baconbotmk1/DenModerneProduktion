@@ -41,6 +41,7 @@ namespace SystemAPI.Controllers
                         .ThenInclude(e3 => e3.SecurityGroupPermissions)
                             .ThenInclude(e4 => e4.Permission)
                 .FirstOrDefault(e => e.Username.ToLower() == data.username.ToLower());
+
             if (user == null)
             {
                 return NotFound();
@@ -59,7 +60,7 @@ namespace SystemAPI.Controllers
                 return NotFound();
             }
 
-            List<Permission> permissions = user.SecurityGroups.SelectMany(e => e.Permissions)
+            List<Permission> permissions = user.UserSecurityGroups.Select(e => e.SecurityGroup).SelectMany(e => e.SecurityGroupPermissions.Select(e2 => e2.Permission))
                     .Distinct()
                     .ToList();
 

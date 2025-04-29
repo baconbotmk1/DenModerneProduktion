@@ -20,6 +20,7 @@
   <ItemGroup>
     <PackageReference Include="Blazor.Bootstrap" Version="3.3.1" />
     <PackageReference Include="Syncfusion.Blazor.Core" Version="29.1.39" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Components\Pages\Admin\DeviceDataTypes\" />

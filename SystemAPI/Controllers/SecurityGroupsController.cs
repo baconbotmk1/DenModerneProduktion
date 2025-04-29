@@ -14,7 +14,7 @@ namespace SystemAPI.Controllers
         }
 
         [HttpGet]
-        public ActionResult<IEnumerable<SecurityGroup>> Get()
+        public ActionResult<IEnumerable<GetSecurityGroupDTO>> Get()
         {
             try
             {
@@ -24,7 +24,16 @@ namespace SystemAPI.Controllers
                         .ThenInclude(e => e.Permission)
                     .Include(e => e.UserSecurityGroups)
                         .ThenInclude(e => e.User)
-                    .ToList();
+                    .ToList()
+                    .Select(e =>
+                    {
+                        e.SecurityGroupPermissions = e.SecurityGroupPermissions.Select(e2 =>
+                        {
+                            e2.SecurityGroup.SecurityGroupPermissions = new List<SecurityGroupPermission>();
+                            return e2;
+                        }).ToList();
+                        return e;
+                    });
 
                 return Ok(data);
             }

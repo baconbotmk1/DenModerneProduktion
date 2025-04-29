@@ -8,9 +8,17 @@ namespace DenModerneProduktion.Services
     {
         private readonly HttpClient _client;
 
+        private readonly System.Text.Json.JsonSerializerOptions _jsonOptions;
+
         public ApiRequester(IHttpClientFactory clientFactory)
         {
             _client = clientFactory.CreateClient("api");
+
+            _jsonOptions = new System.Text.Json.JsonSerializerOptions()
+            {
+                WriteIndented = true,
+                ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles,
+            };
         }
 
 
@@ -20,9 +28,14 @@ namespace DenModerneProduktion.Services
 
             if (response.IsSuccessStatusCode)
             {
-                var result = await response.Content.ReadFromJsonAsync<T>();
+                if (response.Content.ReadAsStream().Length == 0)
+                {
+                    return new EmptyResponse(((int)response.StatusCode));
+                }
 
-                return new AcceptedResponse<T?>(result);
+                var result = await response.Content.ReadFromJsonAsync<T>(options: _jsonOptions);
+
+                return new AcceptedResponse<T?>(result, ((int)response.StatusCode));
             }
             else
             {
@@ -38,11 +51,14 @@ namespace DenModerneProduktion.Services
 
             if (response.IsSuccessStatusCode)
             {
-                
-                Debug.WriteLine(response.Content.ReadAsStream().Length);
+                if (response.Content.ReadAsStream().Length == 0)
+                {
+                    return new EmptyResponse(((int)response.StatusCode));
+                }
+
                 var result = await response.Content.ReadFromJsonAsync<T?>();
 
-                return new AcceptedResponse<T?>(result);
+                return new AcceptedResponse<T?>(result, ((int)response.StatusCode));
             }
             else
             {
@@ -56,15 +72,15 @@ namespace DenModerneProduktion.Services
         {
             var response = await _client.PutAsJsonAsync(url, data);
 
-            foreach(var header in response.Content.Headers.ToList())
-            {
-                Debug.WriteLine(" - " + header.Key + ": " + string.Join(", ", header.Value));
-            }
-
             if (response.IsSuccessStatusCode)
             {
+                if (response.Content.ReadAsStream().Length == 0)
+                {
+                    return new EmptyResponse(((int)response.StatusCode));
+                }
+
                 var result = await response.Content.ReadFromJsonAsync<T>();
-                return new AcceptedResponse<T?>(result);
+                return new AcceptedResponse<T?>(result, ((int)response.StatusCode));
             }
             else
             {
@@ -80,8 +96,13 @@ namespace DenModerneProduktion.Services
 
             if (response.IsSuccessStatusCode)
             {
+                if (response.Content.ReadAsStream().Length == 0)
+                {
+                    return new EmptyResponse(((int)response.StatusCode));
+                }
+
                 var result = await response.Content.ReadFromJsonAsync<T>();
-                return new AcceptedResponse<T?>(result);
+                return new AcceptedResponse<T?>(result, ((int)response.StatusCode));
             }
             else
             {

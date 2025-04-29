@@ -12,6 +12,17 @@ namespace Shared.Models
 		public BaseModel()
 		{
 		}
-	}
+
+		public virtual void LoadReferences() { }
+
+
+		public BaseModel AddReferences()
+		{
+			LoadReferences();
+
+            return this;
+		}
+
+    }
 }
 

@@ -5,9 +5,9 @@ namespace Shared.Responses
     {
 		public T Data { get; set; }
 
-		public AcceptedResponse( T data )
+		public AcceptedResponse( T data, int statusCode = 200 )
 		{
-			Status = 200;
+			Status = statusCode;
 
 			Data = data;
 		}

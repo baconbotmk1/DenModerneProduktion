@@ -12,6 +12,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Security.Claims;
 using System.Text.Json;
 using static System.Net.WebRequestMethods;
+using Newtonsoft.Json;
 
 namespace DenModerneProduktion.Services
 {
@@ -64,7 +65,7 @@ namespace DenModerneProduktion.Services
                     Claim userClaim = CurrentUserClaim.Claims.First(c => c.Type == ClaimTypes.UserData);
                     if(userClaim.Value != "")
                     {
-                        CurrentUser = JsonSerializer.Deserialize<User>(userClaim.Value);
+                        CurrentUser = System.Text.Json.JsonSerializer.Deserialize<User>(userClaim.Value);
                     }
                 }
 
@@ -73,7 +74,7 @@ namespace DenModerneProduktion.Services
                     Claim userClaim = CurrentUserClaim.Claims.First(c => c.Type == "permissions");
                     if (userClaim.Value != "")
                     {
-                        Permissions = JsonSerializer.Deserialize<List<Permission>>(userClaim.Value);
+                        Permissions = System.Text.Json.JsonSerializer.Deserialize<List<Permission>>(userClaim.Value);
                     }
                 }
 
@@ -137,8 +138,14 @@ namespace DenModerneProduktion.Services
                 {
                     new Claim(ClaimTypes.Name, CurrentUser.Username),
                     new Claim(ClaimTypes.Sid, CurrentUser.Id.ToString()),
-                    new Claim(ClaimTypes.UserData, JsonSerializer.Serialize(CurrentUser)),
-                    new Claim("permissions", JsonSerializer.Serialize(Permissions)),
+                    new Claim(ClaimTypes.UserData, JsonConvert.SerializeObject(CurrentUser, new JsonSerializerSettings()
+                    {
+                        ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+                    })),
+                    new Claim("permissions", JsonConvert.SerializeObject(Permissions, new JsonSerializerSettings()
+                    {
+                        ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+                    })),
                 };
 
                 foreach (var permission in Permissions)

@@ -25,9 +25,6 @@ namespace Shared.Models
 
 		public virtual ICollection<AccessCard> AccessCards { get; set; } = new List<AccessCard>();
 
-        [NotMapped]
-        public virtual IEnumerable<SecurityGroup> SecurityGroups => UserSecurityGroups.Select(e => e.SecurityGroup);
-
         //[JsonIgnore]
         [InverseProperty("User")]
         public virtual ICollection<UserRoom> UserRooms { get; set; } = new List<UserRoom>();

@@ -5,6 +5,7 @@ namespace Shared.Models
     {
 		public int SecurityGroupId { get; set; }
 		public SecurityGroup SecurityGroup { get; set; }
+
 		public int PermissionId { get; set; }
 		public Permission Permission { get; set; }
 

@@ -21,11 +21,6 @@ namespace Shared.Models
         //[JsonIgnore]
         [InverseProperty("SecurityGroup")]
         public virtual ICollection<SecurityGroupRoom> SecurityGroupRooms { get; set; } = new List<SecurityGroupRoom>();
-
-        [NotMapped]
-        public virtual IEnumerable<Permission> Permissions => SecurityGroupPermissions.Select(e => e.Permission);
-        [NotMapped]
-        public virtual IEnumerable<User> Users => UserSecurityGroups.Select(e => e.User);
     }
 }
 
