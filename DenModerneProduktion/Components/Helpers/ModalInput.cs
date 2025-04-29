@@ -24,7 +24,8 @@
         TextArea,
         Select,
         Number,
-        Date
+        Date,
+        Bool
     }
 
     public class Option

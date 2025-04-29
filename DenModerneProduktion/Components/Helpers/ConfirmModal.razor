@@ -16,12 +16,15 @@
 
     [Parameter] public EventCallback<MouseEventArgs> OnReject { get; set; } = new EventCallback<MouseEventArgs>();
     [Parameter] public EventCallback<MouseEventArgs> OnConfirm { get; set; } = new EventCallback<MouseEventArgs>();
+    [Parameter] public Action OnConfirmAction { get; set; }
 
     [Parameter] public Modal Modal { get; set; } = default!;
 
-    public void SetTitle(string title)
+    public ConfirmModal SetTitle(string title)
     {
         Text = title;
+
+        return this;
     }
 
     public async Task Show()
@@ -31,6 +34,12 @@
     protected void Confirm()
     {
         OnConfirm.InvokeAsync();
+
+        if(OnConfirmAction != null)
+        {
+            OnConfirmAction.Invoke();
+        }
+
         Modal.HideAsync();
     }
 
@@ -43,5 +52,13 @@
     protected override void OnInitialized()
     {
         base.OnInitialized();
+    }
+
+
+    public ConfirmModal SetConfirmAction( Action act )
+    {
+        OnConfirmAction = act;
+
+        return this;
     }
 }
