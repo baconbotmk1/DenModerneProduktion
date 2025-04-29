@@ -33,7 +33,7 @@ namespace DenModerneProduktion.Services
                     return new EmptyResponse(((int)response.StatusCode));
                 }
 
-                var result = await response.Content.ReadFromJsonAsync<T>(options: _jsonOptions);
+                var result = await response.Content.ReadFromJsonAsync<T>();
 
                 return new AcceptedResponse<T?>(result, ((int)response.StatusCode));
             }

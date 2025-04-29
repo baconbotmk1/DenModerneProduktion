@@ -8,7 +8,7 @@
 @inject ViewHelper viewHelper
 <PageTitle>Sikkerhedsgrupper</PageTitle>
 
-<GenericCRUDListView DeleteMessage="DeleteMessage" Link="admin/security_groups" APIEndpoint="api/security_groups" TType="GetSecurityGroupDTO" Title="Sikkerhedsgrupper" Subtitle="Disse er sikkerhedsgrupper som brugere kan være del af. Det er også dem som får adgang til lokaler, sektioner og enheder.">
+<GenericCRUDListView DeleteMessage="DeleteMessage" Link="admin/security_groups" APIEndpoint="api/security_groups" TType="SecurityGroup" Title="Sikkerhedsgrupper" Subtitle="Disse er sikkerhedsgrupper som brugere kan være del af. Det er også dem som får adgang til lokaler, sektioner og enheder.">
     <Headers>
         <th>ID</th>
         <th>Navn</th>
@@ -20,11 +20,11 @@
         <td>@context.Id</td>
         <td>@context.Name</td>
         <td>@context.Desc</td>
-        <td>@context.Permissions.Count()</td>
-        <td>@context.Users.Count()</td>
+        <td>@context.SecurityGroupPermissions.Count()</td>
+        <td>@context.UserSecurityGroups.Count()</td>
     </Rows>
 </GenericCRUDListView>
 
 @code {
-    public string DeleteMessage(GetSecurityGroupDTO secGrp) => "Slet sikkerhedsgruppen '" + secGrp.Name + "'?";
+    public string DeleteMessage(SecurityGroup secGrp) => "Slet sikkerhedsgruppen '" + secGrp.Name + "'?";
 }
