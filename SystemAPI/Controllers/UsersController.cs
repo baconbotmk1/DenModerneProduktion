@@ -26,6 +26,8 @@ namespace SystemAPI.Controllers
                             .ThenInclude(e => e.SecurityGroupPermissions)
                                 .ThenInclude(e => e.Permission)
                     .Include(e => e.AccessCards)
+                    .Include(e => e.UserRooms)
+                        .ThenInclude(e=>e.Room)
                     .ToList();
 
                 return Ok(data);
@@ -53,14 +55,23 @@ namespace SystemAPI.Controllers
         {
             return HandleExceptions(() =>
             {
-                User? accessCard = repository.GetById(id);
+                var data = context.Users
+                    .AsQueryable()
+                    .Include(e => e.UserSecurityGroups)
+                        .ThenInclude(e => e.SecurityGroup)
+                            .ThenInclude(e => e.SecurityGroupPermissions)
+                                .ThenInclude(e => e.Permission)
+                    .Include(e => e.AccessCards)
+                    .Include(e => e.UserRooms)
+                        .ThenInclude(e => e.Room)
+                    .First(e=>e.Id == id);
 
-                if (accessCard == null)
+                if (data == null)
                 {
                     return NotFound();
                 }
 
-                return Ok(accessCard);
+                return Ok(data);
             });
         }
 
@@ -148,7 +159,7 @@ namespace SystemAPI.Controllers
 
             context.SaveChanges();
 
-            return Ok();
+            return Ok(new object { });
         }
 
 
@@ -168,11 +179,6 @@ namespace SystemAPI.Controllers
                 return NotFound("Security Group not found");
             }
 
-            if (context.UserSecurityGroups.Count(e => e.UserId == id && e.SecurityGroupId == security_group_id) > 0)
-            {
-                return NotFound("User is already part of that Security Group");
-            }
-
             UserSecurityGroup? link = context.UserSecurityGroups.FirstOrDefault(e => e.UserId == id && e.SecurityGroupId == security_group_id);
             if (link == null)
             {
@@ -187,9 +193,73 @@ namespace SystemAPI.Controllers
             context.UserSecurityGroups.Remove(link);
             context.SaveChanges();
 
-            return Ok();
+            return Ok(new object { });
         }
 
+        [HttpPost("{id}/room/{room_id}")]
+        public ActionResult AddRoom(int id, int room_id)
+        {
+            User? user = context.Users.Find(id);
+
+            if (user == null)
+            {
+                return NotFound("User not found");
+            }
+
+            Room? room = context.Rooms.Find(room_id);
+            if (room == null)
+            {
+                return NotFound("Room not found");
+            }
+
+            if (context.UserRooms.Count(e => e.UserId == id && e.RoomId == room_id) > 0)
+            {
+                return NotFound("User already have access to that room");
+            }
+
+            context.UserRooms.Add(new UserRoom()
+            {
+                UserId = id,
+                RoomId = room_id
+            });
+
+            context.SaveChanges();
+
+            return Ok(new object { });
+        }
+
+        [HttpDelete("{id}/room/{room_id}")]
+        public ActionResult RemoveRoom(int id, int room_id)
+        {
+            User? user = context.Users.Find(id);
+
+            if (user == null)
+            {
+                return NotFound("User not found");
+            }
+
+            Room? room = context.Rooms.Find(room_id);
+            if (room == null)
+            {
+                return NotFound("Room not found");
+            }
+
+            UserRoom? link = context.UserRooms.FirstOrDefault(e => e.UserId == id && e.RoomId == room_id);
+            if (link == null)
+            {
+                return NotFound("User dont have access to that room");
+            }
+
+            if (context.Entry(link).State == EntityState.Detached)
+            {
+                context.UserRooms.Attach(link);
+            }
+
+            context.UserRooms.Remove(link);
+            context.SaveChanges();
+
+            return Ok(new object { });
+        }
 
         [HttpPost("{id}/access_card/{access_card_id}")]
         public ActionResult AddAccessCard(int id, int access_card_id)

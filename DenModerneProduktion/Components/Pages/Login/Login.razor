@@ -26,7 +26,8 @@
 {
     <Spinner />
 }
-else{
+else
+{
     <h3>Login</h3>
     <EditForm Model="@loginModel" FormName="Login" OnValidSubmit="HandleLogin">
         <DataAnnotationsValidator />
@@ -65,7 +66,7 @@ else{
     public bool _UserCreated { get; set; }
     public bool _credentialsCorrect { get; set; }
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnInitializedAsync() //REMOVE!!
     {
         loginModel.Username = "sebastian257@hotmail.dk";
         loginModel.Pwd = "P@ssw0rd";
@@ -77,14 +78,21 @@ else{
         ErrorMessage = "";
 
         thinking = true;
-
-        bool loggedIn = await userSession.Login(loginModel.Username, loginModel.Pwd);
-
-        if (loggedIn)
+        try
         {
-            navigationManager.NavigateTo("/");
-        }
+            bool loggedIn = await userSession.Login(loginModel.Username, loginModel.Pwd);
 
+            if (loggedIn)
+            {
+                navigationManager.NavigateTo("/");
+            }
+
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
         ErrorMessage = "Brugeren findes ikke eller adgangskoden er forkert";
 
         Console.WriteLine(loginModel);

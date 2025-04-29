@@ -31,20 +31,36 @@
                 <h3>Sikkerhedsgrupper</h3>
 
             </div>
-            <div class="card-body">
+            <div class="card-body js-list">
                 @foreach(UserSecurityGroup grp in (Item.UserSecurityGroups ?? new List<UserSecurityGroup>()))
                 {
-
+                    <span>@grp.SecurityGroup.Name <Icon Name="IconName.Trash" Size="IconSize.x5" class="js-nav-icon" @onclick="async ()=>await ConfirmDelete(grp.SecurityGroupId, grp.SecurityGroup.Name, DeleteType.security_group)" /></span>
                 }
             </div>
             <div class="card-footer">
                 <button @onclick="() => BeginAddingSecurityGroup()" class="@(UserID != 0 ? "" : "d-none") float-end btn btn-sm btn-primary">Tilføj sikkerhedsgruppe</button>
             </div>
         </div>
+        <div class="card w-50">
+            <div class="card-header">
+                <h3>Lokaler</h3>
+            </div>
+            <div class="card-body js-list">
+                @foreach (UserRoom room in (Item.UserRooms ?? new List<UserRoom>()))
+                {
+                    <span>@room.Room.Name <Icon Name="IconName.Trash" Size="IconSize.x5" class="js-nav-icon" @onclick="async ()=>await ConfirmDelete(room.RoomId, room.Room.Name, DeleteType.room)" /></span>
+                }
+            </div>
+            <div class="card-footer">
+                <button @onclick="() => BeginAddingRoom()" class="@(UserID != 0 ? "" : "d-none") float-end btn btn-sm btn-primary">Tilføj lokale</button>
+            </div>
+        </div>
     }
 </div>
 
-<GenericModal @ref="AddSecurityGroupModal" Title="Tilføj Sikkerhedsgruppe" Inputs="addSecGrpInputs" OnSubmitAsync="HandleModalSubmit" />
+<GenericModal @ref="AddSecurityGroupModal" Title="Tilføj Sikkerhedsgruppe" Inputs="addSecGrpInputs" OnSubmitAsync="HandleSecGrpModalSubmit" />
+<GenericModal @ref="AddRoomModal" Title="Tilføj lokale" Inputs="addRoomInputs" OnSubmitAsync="HandleRoomModalSubmit" />
+<ConfirmModal @ref="ConfirmModal" AcceptText="Bekræft" RejectText="Annuller" OnConfirm="HandleConfirmModalSubmit" />
 
 @code {
     [Parameter]
@@ -59,11 +75,18 @@
     public Dictionary<string, InputBase> Inputs { get; set; } = new Dictionary<string, InputBase>();
 
     public List<SecurityGroup> AllSecurityGroups { get; set; } = new List<SecurityGroup>();
+    public List<Room> AllRooms { get; set; } = new List<Room>();
 
-    public List<SecurityGroup> RemainingSecurityGroups => AllSecurityGroups.Where(e => !(Item ?? new User()).UserSecurityGroups.Select(e2 => e2.SecurityGroupId).Contains(e.Id)).ToList();
+    public List<SecurityGroup> UserSecurityGroups => AllSecurityGroups.Where(e => !(Item ?? new User()).UserSecurityGroups.Select(e2 => e2.SecurityGroupId).Contains(e.Id)).ToList();
+    public List<Room> UserRooms => AllRooms.Where(e => !(Item ?? new User()).UserRooms.Select(e2 => e2.RoomId).Contains(e.Id)).ToList();
 
     protected override async Task OnInitializedAsync()
     {
+        await OnLoad();
+    }
+    private async Task OnLoad()
+    {
+
         Item = new User();
 
         if (UserID != 0)
@@ -72,15 +95,17 @@
 
             var response = await requester.Get<User>("api/users/" + UserID);
 
-            var response2 = await requester.Get<List<SecurityGroup>>("api/security_groups");
+            var grpResponse = await requester.Get<List<SecurityGroup>>("api/security_groups");
+            var roomResponse = await requester.Get<List<Room>>("api/rooms");
 
-            if(response.Status >= 400 || response2.Status >= 400)
+            if (response.Status >= 400 || grpResponse.Status >= 400)
             {
                 viewHelper.Alert("Noget gik galt, genindlæs siden og prøv igen...");
                 return;
             }
 
-            AllSecurityGroups = response2.TryGetData<List<SecurityGroup>>() ?? new List<SecurityGroup>();
+            AllSecurityGroups = grpResponse.TryGetData<List<SecurityGroup>>() ?? new List<SecurityGroup>();
+            AllRooms = roomResponse.TryGetData<List<Room>>() ?? new List<Room>();
 
             viewHelper.HideLoader();
 
@@ -196,7 +221,10 @@
     }
 
     private GenericModal AddSecurityGroupModal;
+    private GenericModal AddRoomModal;
+    private ConfirmModal ConfirmModal;
     private List<ModalInput> addSecGrpInputs { get; set; } = new List<ModalInput>();
+    private List<ModalInput> addRoomInputs { get; set; } = new List<ModalInput>();
 
     private async Task BeginAddingSecurityGroup()
     {
@@ -213,14 +241,28 @@
             new ModalInput
             {
                 Name = "security_group", Label = "Sikkerhedsgruppe", DType = InputType.Select,
-                Options = RemainingSecurityGroups.OrderByDescending(e => e.Name).Select(e => new Option(e.Name, e.Id.ToString())).ToList()
+                Options = UserSecurityGroups.OrderByDescending(e => e.Name).Select(e => new Option(e.Name, e.Id.ToString())).ToList()
             }
         };
 
         await AddSecurityGroupModal.Show();
     }
 
-    private async Task<bool> HandleModalSubmit(Dictionary<string,ModalInput> inputs)
+    private async Task BeginAddingRoom()
+    {
+        addRoomInputs = new List<ModalInput>()
+        {
+            new ModalInput
+            {
+                Name = "room", Label = "Lokale", DType = InputType.Select,
+                Options = UserRooms.OrderByDescending(e => e.Name).Select(e => new Option(e.Name, e.Id.ToString())).ToList()
+            }
+        };
+
+        await AddRoomModal.Show();
+    }
+
+    private async Task<bool> HandleSecGrpModalSubmit(Dictionary<string,ModalInput> inputs)
     {
 
         string sec_grp = (string)inputs["security_group"].Value ?? "";
@@ -229,6 +271,8 @@
 
         if (response.IsSuccessResponse)
         {
+            await OnLoad();
+            StateHasChanged();
             return true;
         }
         else
@@ -237,5 +281,42 @@
 
             return false;
         }
+    }
+    private async Task<bool> HandleRoomModalSubmit(Dictionary<string, ModalInput> inputs)
+    {
+
+        string room = (string)inputs["room"].Value ?? "";
+
+        var response = await requester.Post($"api/users/{UserID}/room/" + room, null);
+
+        if (response.IsSuccessResponse)
+        {
+            await OnLoad();
+            StateHasChanged();
+            return true;
+        }
+        else
+        {
+            inputs["room"].Error = "[ERROR] " + response.Status.ToString() + ": " + response.Message;
+
+            return false;
+        }
+    }
+
+    public int _DeleteId { get; set; }
+    public DeleteType _DeleteType { get; set; }
+    public enum DeleteType { room, security_group }
+    private async Task ConfirmDelete(int Id, string Name, DeleteType type)
+    {
+        _DeleteId = Id;
+        _DeleteType = type;
+        this.ConfirmModal.SetTitle($"Er du sikker på at du vil fjerne {Name}?");
+        await this.ConfirmModal.Show();
+    }
+    private async Task HandleConfirmModalSubmit()
+    {
+        var deleteResponse = await requester.Delete($"api/users/{id}/{_DeleteType}/{_DeleteId}");
+        await OnLoad();
+        StateHasChanged();
     }
 }

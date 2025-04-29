@@ -14,6 +14,7 @@ namespace Shared.Responses
         public ErrorResponse( int status = 500, string message = "" )
         {
             Status = status;
+            Message = message;
             Title = message;
         }
     }

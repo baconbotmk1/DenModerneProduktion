@@ -43,9 +43,9 @@
         padding:7.5px 0px;
     }
 
-    .js-alarm-card-list p:nth-child(even) {
-        background-color:#efefef;
-    }
+        .js-alarm-card-list p:nth-child(even) {
+            background-color: var(--js-color-list-bg-even);
+        }
 
 .js-alarm-card-global-limit {
     display: flex;
