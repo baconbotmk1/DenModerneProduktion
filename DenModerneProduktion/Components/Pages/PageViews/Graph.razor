@@ -32,8 +32,9 @@
                 Responsive = true,
                 MaintainAspectRatio = false,
             };
-        lineChartOptions.Scales.Y!.Max = MaxY;
-        lineChartOptions.Scales.Y!.Min = MinY;
+
+        lineChartOptions.Scales.Y!.Max = MaxY != null ? Math.Ceiling((double)MaxY) : 1;
+        lineChartOptions.Scales.Y!.Min = MinY != null ? Math.Floor((double)MinY) : 0;
 
         StateHasChanged();
     }
@@ -45,7 +46,6 @@
     }
     private LineChartDataset GetDataset()
     {
-        // var data = GraphDatas.Select(x => x.Value).ToList().Select(x => double.TryParse(x.Replace(".", ","), out var result) ? (double?)result : null).ToList();
         var data = GraphDatas.Select(x => (double?)x.Value).ToList();
         List<string> dataColor = GraphDatas.Select(x => x.Color).ToList();
         MaxY = data.Max()+1;

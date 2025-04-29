@@ -13,11 +13,13 @@
         <th>ID</th>
         <th>Navn</th>
         <th>Sikkerhedsgrupper</th>
+        <th>Adgang til antal lokaler</th>
     </Headers>
     <Rows>
         <td>@context.Id</td>
         <td>@context.Name</td>
         <td class="@(context.SecurityGroups.Count() == 0 ? "fst-italic" : "")">@(context.SecurityGroups.Count() == 0 ? "Ingen" : string.Join(", ", context.SecurityGroups.Select(e => e.Name)))</td>
+        <td class="@(context.SecurityGroups.Count() == 0 ? "fst-italic" : "")">@(context.UserSecurityGroups.Count())</td>
     </Rows>
 </GenericCRUDListView>
 

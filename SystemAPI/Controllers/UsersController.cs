@@ -19,7 +19,8 @@ namespace SystemAPI.Controllers
             return HandleExceptions(() =>
             {
                 var data = context.Users
-                    .AsNoTracking()
+                    .AsQueryable()
+                    //.AsNoTracking()
                     .Include(e => e.UserSecurityGroups)
                         .ThenInclude(e => e.SecurityGroup)
                             .ThenInclude(e => e.SecurityGroupPermissions)
