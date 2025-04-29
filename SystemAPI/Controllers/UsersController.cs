@@ -256,6 +256,8 @@ namespace SystemAPI.Controllers
 
             data = context.Rooms
                 .Include(x => x.Devices)
+                    .ThenInclude(x=>x.Type)
+                .Include(x=>x.Devices)
                     .ThenInclude(x => x.Data)
                         .ThenInclude(x => x.Type)
                 .Include(x => x.TimeLimits)

@@ -15,19 +15,19 @@
     @switch (Input.DType)
     {
         case InputType.Text:
-            <input class="form-control @(!string.IsNullOrEmpty(Input.Error) ? "is-invalid" : null)" value="@Input.Value" @onchange="(e) => OnChanged(Input.DType, e)" />
+            <input class="form-control @(!string.IsNullOrEmpty(Input.Error) ? "is-invalid" : null)" value="@Input.Value" @onchange="(e) => OnChangedTmp(Input.DType, e)" />
             break;
         case InputType.TextArea:
-            <textarea class="form-control @(!string.IsNullOrEmpty(Input.Error) ? "is-invalid" : null)" value="@Input.Value" @onchange="(e) => OnChanged(Input.DType, e)"></textarea>
+            <textarea class="form-control @(!string.IsNullOrEmpty(Input.Error) ? "is-invalid" : null)" value="@Input.Value" @onchange="(e) => OnChangedTmp(Input.DType, e)"></textarea>
             break;
         case InputType.Number:
-            <input class="form-control @(!string.IsNullOrEmpty(Input.Error) ? "is-invalid" : null)" type="number" value="@Input.Value" @onchange="(e) => OnChanged(Input.DType, e)" />
+            <input class="form-control @(!string.IsNullOrEmpty(Input.Error) ? "is-invalid" : null)" type="number" value="@Input.Value" @onchange="(e) => OnChangedTmp(Input.DType, e)" />
             break;
         case InputType.Date:
-            <input class="form-control @(!string.IsNullOrEmpty(Input.Error) ? "is-invalid" : null)" type="date" value="@(Input.Value != null ? (Input.Value is DateTime ? null : DateTime.Parse((string)Input.Value)) : null)" @onchange="(e) => OnChanged(InputType.Date,e)" />
+            <input class="form-control @(!string.IsNullOrEmpty(Input.Error) ? "is-invalid" : null)" type="date" value="@(Input.Value != null ? (Input.Value is DateTime ? null : DateTime.Parse((string)Input.Value)) : null)" @onchange="(e) => OnChangedTmp(InputType.Date,e)" />
             break;
         case InputType.Select:
-            <select class="form-select @(!string.IsNullOrEmpty(Input.Error) ? "is-invalid" : null)" value="@(Input.Value is Option ? ((Option)Input.Value).Value : Input.Value)" @onchange="(e) => OnChanged(Input.DType, e)">
+            <select class="form-select @(!string.IsNullOrEmpty(Input.Error) ? "is-invalid" : null)" value="@(Input.Value is Option ? ((Option)Input.Value).Value : Input.Value)" @onchange="(e) => OnChangedTmp(Input.DType, e)">
                 @if (Input.Options != null)
                 {
                     @foreach (var option in Input.Options)
@@ -39,7 +39,7 @@
             break;
         case InputType.Bool:
             <div class="form-check">
-                <input class="form-check-input @(!string.IsNullOrEmpty(Input.Error) ? "is-invalid" : null)" id="@Input.Name" type="checkbox" value="@Input.Value" @onchange="(e) => OnChanged(Input.DType, e)" />
+                <input class="form-check-input @(!string.IsNullOrEmpty(Input.Error) ? "is-invalid" : null)" id="@Input.Name" type="checkbox" value="@Input.Value" @onchange="(e) => OnChangedTmp(Input.DType, e)" />
                 <label class="form-check-label" for="@Input.Name">
                     @Input.Label
                 </label>
@@ -105,7 +105,7 @@
         }
     }
 
-    private void OnChanged(InputType type, ChangeEventArgs e)
+    private void OnChangedTmp(InputType type, ChangeEventArgs e)
     {
         if(type == InputType.Text)
         {
