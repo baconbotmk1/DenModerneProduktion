@@ -1,15 +1,13 @@
 ﻿@inject IJSRuntime JS
-<span>@Text</span>
-
-<div class="d-flex flex-row justify-content-around">
-    <Button class="mt-3 w-25 btn-sm" Color="ButtonColor.Success" Type="ButtonType.Button" @onclick="Confirm">
-        @AcceptText
-    </Button>
-
-    <Button class="mt-3 w-25" Color="ButtonColor.Danger" Type="ButtonType.Button" @onclick="Reject">
-        @RejectText
-    </Button>
-</div>
+<Modal @ref="Modal">
+    <HeaderTemplate>
+        <h5 class="modal-title">@Text</h5>
+    </HeaderTemplate>
+    <FooterTemplate>
+        <Button Color="ButtonColor.Primary" @onclick="Confirm">@AcceptText</Button>
+        <Button Color="ButtonColor.Secondary" @onclick="Reject">@RejectText</Button>
+    </FooterTemplate>
+</Modal>
 
 @code {
     [Parameter] public string Text { get; set; } = "Modal Titel";
@@ -21,6 +19,15 @@
 
     [Parameter] public Modal Modal { get; set; } = default!;
 
+    public void SetTitle(string title)
+    {
+        Text = title;
+    }
+
+    public async Task Show()
+    {
+        await Modal.ShowAsync();
+    }
     protected void Confirm()
     {
         OnConfirm.InvokeAsync();
