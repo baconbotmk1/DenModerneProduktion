@@ -12,8 +12,8 @@
         }
     </BodyTemplate>
     <FooterTemplate>
-        <Button Color="ButtonColor.Primary" @onclick="HandleSubmit">Submit</Button>
-        <Button Color="ButtonColor.Secondary" @onclick="Hide">Cancel</Button>
+        <Button Color="ButtonColor.Primary" @onclick="HandleSubmit">@SubmitText</Button>
+        <Button Color="ButtonColor.Secondary" @onclick="Hide">@CancelText</Button>
     </FooterTemplate>
 </Modal>
 
@@ -21,6 +21,9 @@
     private Modal ModalRef;
 
     [Parameter] public string Title { get; set; } = "Title Missing";
+
+    [Parameter] public string SubmitText { get; set; } = "Submit";
+    [Parameter] public string CancelText { get; set; } = "Cancel";
 
     [Parameter] public List<ModalInput> Inputs { get; set; }
 

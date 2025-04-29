@@ -9,37 +9,39 @@
 @inject NavigationManager navigationManager
 <PageTitle>Sikkerhedsgrupper</PageTitle>
 
-<div class="d-flex flex-row">
-    <div class="card w-50 me-5">
-        <div class="card-header">
-            <h3>@(SecurityGroupID == 0 ? "Ny Sikkerhedsgruppe" : "Sikkerhedsgruppe #" + SecurityGroupID)</h3>
+<div class="row">
+    <div class="col-xl-6 col-12">
+        <div class="card w-100">
+            <div class="card-header">
+                <h3>@(SecurityGroupID == 0 ? "Ny Sikkerhedsgruppe" : "Sikkerhedsgruppe #" + SecurityGroupID)</h3>
 
-        </div>
-        <div class="card-body">
-            <div class="mb-2">
-                <span class="form-label">Navn</span>
-                <input @bind-value="name" required name="name" placeholder="Navn" type="text" class="form-control" />
             </div>
-            <div class="mb-2">
-                <span class="form-label">Beskrivelse</span>
-                <input @bind-value="desc" name="desc" placeholder="Beskrivelse" type="text" class="form-control" />
+            <div class="card-body">
+                <div class="mb-2">
+                    <span class="form-label">Navn</span>
+                    <input @bind-value="name" required name="name" placeholder="Navn" type="text" class="form-control" />
+                </div>
+                <div class="mb-2">
+                    <span class="form-label">Beskrivelse</span>
+                    <input @bind-value="desc" name="desc" placeholder="Beskrivelse" type="text" class="form-control" />
+                </div>
             </div>
-        </div>
-        <div class="card-footer">
-            <button @onclick="() => Create()" class="@(SecurityGroupID == 0 ? "" : "d-none") float-end btn btn-sm btn-success">Opret</button>
-            <button @onclick="() => Update()" class="@(SecurityGroupID != 0 ? "" : "d-none") float-end btn btn-sm btn-primary">Gem</button>
+            <div class="card-footer">
+                <button @onclick="() => Create()" class="@(SecurityGroupID == 0 ? "" : "d-none") float-end btn btn-sm btn-success">Opret</button>
+                <button @onclick="() => Update()" class="@(SecurityGroupID != 0 ? "" : "d-none") float-end btn btn-sm btn-primary">Gem</button>
+            </div>
         </div>
     </div>
     @if (SecurityGroupID != 0)
     {
-    <div class="d-flex flex-column w-50">
+    <div class="col-xl-6 col-12 md-4 md-xl-0">
         <div class="card w-100">
             <div class="card-header">
                 <h3>Rettigheder</h3>
 
             </div>
             <div class="card-body">
-                <table class="w-100">
+                <table class="w-100 table">
                     @foreach (Permission grp in (Item.SecurityGroupPermissions.Count() > 0 ? Item.SecurityGroupPermissions.Select(e => e.Permission) : new List<Permission>()))
                     {
                         <tr>
@@ -54,13 +56,13 @@
                 <button @onclick="() => BeginAddingPermission()" class="@(SecurityGroupID != 0 ? "" : "d-none") float-end btn btn-sm btn-primary">Tilføj rettighed</button>
             </div>
         </div>
-        <div class="card w-100 mt-5">
+        <div class="card w-100 mt-4">
             <div class="card-header">
                 <h3>Brugere</h3>
 
             </div>
             <div class="card-body">
-                <table class="w-100">
+                <table class="w-100 table">
                     @foreach (User user in (Item.UserSecurityGroups.Count() > 0 ? Item.UserSecurityGroups.Select(e => e.User) : new List<User>()))
                     {
                         <tr>
@@ -79,8 +81,8 @@
     }
 </div>
 
-<GenericModal @ref="AddPermissionModal" Title="Tilføj Rettighed" Inputs="addPermissionInputs" OnSubmitAsync="HandleModalSubmit" />
-<GenericModal @ref="AddUserModal" Title="Tilføj Bruger" Inputs="addUserInputs" OnSubmitAsync="HandleUserModalSubmit" />
+<GenericModal @ref="AddPermissionModal" SubmitText="Tilføj" Title="Tilføj Rettighed" Inputs="addPermissionInputs" OnSubmitAsync="HandleModalSubmit" />
+<GenericModal @ref="AddUserModal" SubmitText="Tilføj" Title="Tilføj Bruger" Inputs="addUserInputs" OnSubmitAsync="HandleUserModalSubmit" />
 
 @code {
     public SecurityGroup Item { get; set; } = new SecurityGroup();
@@ -94,46 +96,51 @@
     public int SecurityGroupID => Int32.TryParse(id, out int res) ? res : 0;
 
     public List<Permission> AllPermissions { get; set; } = new List<Permission>();
-    public List<Permission> AllUsers { get; set; } = new List<Permission>();
+    public List<User> AllUsers { get; set; } = new List<User>();
 
     public List<Permission> RemainingPermissions => AllPermissions.Where(e => !(Item ?? new SecurityGroup()).SecurityGroupPermissions.Select(e2 => e2.PermissionId).Contains(e.Id)).ToList();
-    public List<Permission> RemainingUsers => AllUsers.Where(e => !(Item ?? new SecurityGroup()).UserSecurityGroups.Select(e2 => e2.UserId).Contains(e.Id)).ToList();
+    public List<User> RemainingUsers => AllUsers.Where(e => !(Item ?? new SecurityGroup()).UserSecurityGroups.Select(e2 => e2.UserId).Contains(e.Id)).ToList();
 
 
     protected override async Task OnInitializedAsync()
     {
-        if (SecurityGroupID != 0)
+        await LoadPage();
+    }
+
+    async public Task LoadPage()
+    {
+        var response = await requester.Get<SecurityGroup>("api/security_groups/" + SecurityGroupID);
+
+        if (response.Status >= 400)
         {
-            var response = await requester.Get<SecurityGroup>("api/security_groups/" + SecurityGroupID);
-
-            SecurityGroup? securityGroup = response is AcceptedResponse<SecurityGroup> ? ((AcceptedResponse<SecurityGroup>)response).Data : null;
-
-            var response2 = await requester.Get<List<Permission>>("api/permissions");
-
-            var response3 = await requester.Get<List<User>>("api/users");
-
-            if (response.Status >= 400 || response2.Status >= 400 || response3.Status >= 400)
-            {
-                viewHelper.Alert("Noget gik galt, genindlæs siden og prøv igen...");
-                return;
-            }
-
-            AllPermissions = response2.TryGetData<List<Permission>>() ?? new List<Permission>();
-            AllUsers = response3.TryGetData<List<User>>() ?? new List<User>();
-
-            if (securityGroup != null)
-            {
-                Item = securityGroup;
-                name = securityGroup.Name;
-                desc = securityGroup.Desc;
-
-                StateHasChanged();
-            }
-            else
-            {
-                navigationManager.NavigateTo("admin/security_groups");
-            }
+            viewHelper.Alert("Noget gik galt, genindlæs siden og prøv igen...");
+            return;
         }
+
+        SecurityGroup? securityGroup = response is AcceptedResponse<SecurityGroup> ? ((AcceptedResponse<SecurityGroup>)response).Data : null;
+        if(securityGroup == null)
+        {
+            navigationManager.NavigateTo("admin/security_groups", true);
+        }
+
+        if(AllPermissions.Count() == 0)
+        {
+            var response2 = await requester.Get<List<Permission>>("api/permissions");
+            AllPermissions = response2.TryGetData<List<Permission>>() ?? new List<Permission>();
+        }
+
+        if (AllUsers.Count() == 0)
+        {
+            var response3 = await requester.Get<List<User>>("api/users");
+            AllUsers = response3.TryGetData<List<User>>() ?? new List<User>();
+        }
+
+
+        Item = securityGroup!;
+        name = securityGroup!.Name;
+        desc = securityGroup!.Desc ?? "";
+
+        StateHasChanged();
     }
 
 
@@ -178,15 +185,9 @@
             Desc = desc
         });
 
-        SecurityGroup? updatedSecurityGroup = response is AcceptedResponse<SecurityGroup> ? ((AcceptedResponse<SecurityGroup>)response).Data : null;
+        await LoadPage();
 
         viewHelper.HideLoader();
-
-        if (updatedSecurityGroup != null)
-        {
-            name = updatedSecurityGroup.Name;
-            desc = updatedSecurityGroup.Desc;
-        }
     }
 
 
@@ -246,10 +247,9 @@
 
     private async Task<bool> HandleUserModalSubmit(Dictionary<string, ModalInput> inputs)
     {
+        string user_id = (string)inputs["user"].Value ?? "";
 
-        string permission = (string)inputs["user"].Value ?? "";
-
-        var response = await requester.Post($"api/user/{permission}/permission/" + SecurityGroupID, null);
+        var response = await requester.Post($"api/users/{user_id}/security_group/" + SecurityGroupID, null);
 
         if (response.IsSuccessResponse)
         {
