@@ -77,8 +77,8 @@
     public List<SecurityGroup> AllSecurityGroups { get; set; } = new List<SecurityGroup>();
     public List<Room> AllRooms { get; set; } = new List<Room>();
 
-    public List<SecurityGroup> UserSecurityGroups => AllSecurityGroups.Where(e => !(Item ?? new User()).UserSecurityGroups.Select(e2 => e2.SecurityGroupId).Contains(e.Id)).ToList();
-    public List<Room> UserRooms => AllRooms.Where(e => !(Item ?? new User()).UserRooms.Select(e2 => e2.RoomId).Contains(e.Id)).ToList();
+    public List<SecurityGroup> UserSecurityGroups => AllSecurityGroups.Where(e => !(Item ?? new User()).UserSecurityGroups.Select(e2 => e2.SecurityGroupId).Contains(e.Id)).OrderBy(x => x.Name).ToList();
+    public List<Room> UserRooms => AllRooms.Where(e => !(Item ?? new User()).UserRooms.Select(e2 => e2.RoomId).Contains(e.Id)).OrderBy(x=>x.Name).ToList();
 
     protected override async Task OnInitializedAsync()
     {
@@ -241,7 +241,7 @@
             new ModalInput
             {
                 Name = "security_group", Label = "Sikkerhedsgruppe", DType = InputType.Select,
-                Options = UserSecurityGroups.OrderByDescending(e => e.Name).Select(e => new Option(e.Name, e.Id.ToString())).ToList()
+                Options = UserSecurityGroups.OrderBy(e => e.Name).Select(e => new Option(e.Name, e.Id.ToString())).ToList()
             }
         };
 
@@ -255,7 +255,7 @@
             new ModalInput
             {
                 Name = "room", Label = "Lokale", DType = InputType.Select,
-                Options = UserRooms.OrderByDescending(e => e.Name).Select(e => new Option(e.Name, e.Id.ToString())).ToList()
+                Options = UserRooms.OrderBy(e => e.Name).Select(e => new Option(e.Name, e.Id.ToString())).ToList()
             }
         };
 

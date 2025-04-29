@@ -2,7 +2,6 @@
 using Microsoft.EntityFrameworkCore;
 using Shared.Models;
 using Pomelo.EntityFrameworkCore.MySql;
-using Shared.Models.Assignables.TimeLimit;
 
 namespace Shared
 {
@@ -65,14 +64,6 @@ namespace Shared
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<TimeLimitAssignment>()
-                .HasDiscriminator<string>("type")
-                .HasValue<SecurityGroupDeviceTL>("secgrp_device")
-                .HasValue<SecurityGroupRoomTL>("secgrp_room")
-                .HasValue<SecurityGroupSectionTL>("secgrp_section")
-                .HasValue<UserRoomTL>("user_room")
-                .HasValue<UserSectionTL>("user_section")
-                .HasValue<UserDeviceTL>("user_device");
         }
     }
 }

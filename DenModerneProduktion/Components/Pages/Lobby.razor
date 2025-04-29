@@ -1,6 +1,10 @@
 ﻿@using DenModerneProduktion.Services
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Components.Authorization
+@using Shared.Models
 @inject ViewHelper viewHelper
 @inject ApiRequester requester
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
 @page "/lobby"
 <PageTitle>Lobby</PageTitle>
@@ -20,8 +24,8 @@ else
                     <div class="js-lobby-list-item-info">
                         <p class="js-lobby-list-item-info-title">@room.Name</p>
                         <div class="js-lobby-list-item-info-data">
-                            <p class="js-lobby-list-item-info-data-temperature">Temperatur: <span>22,4&deg;</span></p>
-                            <p class="js-lobby-list-item-info-data-humidity">Fugtighed: <span>55%</span></p>
+                            <p class="js-lobby-list-item-info-data-temperature">Temperatur: <span>@($"{GetRoomData(room,2).Value}{GetRoomData(room,2).Type.Suffix}" ?? "N/A")</span></p>
+                            <p class="js-lobby-list-item-info-data-humidity">Fugtighed: <span>@($"{GetRoomData(room,3).Value}{GetRoomData(room,3).Type.Suffix}" ?? "N/A")</span></p>
                         </div>
                     </div>
                     <div class="js-lobby-list-item-icon"><Icon Name="IconList[CustomCount++ % IconList.Count]" Size="IconSize.x4" Style="@($"color:#{GenerateHexColor()}")" /></div>
@@ -37,6 +41,7 @@ else
     public List<IconName> IconList { get; set; } = new() { IconName.CircleFill, IconName.TriangleFill, IconName.ExclamationSquareFill, IconName.ExclamationOctagonFill, IconName.SquareFill, IconName.BalloonFill, IconName.BatteryFull, IconName.BellFill, IconName.CheckSquareFill, IconName.CloudFill };
     public List<Shared.Models.Room> AccessibleRooms { get; set; } = new();
     public bool IsLoading { get; set; } = true;
+    private ClaimsPrincipal user;
 
     protected override void OnAfterRender(bool firstRender)
     {
@@ -45,23 +50,31 @@ else
     }
     protected override async Task OnInitializedAsync()
     {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        user = authState.User;
         viewHelper.NavUpdate += async () => await GetAccessibleRoomsAsync();
         await GetAccessibleRoomsAsync();
     }
+    private DeviceData GetRoomData(Shared.Models.Room item, int type) => item.Devices.FirstOrDefault(x => x.Type.Id == type).Data.FirstOrDefault();
+
     private async Task GetAccessibleRoomsAsync()
     {
         IsLoading = true;
         StateHasChanged();
-        var response = await requester.Get<List<Shared.Models.Room>>("api/rooms");
-        if (response.StatusCode != 200)
+        if (user.Identity.IsAuthenticated)
         {
-            viewHelper.Alert(response.Message);
-            return;
-        }
+            var userId = user.Claims.First(x => x.Type == ClaimTypes.Sid).Value;
+            var response = await requester.Get<List<Shared.Models.Room>>($"api/users/{userId}/rooms/data");
+            if (response.StatusCode != 200)
+            {
+                viewHelper.Alert(response.Message);
+                return;
+            }
 
-        AccessibleRooms = ((Shared.Responses.AcceptedResponse<List<Shared.Models.Room>>)response).Data;
-        IsLoading = false;
-        StateHasChanged();
+            AccessibleRooms = ((Shared.Responses.AcceptedResponse<List<Shared.Models.Room>>)response).Data;
+            IsLoading = false;
+            StateHasChanged();
+        }
     }
 
     private string GenerateHexColor()

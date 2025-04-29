@@ -33,84 +33,86 @@
     <nav class="flex-column">
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <Icon Name="IconName.HouseFill" Size="IconSize.x4" class="js-nav-icon"/> Forside
+                <Icon Name="IconName.HouseFill" Size="IconSize.x4" class="js-nav-icon" /> Forside
             </NavLink>
         </div>
 
         <AuthorizeView>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="Lobby">
-                <Icon Name="IconName.LaptopFill" Size="IconSize.x4" class="js-nav-icon"/> Lobby
-            </NavLink>
-        </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="Lobby">
+                    <Icon Name="IconName.LaptopFill" Size="IconSize.x4" class="js-nav-icon" /> Lobby
+                </NavLink>
+            </div>
         </AuthorizeView>
 
         <AuthorizeView Policy="@Permissions.ViewAdminPanel">
-        @if (_ShowAdminMenu)
-        {
-            <div class="nav-item px-3">
-                <NavLink class="nav-link" href="admin">
-                    <Icon Name="IconName.PersonFillGear" Size="IconSize.x4" class="js-nav-icon"/> Admin
-                </NavLink>
-                @if (_ShowSubMenu)
-                {
-                    <nav class="flex-column">
-                        <div class="nav-item px-3">
-                            <NavLink class="nav-link" href="admin/sections">
-                                <Icon Name="IconName.MapFill" Size="IconSize.x4" class="js-nav-icon" /> Sektion
-                            </NavLink>
-                        </div>
-                        <div class="nav-item px-3">
-                            <NavLink class="nav-link" href="admin/rooms">
-                                <Icon Name="IconName.PinMapFill" Size="IconSize.x4" class="js-nav-icon" /> Lokale
-                            </NavLink>
-                        </div>
-                        <div class="nav-item px-3">
-                            <NavLink class="nav-link" href="admin/users">
-                                <Icon Name="IconName.PersonFill" Size="IconSize.x4" class="js-nav-icon" /> Brugere
-                            </NavLink>
-                        </div>
-                        <div class="nav-item px-3">
-                            <NavLink class="nav-link" href="admin/security_groups">
-                                <Icon Name="IconName.PeopleFill" Size="IconSize.x4" class="js-nav-icon" /> Sikkerhedsgrupper
-                            </NavLink>
-                        </div>
-                        <div class="nav-item px-3">
-                            <NavLink class="nav-link" href="admin/permissions">
-                                <Icon Name="IconName.ShieldFill" Size="IconSize.x4" class="js-nav-icon" /> Rettigheder
-                            </NavLink>
-                        </div>
-                        <div class="nav-item px-3">
-                            <NavLink class="nav-link" href="admin/device_types">
-                                <Icon Name="IconName.ShieldFill" Size="IconSize.x4" class="js-nav-icon" /> Enhedstyper
-                            </NavLink>
-                        </div>
-                        <div class="nav-item px-3">
-                            <NavLink class="nav-link" href="admin/devices">
-                                <Icon Name="IconName.ShieldFill" Size="IconSize.x4" class="js-nav-icon" /> Enheder
-                            </NavLink>
-                        </div>
-                    </nav>
-                }
-            </div>
-        }
+            @if (_ShowAdminMenu)
+            {
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="admin">
+                        <Icon Name="IconName.PersonFillGear" Size="IconSize.x4" class="js-nav-icon" /> Admin
+                    </NavLink>
+                    @if (_ShowSubMenu)
+                    {
+                        <nav class="flex-column">
+                            <div class="nav-item px-3">
+                                <NavLink class="nav-link" href="admin/sections">
+                                    <Icon Name="IconName.MapFill" Size="IconSize.x4" class="js-nav-icon" /> Sektion
+                                </NavLink>
+                            </div>
+                            <div class="nav-item px-3">
+                                <NavLink class="nav-link" href="admin/rooms">
+                                    <Icon Name="IconName.PinMapFill" Size="IconSize.x4" class="js-nav-icon" /> Lokale
+                                </NavLink>
+                            </div>
+                            <div class="nav-item px-3">
+                                <NavLink class="nav-link" href="admin/users">
+                                    <Icon Name="IconName.PersonFill" Size="IconSize.x4" class="js-nav-icon" /> Brugere
+                                </NavLink>
+                            </div>
+                            <div class="nav-item px-3">
+                                <NavLink class="nav-link" href="admin/security_groups">
+                                    <Icon Name="IconName.PeopleFill" Size="IconSize.x4" class="js-nav-icon" /> Sikkerhedsgrupper
+                                </NavLink>
+                            </div>
+                            <div class="nav-item px-3">
+                                <NavLink class="nav-link" href="admin/permissions">
+                                    <Icon Name="IconName.ShieldFill" Size="IconSize.x4" class="js-nav-icon" /> Rettigheder
+                                </NavLink>
+                            </div>
+                            <div class="nav-item px-3">
+                                <NavLink class="nav-link" href="admin/device_types">
+                                    <Icon Name="IconName.ShieldFill" Size="IconSize.x4" class="js-nav-icon" /> Enhedstyper
+                                </NavLink>
+                            </div>
+                            <div class="nav-item px-3">
+                                <NavLink class="nav-link" href="admin/devices">
+                                    <Icon Name="IconName.ShieldFill" Size="IconSize.x4" class="js-nav-icon" /> Enheder
+                                </NavLink>
+                            </div>
+                        </nav>
+                    }
+                </div>
+            }
         </AuthorizeView>
     </nav>
-    <div class="js-nav-rooms">
-        <h3>Lokaler</h3>
-        <div class="nav-scrollable">
-            <nav class="flex-column">
-                @foreach (var room in AccessibleRooms)
-                {
-                    <div class="nav-item px-3">
-                        <NavLink class="nav-link" href="@($"rooms/{room.Id}")" Match="NavLinkMatch.All">
-                            <Icon Name="IconName.DoorClosedFill" Size="IconSize.x4" class="js-nav-icon"/> @room.Name
-                        </NavLink>
-                    </div>
-                }
-            </nav>
+    <AuthorizeView>
+        <div class="js-nav-rooms">
+            <h3>Lokaler</h3>
+            <div class="nav-scrollable">
+                <nav class="flex-column">
+                    @foreach (var room in AccessibleRooms)
+                    {
+                        <div class="nav-item px-3">
+                            <NavLink class="nav-link" href="@($"rooms/{room.Id}")" Match="NavLinkMatch.All">
+                                <Icon Name="IconName.DoorClosedFill" Size="IconSize.x4" class="js-nav-icon" /> @room.Name
+                            </NavLink>
+                        </div>
+                    }
+                </nav>
+            </div>
         </div>
-    </div>
+    </AuthorizeView>
 </div>
 
 @code {
@@ -156,14 +158,19 @@
     }
     private async Task GetAccessibleRoomsAsync()
     {
-        var response = await requester.Get<List<Shared.Models.Room>>("api/rooms");
-        if (response.StatusCode != 200)
-        {
-            viewHelper.Alert(response.Message);
-            return;
-        }
 
-        AccessibleRooms = ((Shared.Responses.AcceptedResponse<List<Shared.Models.Room>>)response).Data;
-        StateHasChanged();
+        if (user.Identity.IsAuthenticated)
+        {
+            var userId = user.Claims.First(x => x.Type == ClaimTypes.Sid).Value;
+            var response = await requester.Get<List<Shared.Models.Room>>($"api/users/{userId}/rooms");
+            if (response.StatusCode != 200)
+            {
+                viewHelper.Alert(response.Message);
+                return;
+            }
+
+            AccessibleRooms = ((Shared.Responses.AcceptedResponse<List<Shared.Models.Room>>)response).Data;
+            StateHasChanged();
+        }
     }
 }
