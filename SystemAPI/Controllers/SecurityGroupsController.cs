@@ -19,8 +19,11 @@ namespace SystemAPI.Controllers
             try
             {
                 var data = context.SecurityGroups
+                    .AsQueryable()
                     .Include(e => e.SecurityGroupPermissions)
-                    .ThenInclude(e => e.Permission)
+                        .ThenInclude(e => e.Permission)
+                    .Include(e => e.UserSecurityGroups)
+                        .ThenInclude(e => e.User)
                     .ToList();
 
                 return Ok(data);

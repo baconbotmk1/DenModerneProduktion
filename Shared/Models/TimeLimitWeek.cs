@@ -10,7 +10,7 @@ namespace Shared.Models
 		public DateTime? StartDate { get; set; }
 
         [InverseProperty("Week")]
-        public ICollection<TimeLimitWeekDay> Days { get; } = new List<TimeLimitWeekDay>();
+        public ICollection<TimeLimitWeekDay> Days { get; set; } = new List<TimeLimitWeekDay>();
 
 		public int TimeLimitId { get; set; }
 		public TimeLimit TimeLimit { get; set; }

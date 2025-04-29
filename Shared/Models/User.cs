@@ -19,8 +19,8 @@ namespace Shared.Models
         public string? ReferenceId { get; set; }
 		public string? ReferenceType { get; set; }
 
+		//[JsonIgnore]
         [InverseProperty("User")]
-		[JsonIgnore]
 		public virtual ICollection<UserSecurityGroup> UserSecurityGroups { get; set; } = new List<UserSecurityGroup>();
 
 		public virtual ICollection<AccessCard> AccessCards { get; set; } = new List<AccessCard>();
@@ -28,8 +28,8 @@ namespace Shared.Models
         [NotMapped]
         public virtual IEnumerable<SecurityGroup> SecurityGroups => UserSecurityGroups.Select(e => e.SecurityGroup);
 
+        //[JsonIgnore]
         [InverseProperty("User")]
-        [JsonIgnore]
         public virtual ICollection<UserRoom> UserRooms { get; set; } = new List<UserRoom>();
 
 
