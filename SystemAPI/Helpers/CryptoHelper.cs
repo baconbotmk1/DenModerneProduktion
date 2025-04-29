@@ -15,7 +15,7 @@ namespace SystemAPI.Helpers
             return salt;
         }
 
-        public static string GenerateSaltString( int length = 16 ) => Convert.ToBase64String(GenerateSalt(length));
+        public static string GenerateSaltString( int length = 16 ) => Convert.ToBase64String(GenerateSalt(length)).Replace("/","-");
 
         public static byte[] HashPassword(string password, byte[] salt )
         {

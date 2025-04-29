@@ -49,6 +49,7 @@ else{
         <button disabled="@thinking" class="btn btn-primary">
             Login
         </button>
+        <a class="js-forgot-pwd" href="/forgotpassword">Glemt adgangskode?</a>
     </EditForm>
 }
 @code {
@@ -77,7 +78,7 @@ else{
 
             if (loggedIn)
             {
-                navigationManager.Refresh(true);
+                navigationManager.NavigateTo("/");
             }
         }
         catch(Exception ex)
