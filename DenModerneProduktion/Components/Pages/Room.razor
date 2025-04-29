@@ -4,7 +4,6 @@
 @inject ApiRequester requester
 @inject ViewHelper viewHelper
 @inject NavigationManager Navigation
-@rendermode InteractiveServer
 
 @page "/rooms/{_Id}"
 <PageTitle>Lokale</PageTitle>
@@ -116,10 +115,10 @@ else
         {
             var fromDateTime = DateTime.Now.AddHours(hoursSpan * (i-1));
             var toDateTime =  DateTime.Now.AddHours(hoursSpan * i);
-            List<double> values = _RoomDeviceData.Where(x => x.Timestamp > fromDateTime && x.Timestamp <= toDateTime).Select(x=>double.Parse(x.Value.Replace(".",","))).ToList();
+            List<double> values = _RoomDeviceData.Where(x => x.Timestamp > fromDateTime && x.Timestamp <= toDateTime).Select(x=>double.Parse(x.Value, NumberStyles.Any, CultureInfo.InvariantCulture)).ToList();
             if (values.Count != 0)
             {
-                var value = double.Parse(values.Average().ToString("0.0"));
+                var value = Math.Round(values.Average(), 1);
                 var pattern = CurrentDataPeriod == 0 ? "dd/MM HH:mm" : CurrentDataPeriod == 1 ? "dd/MM HH:mm" : "dd/MM";
 
                 GraphData.Add(new()

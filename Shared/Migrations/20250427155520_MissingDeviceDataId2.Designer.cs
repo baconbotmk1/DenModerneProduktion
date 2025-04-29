@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Shared;
 
@@ -11,9 +12,11 @@ using Shared;
 namespace Shared.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20250427155520_MissingDeviceDataId2")]
+    partial class MissingDeviceDataId2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -816,6 +819,9 @@ namespace Shared.Migrations
                     b.Property<string>("ReferenceType")
                         .HasColumnType("longtext");
 
+                    b.Property<string>("ResetState")
+                        .HasColumnType("longtext");
+
                     b.Property<string>("ResetToken")
                         .HasColumnType("longtext");
 
@@ -1287,7 +1293,7 @@ namespace Shared.Migrations
                         .IsRequired();
 
                     b.HasOne("Shared.Models.SecurityGroup", "SecurityGroup")
-                        .WithMany("SecurityGroupRooms")
+                        .WithMany()
                         .HasForeignKey("SecurityGroupId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1377,7 +1383,7 @@ namespace Shared.Migrations
                         .IsRequired();
 
                     b.HasOne("Shared.Models.User", "User")
-                        .WithMany("UserRooms")
+                        .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1556,8 +1562,6 @@ namespace Shared.Migrations
                 {
                     b.Navigation("SecurityGroupPermissions");
 
-                    b.Navigation("SecurityGroupRooms");
-
                     b.Navigation("UserSecurityGroups");
                 });
 
@@ -1596,8 +1600,6 @@ namespace Shared.Migrations
             modelBuilder.Entity("Shared.Models.User", b =>
                 {
                     b.Navigation("AccessCards");
-
-                    b.Navigation("UserRooms");
 
                     b.Navigation("UserSecurityGroups");
                 });

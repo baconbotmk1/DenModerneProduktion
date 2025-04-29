@@ -30,6 +30,39 @@
     <!-- Add sortable.js reference if SortableList component is used in your application. -->
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     <script src="_content/Blazor.Bootstrap/blazor.bootstrap.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <script src="mpegts.js"></script>
+    <script src="https://vjs.zencdn.net/8.22.0/video.min.js"></script>
+    <script type="text/javascript">let maxLength = 0;
+	    var hls;
+
+	    const SECONDS_IN_DAY = 86400;
+
+        function loadFeed(videoSrc)
+        {
+            var video = document.getElementById('video');
+	        if (Hls.isSupported()) {
+		        hls = new Hls();
+		        hls.loadSource(videoSrc);
+		        hls.attachMedia(video);
+		        //hls.on(Hls.Events.MANIFEST_PARSED, function () {
+			        //video.play();
+		        //});
+		        hls.on(Hls.Events.LEVEL_LOADED, function () {
+			        maxLength = this.levelController.currentLevel.details.totalduration;
+
+			        let duration = this.levelController.currentLevel.details.totalduration
+			        let strDur = "" + (( duration / SECONDS_IN_DAY ) * 100 ) + "%";
+
+			        $("#timeline-duration")[0].width = strDur;
+		        });
+	        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+		        video.src = videoSrc;
+		        video.addEventListener('loadedmetadata', () => {
+			        video.play();
+		        });
+	        }
+        }</script>
 </body>
 
 </html>

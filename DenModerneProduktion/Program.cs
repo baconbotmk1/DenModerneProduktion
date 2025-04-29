@@ -25,7 +25,7 @@ namespace DenModerneProduktion
             builder.Services.AddAuthorization();
             builder.Services.AddCascadingAuthenticationState();
 
-            builder.Services.AddAuthorization(async options =>
+            builder.Services.AddAuthorization(options =>
             {
                 var allPermissions = new List<string>
                 {

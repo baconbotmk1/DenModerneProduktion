@@ -18,6 +18,7 @@ namespace SystemAPI.Controllers
             {
                 var data = context.DeviceInfos
                     .AsQueryable()
+                    .Where(e => device_id > 0 ? e.DeviceId == device_id : true)
                     .OrderByDescending(e => e.Timestamp)
                     .Skip(skip)
                     .Take(limit);
@@ -54,6 +55,7 @@ namespace SystemAPI.Controllers
             {
                 var data = context.DeviceDatas
                     .AsQueryable()
+                    .Where(e => device_id > 0 ? e.DeviceId == device_id : true)
                     .OrderByDescending(e => e.Timestamp)
                     .Skip(skip)
                     .Take(limit);
@@ -90,6 +92,7 @@ namespace SystemAPI.Controllers
             {
                 var data = context.DeviceEvents
                     .AsQueryable()
+                    .Where(e => device_id > 0 ? e.DeviceId == device_id : true)
                     .OrderByDescending(e => e.Timestamp)
                     .Skip(skip)
                     .Take(limit);

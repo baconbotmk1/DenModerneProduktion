@@ -17,6 +17,8 @@ namespace Shared.Models
         public int TypeId { get; set; }
 		public DeviceDataType Type { get; set; }
 
+        public ICollection<DeviceEvent> Events { get; set; } = new List<DeviceEvent>();
+
 		public DeviceData()
 		{
 		}
