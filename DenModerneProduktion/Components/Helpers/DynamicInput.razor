@@ -62,10 +62,6 @@
     private DateTime dateValue;
     private string selectedValue;
 
-    public delegate void OnChanged();
-
-    public OnChanged OnChangedEvent { get; set; }
-
     protected override void OnParametersSet()
     {
         switch (Input.DType)
@@ -147,9 +143,9 @@
             Input.Value = DateTime.Parse(val);
         }
 
-        if(OnChangedEvent != null)
+        if(Input.OnChanged != null)
         {
-            OnChangedEvent.Invoke();
+            Input.OnChanged.Invoke();
         }
     }
 }

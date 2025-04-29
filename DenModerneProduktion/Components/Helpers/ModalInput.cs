@@ -12,6 +12,32 @@
 
         public bool Required { get; set; } = false;
 
+        public Action? OnChanged { get; set; } = null;
+
+        public Func<bool>? ShouldRenderGeneral { get; set; } = null;
+        public Func<Dictionary<string, ModalInput>, bool>? ShouldRenderModal { get; set; } = null;
+
+
+        public bool ShouldRender()
+        {
+            if(ShouldRenderGeneral != null)
+            {
+                return ShouldRenderGeneral.Invoke();
+            }
+
+            return true;
+        }
+
+        public bool ShouldRender(Dictionary<string, ModalInput> inputs)
+        {
+            if (ShouldRenderModal != null)
+            {
+                return ShouldRenderModal.Invoke(inputs);
+            }
+
+            return true;
+        }
+
         public void Reset()
         {
             Error = null;

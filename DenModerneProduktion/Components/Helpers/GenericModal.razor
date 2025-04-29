@@ -6,7 +6,7 @@
         <h5 class="modal-title">@Title</h5>
     </HeaderTemplate>
     <BodyTemplate>
-        @foreach (var input in Inputs)
+        @foreach (var input in Inputs.Where(e => e.ShouldRender(Inputs.ToDictionary(e => e.Name))))
         {
             <DynamicInput Input="input" />
         }
@@ -25,12 +25,22 @@
     [Parameter] public string SubmitText { get; set; } = "Submit";
     [Parameter] public string CancelText { get; set; } = "Cancel";
 
-    [Parameter] public List<ModalInput> Inputs { get; set; }
+    [Parameter] public List<ModalInput> Inputs { get; set; } = new List<ModalInput>();
 
     //[Parameter] public EventCallback<List<ModalInput>> OnSubmit { get; set; }
     //[Parameter] public Func<List<ModalInput>,bool> OnSubmit { get; set; }
     [Parameter] public Func<Dictionary<string,ModalInput>,bool> OnSubmit { get; set; }
     [Parameter] public Func<Dictionary<string,ModalInput>,Task<bool>> OnSubmitAsync { get; set; }
+
+    public override Task SetParametersAsync(ParameterView parameters)
+    {
+        foreach(ModalInput input in Inputs)
+        {
+            input.OnChanged = Update;
+        }
+
+        return base.SetParametersAsync(parameters);
+    }
 
     public async Task Show()
     {
