@@ -2,135 +2,129 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Shared.DTOs.User;
 using Swashbuckle.AspNetCore.Filters;
-using SystemAPI.SwaggerExamples;
 
 namespace SystemAPI.Controllers
 {
     [ApiController]
     [Route("api/users")]
-    public class UsersController : BaseCRUDController<User>
+    public class UsersController(DataContext _context, IConfiguration _configuration, IServiceProvider _provider) : BaseController(_context, _configuration, _provider)
     {
-        public UsersController(DataContext Context, IRepository<User> DIrepository) : base(Context, DIrepository)
-        {
-        }
-
+        /// <summary>
+        /// Get all users
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
         public ActionResult<IEnumerable<User>> Get()
         {
-            return HandleExceptions(() =>
-            {
-                var data = context.Users
-                    .AsQueryable()
-                    //.AsNoTracking()
-                    .Include(e => e.UserSecurityGroups)
-                        .ThenInclude(e => e.SecurityGroup)
-                            .ThenInclude(e => e.SecurityGroupPermissions)
-                                .ThenInclude(e => e.Permission)
-                    .Include(e => e.AccessCards)
-                    .Include(e => e.UserRooms)
-                        .ThenInclude(e => e.Room)
-                    .ToList();
+            var data = context.Users
+                .AsQueryable()
+                //.AsNoTracking()
+                .Include(e => e.UserSecurityGroups)
+                    .ThenInclude(e => e.SecurityGroup)
+                        .ThenInclude(e => e.SecurityGroupPermissions)
+                            .ThenInclude(e => e.Permission)
+                .Include(e => e.AccessCards)
+                .Include(e => e.UserRooms)
+                    .ThenInclude(e => e.Room)
+                .ToList();
 
-                return Ok(data);
-            });
+            return Ok(data);
         }
 
+        /// <summary>
+        /// Create a new user
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
         [HttpPost]
-        [SwaggerRequestExample(typeof(CreateUser), typeof(CreateUserExample))]
         public ActionResult<User> Post([FromBody] CreateUser data)
         {
-            return HandleExceptions(() =>
-            {
-                User item = data.Adapt<User>();
+            User item = data.Adapt<User>();
 
-                repository.Insert(item);
-                repository.Save();
+            context.Users.Add(item);
+            context.SaveChanges();
 
-                return Ok(item);
-            });
+            return Ok(item);
         }
 
-
+        /// <summary>
+        /// Get a user by ID
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpGet("{id}")]
         public ActionResult<User> GetUserById(int id)
         {
-            return HandleExceptions(() =>
+            var data = context.Users
+                .AsQueryable()
+                .Include(e => e.UserSecurityGroups)
+                    .ThenInclude(e => e.SecurityGroup)
+                        .ThenInclude(e => e.SecurityGroupPermissions)
+                            .ThenInclude(e => e.Permission)
+                .Include(e => e.AccessCards)
+                .Include(e => e.UserRooms)
+                    .ThenInclude(e => e.Room)
+                .First(e => e.Id == id);
+
+            if (data == null)
             {
-                var data = context.Users
-                    .AsQueryable()
-                    .Include(e => e.UserSecurityGroups)
-                        .ThenInclude(e => e.SecurityGroup)
-                            .ThenInclude(e => e.SecurityGroupPermissions)
-                                .ThenInclude(e => e.Permission)
-                    .Include(e => e.AccessCards)
-                    .Include(e => e.UserRooms)
-                        .ThenInclude(e => e.Room)
-                    .First(e => e.Id == id);
+                return NotFound();
+            }
 
-                if (data == null)
-                {
-                    return NotFound();
-                }
-
-                return Ok(data);
-            });
+            return Ok(data);
         }
 
-
+        /// <summary>
+        /// Update a user
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="data"></param>
+        /// <returns></returns>
         [HttpPut("{id}")]
         public ActionResult<User> Put(int id, [FromBody] CreateUser data)
         {
-            try
+            User? item = context.Users.FirstOrDefault(e => e.Id == id);
+
+            if (item == null)
             {
-                User? item = repository.GetById(id);
-
-                if (item == null)
-                {
-                    return NotFound();
-                }
-
-                data.Adapt(item);
-
-                repository.Update(item);
-                repository.Save();
-
-                return Ok(item);
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine(ex.GetType().Name);
-                Debug.WriteLine(ex.GetType().Namespace);
-                Debug.WriteLine(ex.Message);
+                return NotFound();
             }
 
-            return BadRequest();
+            data.Adapt(item);
+
+            context.Users.Update(item);
+            context.SaveChanges();
+
+            return Ok(item);
         }
 
+        /// <summary>
+        /// Delete a user
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpDelete("{id}")]
         public ActionResult Delete(int id)
         {
-            return HandleExceptions(() =>
+            User? foundObject = context.Users.FirstOrDefault(e => e.Id == id);
+
+            if (foundObject == null)
             {
-                User? foundObject = repository.GetById(id);
+                return NotFound();
+            }
 
-                if (foundObject == null)
-                {
-                    return NotFound();
-                }
+            context.Users.Remove(foundObject);
+            context.SaveChanges();
 
-                bool deleted = repository.Delete(id);
-                repository.Save();
-
-                if (!deleted)
-                {
-                    return NotFound();
-                }
-
-                return Ok();
-            });
+            return Ok();
         }
 
-
+        /// <summary>
+        /// Add a security group to a user
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="security_group_id"></param>
+        /// <returns></returns>
         [HttpPost("{id}/security_group/{security_group_id}")]
         public ActionResult AddSecurityGroup(int id, int security_group_id)
         {
@@ -163,7 +157,12 @@ namespace SystemAPI.Controllers
             return Ok(new object { });
         }
 
-
+        /// <summary>
+        /// Remove a security group from a user
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="security_group_id"></param>
+        /// <returns></returns>
         [HttpDelete("{id}/security_group/{security_group_id}")]
         public ActionResult RemoveSecurityGroup(int id, int security_group_id)
         {
@@ -196,6 +195,12 @@ namespace SystemAPI.Controllers
 
             return Ok(new object { });
         }
+
+        /// <summary>
+        /// Get all rooms that a user has access to
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpGet("{id}/rooms")]
         public ActionResult<IEnumerable<Room>> GetUserRooms(int id)
         {
@@ -229,6 +234,11 @@ namespace SystemAPI.Controllers
             return Ok(data);
         }
 
+        /// <summary>
+        /// Get all rooms that a user has access to, with data
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpGet("{id}/rooms/data")]
         public ActionResult<IEnumerable<Room>> GetRoomsWithDataByUserId(int id)
         {
@@ -273,6 +283,12 @@ namespace SystemAPI.Controllers
             return Ok(data);
         }
 
+        /// <summary>
+        /// Add access to a room for a user
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="room_id"></param>
+        /// <returns></returns>
         [HttpPost("{id}/room/{room_id}")]
         public ActionResult AddRoom(int id, int room_id)
         {
@@ -305,6 +321,12 @@ namespace SystemAPI.Controllers
             return Ok(new object { });
         }
 
+        /// <summary>
+        /// Remove access to a room for a user
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="room_id"></param>
+        /// <returns></returns>
         [HttpDelete("{id}/room/{room_id}")]
         public ActionResult RemoveRoom(int id, int room_id)
         {
@@ -338,6 +360,12 @@ namespace SystemAPI.Controllers
             return Ok(new object { });
         }
 
+        /// <summary>
+        /// Assign an access card to a user
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="access_card_id"></param>
+        /// <returns></returns>
         [HttpPost("{id}/access_card/{access_card_id}")]
         public ActionResult AddAccessCard(int id, int access_card_id)
         {
@@ -366,7 +394,12 @@ namespace SystemAPI.Controllers
             return Ok();
         }
 
-
+        /// <summary>
+        /// Remove an access card from a user
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="access_card_id"></param>
+        /// <returns></returns>
         [HttpDelete("{id}/access_card/{access_card_id}")]
         public ActionResult RemoveAccessCard(int id, int access_card_id)
         {

@@ -251,7 +251,7 @@
         }
     }
 
-   protected override void OnAfterRender(bool first)
+    protected override void OnAfterRender(bool first)
     {
         if(first)
         {
@@ -382,5 +382,31 @@
             RoomId = updatedDevice.RoomId.ToString();
             SectionId = updatedDevice.SectionId.ToString();
         }
+    }
+
+    public List<Device>? AllDevices { get; set; }
+
+    private GenericModal AddModal;
+    private List<ModalInput> addInputs { get; set; } = new List<ModalInput>();
+
+    private async Task BeginAddingUser()
+    {
+        if(AllDevices == null)
+        {
+            var response = await requester.Get<List<Device>>("api/devices");
+            AllDevices = response.TryGetData<List<Device>>() ?? new List<Device>();
+        }
+
+
+        addInputs = new List<ModalInput>()
+        {
+            new ModalInput
+            {
+                Name = "¨device", Label = "Enhed", DType = InputType.Select,
+                Options = AllDevices.Where(e => e.RoomId == null || e.RoomId.Value != DeviceID).OrderByDescending(e => e.Name).Select(e => new Option(e.Name, e.Id.ToString())).ToList()
+            }
+        };
+
+        await AddModal.Show();
     }
 }

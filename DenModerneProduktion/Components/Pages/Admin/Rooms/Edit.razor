@@ -1,5 +1,6 @@
 ﻿@page "/admin/rooms/{id}"
 @using System.Diagnostics
+@using DenModerneProduktion.Components.Helpers
 @using DenModerneProduktion.Services
 @using Shared.DTOs.Room
 @using Shared.Models
@@ -8,28 +9,66 @@
 @inject NavigationManager navigationManager
 <PageTitle>Lokale</PageTitle>
 
-<div class="card w-50">
-    <div class="card-header">
-        <h3>@(RoomID == 0 ? "Nyt lokale" : "Lokale #" + RoomID)</h3>
+<div>
+    <div class="card w-50">
+        <div class="card-header">
+            <h3>@(RoomID == 0 ? "Nyt lokale" : "Lokale #" + RoomID)</h3>
 
-    </div>
-    <div class="card-body">
-        <div class="mb-2">
-            <span class="form-label">Navn</span>
-            <input @bind-value="Name" required name="name" placeholder="Navn" type="text" class="form-control" />
         </div>
-        <div class="mb-2">
-            <span class="form-label">Sektion</span>
-            <input @bind-value="SectionID" name="section" placeholder="Sektion" type="text" class="form-control" />
+        <div class="card-body">
+            <div class="mb-2">
+                <span class="form-label">Navn</span>
+                <input @bind-value="Name" required name="name" placeholder="Navn" type="text" class="form-control" />
+            </div>
+            <div class="mb-2">
+                <span class="form-label">Sektion</span>
+                <input @bind-value="SectionID" name="section" placeholder="Sektion" type="text" class="form-control" />
+            </div>
+        </div>
+        <div class="card-footer">
+            <button @onclick="() => Create()" class="@(RoomID == 0 ? "" : "d-none") float-end btn btn-sm btn-success">Opret</button>
+            <button @onclick="() => Update()" class="@(RoomID != 0 ? "" : "d-none") float-end btn btn-sm btn-primary">Gem</button>
         </div>
     </div>
-    <div class="card-footer">
-        <button @onclick="() => Create()" class="@(RoomID == 0 ? "" : "d-none") float-end btn btn-sm btn-success">Opret</button>
-        <button @onclick="() => Update()" class="@(RoomID != 0 ? "" : "d-none") float-end btn btn-sm btn-primary">Gem</button>
+    <div>
+        <div class="card w-100 mt-4">
+            <div class="card-header">
+                <h3>Enheder</h3>
+
+            </div>
+            <div class="card-body">
+                <table class="w-100 table">
+                    @foreach (Device device in (Item.Devices.Count() > 0 ? Item.Devices : new List<Device>()))
+                    {
+                        <tr>
+                            <td>@device.Id</td>
+                            <td>@device.Name</td>
+                            <td>
+                                <div class="float-end">
+                                    <button class="btn btn-sm btn-primary">
+                                        <!--<Icon Name="IconName.Wrench" Color="IconColor.White" Size="IconSize.x5" class="js-nav-icon" @onclick="async () => await OpenRoomEdit(room)" /> -->
+                                    </button>
+                                    <button class="btn btn-sm btn-danger">
+                                        <Icon Name="IconName.Trash" Color="IconColor.White" Size="IconSize.x5" class="js-nav-icon" @onclick="async ()=>await ConfirmDelete(ReferenceType.Device, device.Id)" />
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </table>
+            </div>
+            <div class="card-footer">
+                <button @onclick="async () => BeginAdding(ReferenceType.Device)" class="@(RoomID != 0 ? "" : "d-none") float-end btn btn-sm btn-primary">Tilføj lokale</button>
+            </div>
+        </div>
     </div>
 </div>
 
+<ConfirmModal @ref="ConfirmModalRef" />
+
 @code {
+    public Room Item { get; set; } = new Room();
+
     [Parameter]
     public string ID { get; set; }
 
@@ -38,7 +77,14 @@
 
     public int RoomID => Int32.TryParse(ID, out int res) ? res : 0;
 
+    private ConfirmModal ConfirmModalRef;
+
     protected override async Task OnInitializedAsync()
+    {
+        await LoadPage();
+    }
+
+    public async Task LoadPage()
     {
         if (RoomID != 0)
         {
@@ -56,6 +102,12 @@
                 navigationManager.NavigateTo("admin/rooms");
             }
         }
+    }
+
+
+    public enum ReferenceType
+    {
+        Device = 1,
     }
 
 
@@ -101,5 +153,77 @@
             SectionID = updatedRoom.SectionId.ToString();
         }
         await viewHelper.NavUpdate.Invoke();
+    }
+
+
+
+    public List<Device>? AllDevices { get; set; }
+
+    private GenericModal AddModal;
+    private List<ModalInput> addInputs { get; set; } = new List<ModalInput>();
+
+    private async Task BeginAdding( ReferenceType type )
+    {
+        if (type == ReferenceType.Device)
+        {
+            if (AllDevices == null)
+            {
+                var response = await requester.Get<List<Device>>("api/devices");
+                AllDevices = response.TryGetData<List<Device>>() ?? new List<Device>();
+            }
+
+            AddModal.OnSubmitAsync = async (Dictionary<string, ModalInput> inputs) =>
+            {
+                string device_id = (string)inputs["device"].Value ?? "";
+
+                var response = await requester.Post($"api/rooms/{RoomID}/device/" + device_id, null);
+
+                if (response.IsSuccessResponse)
+                {
+                    await LoadPage();
+                    return true;
+                }
+                else
+                {
+                    inputs["device"].Error = "[ERROR] " + response.Status.ToString() + ": " + response.Message;
+
+                    return false;
+                }
+            };
+            AddModal.Title = "Tilkryt enhed";
+            addInputs = new List<ModalInput>()
+            {
+                new ModalInput
+                {
+                    Name = "device", Label = "Enhed", DType = InputType.Select,
+                    Options = AllDevices.Where(e => e.RoomId != RoomID).OrderByDescending(e => e.Name).Select(e => new Option(e.Name, e.Id.ToString())).ToList()
+                }
+            };
+
+            AddModal.Update();
+
+            await AddModal.Show();
+        }
+    }
+
+    public async Task ConfirmDelete(ReferenceType type, int id)
+    {
+        switch (type)
+        {
+            case ReferenceType.Device:
+                /*ConfirmModalRef
+                    .SetConfirmAction(async () =>
+                    {
+                        var userResponse = await requester.Delete($"api/rooms/{id}/device/" + RoomID);
+                        if (userResponse.IsSuccessResponse)
+                        {
+                            await LoadPage();
+                        }
+                    })
+                    .SetTitle($"Slet {id}?");
+
+                await ConfirmModalRef.Show();*/
+                break;
+        }
     }
 }

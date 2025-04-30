@@ -1,115 +1,105 @@
-﻿using System.Diagnostics;
-using Shared.DTOs.DeviceSharedCategory;
+﻿using Shared.DTOs.DeviceSharedCategory;
 
 namespace SystemAPI.Controllers
 {
     [ApiController]
     [Route("api/device_shared_categories")]
-    public class DeviceSharedCategoriesController : BaseCRUDController<DeviceSharedCategory>
+    public class DeviceSharedCategoriesController(DataContext _context, IConfiguration _configuration, IServiceProvider _provider) : BaseController(_context, _configuration, _provider)
     {
-        public DeviceSharedCategoriesController(DataContext Context, IRepository<DeviceSharedCategory> DIrepository) : base(Context, DIrepository)
-        {
-        }
-
+        /// <summary>
+        /// Get all device shared categories
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
         public ActionResult<IEnumerable<DeviceSharedCategory>> Get()
         {
-            return HandleExceptions(() =>
-            {
-                var data = context.DeviceSharedCategories
-                    .AsNoTracking()
-                    .Include(e => e.InfoTypes)
-                    .Include(e => e.DataTypes)
-                    .Include(e => e.EventTypes)
-                    .ToList();
+            var data = context.DeviceSharedCategories
+                .AsNoTracking()
+                .Include(e => e.InfoTypes)
+                .Include(e => e.DataTypes)
+                .Include(e => e.EventTypes)
+                .ToList();
 
-                return Ok(data);
-            });
+            return Ok(data);
         }
 
+        /// <summary>
+        /// Create a new device shared category
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
         [HttpPost]
         public ActionResult<DeviceSharedCategory> Post([FromBody] CreateDeviceSharedCategory data)
         {
-            return HandleExceptions(() =>
-            {
-                DeviceSharedCategory item = data.Adapt<DeviceSharedCategory>();
+            DeviceSharedCategory item = data.Adapt<DeviceSharedCategory>();
 
-                repository.Insert(item);
-                repository.Save();
+            context.DeviceSharedCategories.Add(item);
+            context.SaveChanges();
 
-                return Ok(item);
-            });
+            return Ok(item);
         }
 
-
+        /// <summary>
+        /// Get a device shared category by ID
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpGet("{id}")]
         public ActionResult<DeviceSharedCategory> GetById(int id)
         {
-            return HandleExceptions(() =>
+            DeviceSharedCategory? deviceSharedCategory = context.DeviceSharedCategories.FirstOrDefault(e => e.Id == id);
+
+            if (deviceSharedCategory == null)
             {
-                DeviceSharedCategory? deviceSharedCategory = repository.GetById(id);
+                return NotFound();
+            }
 
-                if (deviceSharedCategory == null)
-                {
-                    return NotFound();
-                }
-
-                return Ok(deviceSharedCategory);
-            });
+            return Ok(deviceSharedCategory);
         }
 
-
+        /// <summary>
+        /// Update a device shared category
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="data"></param>
+        /// <returns></returns>
         [HttpPut("{id}")]
         public ActionResult<DeviceSharedCategory> Put(int id, [FromBody] CreateDeviceSharedCategory data)
         {
-            try
+            DeviceSharedCategory? item = context.DeviceSharedCategories.FirstOrDefault(e => e.Id == id);
+
+            if (item == null)
             {
-                DeviceSharedCategory? item = repository.GetById(id);
-
-                if (item == null)
-                {
-                    return NotFound();
-                }
-
-                data.Adapt(item);
-
-                repository.Update(item);
-                repository.Save();
-
-                return Ok(item);
-            }
-            catch(Exception ex)
-            {
-                Debug.WriteLine(ex.GetType().Name);
-                Debug.WriteLine(ex.GetType().Namespace);
-                Debug.WriteLine(ex.Message);
+                return NotFound();
             }
 
-            return BadRequest();
+            data.Adapt(item);
+
+            context.DeviceSharedCategories.Update(item);
+            context.SaveChanges();
+
+            return Ok(item);
         }
 
+        /// <summary>
+        /// Delete a device shared category
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpDelete("{id}")]
         public ActionResult Delete(int id)
         {
-            return HandleExceptions(() =>
+            DeviceSharedCategory? foundObject = context.DeviceSharedCategories.FirstOrDefault(e => e.Id == id);
+
+            if (foundObject == null)
             {
-                DeviceSharedCategory? foundObject = repository.GetById(id);
+                return NotFound();
+            }
 
-                if (foundObject == null)
-                {
-                    return NotFound();
-                }
+            context.DeviceSharedCategories.Remove(foundObject);
+            context.SaveChanges();
 
-                bool deleted = repository.Delete(id);
-                repository.Save();
-
-                if (!deleted)
-                {
-                    return NotFound();
-                }
-
-                return Ok();
-            });
+            return Ok();
         }
     }
 }

@@ -4,12 +4,12 @@ namespace SystemAPI.Controllers
 {
     [ApiController]
     [Route("api/buildings")]
-    public class BuildingsController : BaseCRUDController<Building>
+    public class BuildingsController(DataContext _context, IConfiguration _configuration, IServiceProvider _provider) : BaseController(_context, _configuration, _provider)
     {
-        public BuildingsController(DataContext Context, IRepository<Building> DIrepository) : base(Context, DIrepository)
-        {
-        }
-
+        /// <summary>
+        /// Get all buildings
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
         public IEnumerable<Building> Get()
         {
@@ -21,7 +21,11 @@ namespace SystemAPI.Controllers
                 .ToList();
         }
 
-        //[SwaggerRequestExample(typeof(CreateBuilding), typeof(CreateBuildingExample))]
+        /// <summary>
+        /// Create a new building
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
         [HttpPost]
         public ActionResult<Building> Post([FromBody] CreateBuilding data)
         {
@@ -32,17 +36,22 @@ namespace SystemAPI.Controllers
                 return NotFound("No cadastre with that ID exists");
             }
 
-            repository.Insert(item);
-            repository.Save();
+            context.Buildings.Add(item);
+            context.SaveChanges();
 
             return Ok(item);
         }
 
 
+        /// <summary>
+        /// Get a building by ID
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpGet("{id}")]
         public ActionResult<Building> GetBuildingById(int id)
         {
-            Building? Building = repository.GetById(id);
+            Building? Building = context.Buildings.FirstOrDefault(e => e.Id == id);
 
             if (Building == null)
             {
@@ -53,10 +62,16 @@ namespace SystemAPI.Controllers
         }
 
 
+        /// <summary>
+        /// Update a building
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="data"></param>
+        /// <returns></returns>
         [HttpPut("{id}")]
         public ActionResult<Building> Put(int id, [FromBody] CreateBuilding data)
         {
-            Building? item = repository.GetById(id);
+            Building? item = context.Buildings.FirstOrDefault(e => e.Id == id);
 
             if (item == null)
             {
@@ -70,29 +85,29 @@ namespace SystemAPI.Controllers
                 return NotFound("No Cadastre with that ID exists");
             }
 
-            repository.Update(item);
-            repository.Save();
+            context.Buildings.Update(item);
+            context.SaveChanges();
 
             return Ok(item);
         }
 
+        /// <summary>
+        /// Delete a building
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpDelete("{id}")]
         public ActionResult Delete(int id)
         {
-            Building? foundObject = repository.GetById(id);
+            Building? foundObject = context.Buildings.FirstOrDefault(e => e.Id == id);
 
             if (foundObject == null)
             {
                 return NotFound();
             }
 
-            bool deleted = repository.Delete(id);
-            repository.Save();
-
-            if (!deleted)
-            {
-                return NotFound();
-            }
+            context.Buildings.Remove(foundObject);
+            context.SaveChanges();
 
             return Ok();
         }

@@ -1,11 +1,12 @@
-﻿using System;
+﻿using Shared.Services;
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
 namespace Shared.Models
 {
-	public class SecurityGroup : BaseModel
+	public class SecurityGroup : BaseModel, ITimeLimitted
     {
         public string Name { get; set; } = default!;
         public string? Desc { get; set; } = default;

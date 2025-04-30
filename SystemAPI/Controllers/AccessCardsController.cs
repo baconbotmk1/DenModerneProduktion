@@ -4,18 +4,25 @@ namespace SystemAPI.Controllers
 {
     [ApiController]
     [Route("api/access_cards")]
-    public class AccessCardsController : BaseCRUDController<AccessCard>
+    public class AccessCardsController(DataContext _context, IConfiguration _configuration, IServiceProvider _provider) : BaseController(_context, _configuration, _provider)
     {
-        public AccessCardsController(DataContext Context, IRepository<AccessCard> DIrepository) : base(Context, DIrepository)
-        {
-        }
-
+        /// <summary>
+        /// Get all access cards
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
         public IEnumerable<AccessCard> Get()
         {
-            return repository.Get();
+            return context.AccessCards
+                .AsQueryable()
+                .ToList();
         }
 
+        /// <summary>
+        /// Create a new access card
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
         [HttpPost]
         public ActionResult<AccessCard> Post([FromBody] CreateAccessCard data)
         {
@@ -29,17 +36,22 @@ namespace SystemAPI.Controllers
 
             AccessCard item = data.Adapt<AccessCard>();
 
-            repository.Insert(item);
-            repository.Save();
+            context.AccessCards.Add(item);
+            context.SaveChanges();
 
             return Ok(item);
         }
 
 
+        /// <summary>
+        /// Get an access card by ID
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpGet("{id}")]
         public ActionResult<AccessCard> GetUserById(int id)
         {
-            AccessCard? accessCard = repository.GetById(id);
+            AccessCard? accessCard = context.AccessCards.FirstOrDefault(e => e.Id == id);
 
             if (accessCard == null)
             {
@@ -49,11 +61,16 @@ namespace SystemAPI.Controllers
             return Ok(accessCard);
         }
 
-
+        /// <summary>
+        /// Update an access card
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="data"></param>
+        /// <returns></returns>
         [HttpPut("{id}")]
         public ActionResult<AccessCard> Put(int id, [FromBody] CreateAccessCard data)
         {
-            AccessCard? item = repository.GetById(id);
+            AccessCard? item = context.AccessCards.FirstOrDefault(e => e.Id == id);
 
             if (item == null)
             {
@@ -70,29 +87,29 @@ namespace SystemAPI.Controllers
 
             data.Adapt(item);
 
-            repository.Update(item);
-            repository.Save();
+            context.AccessCards.Update(item);
+            context.SaveChanges();
 
             return Ok(item);
         }
 
+        /// <summary>
+        /// Delete an access card
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpDelete("{id}")]
         public ActionResult Delete(int id)
         {
-            AccessCard? foundObject = repository.GetById(id);
+            AccessCard? foundObject = context.AccessCards.FirstOrDefault(e => e.Id == id);
 
             if (foundObject == null)
             {
                 return NotFound();
             }
 
-            bool deleted = repository.Delete(id);
-            repository.Save();
-
-            if (!deleted)
-            {
-                return NotFound();
-            }
+            context.AccessCards.Remove(foundObject);
+            context.SaveChanges();
 
             return Ok();
         }

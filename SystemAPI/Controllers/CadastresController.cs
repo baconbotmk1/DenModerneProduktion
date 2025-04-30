@@ -1,40 +1,55 @@
 ﻿using Shared.DTOs.Cadastre;
+
 namespace SystemAPI.Controllers
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="_context"></param>
+    /// <param name="_configuration"></param>
+    /// <param name="_provider"></param>
     [ApiController]
     [Route("api/cadastres")]
-    public class CadastresController : BaseCRUDController<Cadastre>
+    public class CadastresController(DataContext _context, IConfiguration _configuration, IServiceProvider _provider) : BaseController(_context, _configuration, _provider)
     {
-        public CadastresController(DataContext Context, IRepository<Cadastre> DIrepository) : base(Context, DIrepository)
-        {
-        }
-
+        /// <summary>
+        /// Get all cadastres
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
         public IEnumerable<Cadastre> Get()
         {
             return context.Cadastres
-                .AsNoTracking()
+                .AsQueryable()
                 .Include(e => e.Buildings)
                 .ToList();
         }
 
-        //[SwaggerRequestExample(typeof(CreateCadastre), typeof(CreateCadastreExample))]
+        /// <summary>
+        /// Create a new cadastre
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
         [HttpPost]
         public ActionResult<Cadastre> Post([FromBody] CreateCadastre data)
         {
             Cadastre item = data.Adapt<Cadastre>();
 
-            repository.Insert(item);
-            repository.Save();
+            context.Cadastres.Add(item);
+            context.SaveChanges();
 
             return Ok(item);
         }
 
-
+        /// <summary>
+        /// Get a cadastre by ID
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpGet("{id}")]
         public ActionResult<Cadastre> GetCadastreById(int id)
         {
-            Cadastre? Cadastre = repository.GetById(id);
+            Cadastre? Cadastre = context.Cadastres.FirstOrDefault(e => e.Id == id);
 
             if (Cadastre == null)
             {
@@ -44,11 +59,16 @@ namespace SystemAPI.Controllers
             return Ok(Cadastre);
         }
 
-
+        /// <summary>
+        /// Update a cadastre
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="data"></param>
+        /// <returns></returns>
         [HttpPut("{id}")]
         public ActionResult<Cadastre> Put(int id, [FromBody] CreateCadastre data)
         {
-            Cadastre? item = repository.GetById(id);
+            Cadastre? item = context.Cadastres.FirstOrDefault(e => e.Id == id);
 
             if (item == null)
             {
@@ -57,29 +77,29 @@ namespace SystemAPI.Controllers
 
             data.Adapt(item);
 
-            repository.Update(item);
-            repository.Save();
+            context.Cadastres.Update(item);
+            context.SaveChanges();
 
             return Ok(item);
         }
 
+        /// <summary>
+        /// Delete a cadastre
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpDelete("{id}")]
         public ActionResult Delete(int id)
         {
-            Cadastre? foundObject = repository.GetById(id);
+            Cadastre? foundObject = context.Cadastres.FirstOrDefault(e => e.Id == id);
 
             if (foundObject == null)
             {
                 return NotFound();
             }
 
-            bool deleted = repository.Delete(id);
-            repository.Save();
-
-            if (!deleted)
-            {
-                return NotFound();
-            }
+            context.Cadastres.Remove(foundObject);
+            context.SaveChanges();
 
             return Ok();
         }

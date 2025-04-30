@@ -10,7 +10,7 @@
             <AccordionItem Title="@("Begrænsning #" + (TimeLimits.ToList().IndexOf(timeLimit)+1) + (!string.IsNullOrEmpty(timeLimit.Name) ? " - " + timeLimit.Name : ""))">
                 <Content>
                     <input class="form-control mb-2" type="text" @bind-value="timeLimit.Name" />
-                    <TimeLimitInputs TimeLimit="timeLimit" />
+                    <TimeLimitInputs OnChanged="() => StateHasChanged()" TimeLimit="timeLimit" />
 
                     <div style="margin-left: auto;width: fit-content;">
                         <button class="btn btn-sm btn-outline-danger mt-2 ms-auto me-0" @onclick="() => TimeLimits.Remove(timeLimit)">Slet begrænsning</button>
@@ -22,14 +22,40 @@
 
     <button class="btn btn-sm btn-outline-primary w-100 mt-2" @onclick="() => TimeLimits.Add(new TimeLimit())">Tilføj begrænsning</button>
 
+    <div class="mt-2"></div>
+    <CheckboxInput Label="Afprøv?" @bind-Value="TryIt" />
+    @if (TryIt)
+    {   
+        <div class="d-flex flex-row" style="border: 1px dotted lightgray;border-radius:8px;padding:8px;">
+            <input class="form-control" @bind-value="TryDateTime" type="datetime-local" />
+            @if (TryDateTime == null)
+            {
+                <span class="text-secondary m-2">...</span>
+            }
+            else if (TimeLimits.Any(e => e.IsActive(TryDateTime.Value)))
+            {
+                <span class="text-success m-2">Aktiv</span>
+            }
+            else
+            {
+                <span class="text-danger m-2">Inaktiv</span>
+            }
+        </div>
+    }
+
+
 </div>
 
 @code {
-    [Parameter] public List<TimeLimit> TimeLimits { get; set; } = new List<TimeLimit>();
+    [Parameter] public ICollection<TimeLimit> TimeLimits { get; set; } = new List<TimeLimit>();
     [Parameter] public string Class { get; set; } = "";
+
+    public bool TryIt { get; set; } = false;
+    public DateTime? TryDateTime { get; set; }
 
     protected override void OnInitialized()
     {
+        TryDateTime = DateTime.Now;
         base.OnInitialized();
     }
 

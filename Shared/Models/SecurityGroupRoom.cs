@@ -1,7 +1,8 @@
-﻿using System;
+﻿using Shared.Services;
+using System;
 namespace Shared.Models
 {
-	public class SecurityGroupRoom : BaseModel
+	public class SecurityGroupRoom : BaseModel, ITimeLimitted
     {
 		public int SecurityGroupId { get; set; }
 		public SecurityGroup SecurityGroup { get; set; }

@@ -41,6 +41,29 @@ namespace Shared.Models
         public TimeLimit()
 		{
 		}
+
+
+        public bool IsActive( DateTime time )
+        {
+            if (FromDate != null && FromDate > time)
+                return false;
+            if (ToDate != null && ToDate < time)
+                return false;
+
+            if(Weeks.Count > 0)
+            {
+                foreach (TimeLimitWeek week in Weeks)
+                {
+                    if (week.IsActive(time))
+                        return true;
+                }
+
+                return false;
+            }
+
+
+            return true;
+        }
 	}
 }
 

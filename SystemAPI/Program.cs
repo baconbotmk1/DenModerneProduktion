@@ -18,72 +18,49 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        MapsterConfig.RegisterMappings();
-
-        builder.Services.AddCors(o => o.AddPolicy("Test", builder =>
-        {
-            builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
-        }));
-
-        // Add services to the container.
-
         builder.Services.AddControllers().AddJsonOptions(options =>
         {
             options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
             options.JsonSerializerOptions.WriteIndented = true;
         });
-        // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen(c =>
         {
-            c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
+            c.SwaggerDoc("v1", new OpenApiInfo { Title = "Den Moderne Produktion API", Version = "v1" });
             c.ExampleFilters();
+
+            var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+            c.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
         });
 
         builder.Services.AddDbContext<DataContext>();
         builder.Services.AddSwaggerExamplesFromAssemblies(Assembly.GetEntryAssembly());
 
-        builder.Services.AddScoped<IRepository<AccessCard>,AccessCardRepository>();
-        builder.Services.AddScoped<IRepository<User>, UserRepository>();
-        builder.Services.AddScoped<IRepository<SecurityGroup>, SecurityGroupRepository>();
-        builder.Services.AddScoped<IRepository<Building>, BuildingRepository>();
-        builder.Services.AddScoped<IRepository<Room>, RoomRepository>();
-        builder.Services.AddScoped<IRepository<Section>, SectionRepository>();
-        builder.Services.AddScoped<IRepository<DeviceDataType>, GenericRepository<DeviceDataType>>();
-        builder.Services.AddScoped<IRepository<DeviceInfoType>, GenericRepository<DeviceInfoType>>();
-        builder.Services.AddScoped<IRepository<DeviceEventType>, GenericRepository<DeviceEventType>>();
-        builder.Services.AddScoped<IRepository<DeviceSharedCategory>, GenericRepository<DeviceSharedCategory>>();
-        builder.Services.AddScoped<IRepository<DeviceType>, GenericRepository<DeviceType>>();
-        builder.Services.AddScoped<IRepository<Device>, GenericRepository<Device>>();
+        builder.Services.AddScoped<MqttRequester>();
 
         builder.Services.AddScoped(sp =>
-                new HttpClient
-                {
-                    BaseAddress = new Uri(builder.Configuration.GetSection("API").GetValue<string>("Host") ?? ""),
-                });
-
-        builder.Services.AddHttpClient("mailer", (options) =>
-        {   
-            options.DefaultRequestHeaders.Add("Authorization", "Bearer " + builder.Configuration.GetSection("Mailer").GetValue<string>("AuthToken"));
-            options.DefaultRequestHeaders.Add("Content-Type", "application/json");
-        });
+            new HttpClient
+            {
+                BaseAddress = new Uri(builder.Configuration.GetSection("API").GetValue<string>("Host") ?? ""),
+            }
+        );
 
         builder.Services.Configure<FormOptions>(options =>
         {
-            options.ValueLengthLimit = int.MaxValue; //not recommended value
-            options.MultipartBodyLengthLimit = long.MaxValue; //not recommended value
+            options.ValueLengthLimit = int.MaxValue;
+            options.MultipartBodyLengthLimit = long.MaxValue;
         });
+
+        builder.Services.AddHostedService<MqttReacter>();
 
         var app = builder.Build();
 
-        // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
         {
             app.UseSwagger();
             app.UseSwaggerUI();
         }
-
-        app.UseCors("Test");
 
         app.UseHttpsRedirection();
 

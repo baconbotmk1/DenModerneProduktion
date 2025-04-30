@@ -1,43 +1,37 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-
-// For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+﻿using System.Diagnostics;
 
 namespace SystemAPI.Controllers
 {
     [ApiController]
     [Route("api/camera")]
-    public class StreamController : Controller
+    public class StreamController(DataContext _context, IConfiguration _configuration, IServiceProvider _provider) : BaseController(_context, _configuration, _provider)
     {
-        private readonly DataContext _context;
-        private int? _typeId = null;
-        private int? _linkTypeId = null;
+        private int? typeId = null;
+        private int? linkTypeId = null;
 
-        public StreamController( DataContext context )
-        {
-            _context = context;
-        }
 
+        /// <summary>
+        /// Creates a stream from a camera device to be stream to a browser
+        /// </summary>
+        /// <remarks>Still a work-in-progress</remarks>
+        /// <param name="device_id"></param>
+        /// <returns></returns>
         [HttpGet("live/{device_id}")]
         public async Task GetLiveDevice( int device_id )
         {
-            if(_typeId == null)
+            if(typeId == null)
             {
-                _typeId = _context.DeviceTypes.AsQueryable().First(e => e.Name == "Kamera").Id;
+                typeId = context.DeviceTypes.AsQueryable().First(e => e.Name == "Kamera").Id;
             }
 
-            if (_typeId == null)
+            if (typeId == null)
             {
-                _linkTypeId = _context.DeviceInfoTypes.AsQueryable().First(e => e.Name == "RTSP Link").Id;
+                linkTypeId = context.DeviceInfoTypes.AsQueryable().First(e => e.Name == "RTSP Link").Id;
             }
 
-            Device? cameraObj = _context.Devices
+            Device? cameraObj = context.Devices
                 .AsQueryable()
-                .Where(e => e.TypeId == _typeId)
+                .Where(e => e.TypeId == typeId)
                 .Where(e => e.Id == device_id)
                 .Include(e => e.Infos)
                 .FirstOrDefault();
@@ -47,7 +41,7 @@ namespace SystemAPI.Controllers
                 return;
             }
 
-            DeviceInfo? linkObj = cameraObj.Infos.Where(e => e.TypeId == _linkTypeId).FirstOrDefault();
+            DeviceInfo? linkObj = cameraObj.Infos.Where(e => e.TypeId == linkTypeId).FirstOrDefault();
             if(linkObj == null)
             {
                 return;

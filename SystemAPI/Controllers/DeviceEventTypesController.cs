@@ -1,113 +1,103 @@
-﻿using System.Diagnostics;
-using Shared.DTOs.DeviceEventType;
+﻿using Shared.DTOs.DeviceEventType;
 
 namespace SystemAPI.Controllers
 {
     [ApiController]
     [Route("api/device_event_types")]
-    public class DeviceEventTypesController : BaseCRUDController<DeviceEventType>
+    public class DeviceEventTypesController(DataContext _context, IConfiguration _configuration, IServiceProvider _provider) : BaseController(_context, _configuration, _provider)
     {
-        public DeviceEventTypesController(DataContext Context, IRepository<DeviceEventType> DIrepository) : base(Context, DIrepository)
-        {
-        }
-
+        /// <summary>
+        /// Get all device event types
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
         public ActionResult<IEnumerable<DeviceEventType>> Get()
         {
-            return HandleExceptions(() =>
-            {
-                var data = context.DeviceEventTypes
-                    .AsNoTracking()
-                    .Include(e => e.Category)
-                    .ToList();
+            var data = context.DeviceEventTypes
+                .AsNoTracking()
+                .Include(e => e.Category)
+                .ToList();
 
-                return Ok(data);
-            });
+            return Ok(data);
         }
 
+        /// <summary>
+        /// Create a new device event type
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
         [HttpPost]
         public ActionResult<DeviceEventType> Post([FromBody] CreateDeviceEventType data)
         {
-            return HandleExceptions(() =>
-            {
-                DeviceEventType item = data.Adapt<DeviceEventType>();
+            DeviceEventType item = data.Adapt<DeviceEventType>();
 
-                repository.Insert(item);
-                repository.Save();
+            context.DeviceEventTypes.Add(item);
+            context.SaveChanges();
 
-                return Ok(item);
-            });
+            return Ok(item);
         }
 
-
+        /// <summary>
+        /// Get a device event type by ID
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpGet("{id}")]
         public ActionResult<DeviceEventType> GetById(int id)
         {
-            return HandleExceptions(() =>
+            DeviceEventType? deviceDataType = context.DeviceEventTypes.FirstOrDefault(e => e.Id == id);
+
+            if (deviceDataType == null)
             {
-                DeviceEventType? deviceDataType = repository.GetById(id);
+                return NotFound();
+            }
 
-                if (deviceDataType == null)
-                {
-                    return NotFound();
-                }
-
-                return Ok(deviceDataType);
-            });
+            return Ok(deviceDataType);
         }
 
-
+        /// <summary>
+        /// Update a device event type
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="data"></param>
+        /// <returns></returns>
         [HttpPut("{id}")]
         public ActionResult<DeviceEventType> Put(int id, [FromBody] CreateDeviceEventType data)
         {
-            try
+            DeviceEventType? item = context.DeviceEventTypes.FirstOrDefault(e => e.Id == id);
+
+            if (item == null)
             {
-                DeviceEventType? item = repository.GetById(id);
-
-                if (item == null)
-                {
-                    return NotFound();
-                }
-
-                data.Adapt(item);
-
-                repository.Update(item);
-                repository.Save();
-
-                return Ok(item);
-            }
-            catch(Exception ex)
-            {
-                Debug.WriteLine(ex.GetType().Name);
-                Debug.WriteLine(ex.GetType().Namespace);
-                Debug.WriteLine(ex.Message);
+                return NotFound();
             }
 
-            return BadRequest();
+            data.Adapt(item);
+
+            context.DeviceEventTypes.Update(item);
+            context.SaveChanges();
+
+            return Ok(item);
         }
 
+        /// <summary>
+        /// Delete a device event type
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpDelete("{id}")]
         public ActionResult Delete(int id)
         {
-            return HandleExceptions(() =>
+            DeviceEventType? foundObject = context.DeviceEventTypes.FirstOrDefault(e => e.Id == id);
+
+            if (foundObject == null)
             {
-                DeviceEventType? foundObject = repository.GetById(id);
+                return NotFound();
+            }
 
-                if (foundObject == null)
-                {
-                    return NotFound();
-                }
+            context.DeviceEventTypes.Remove(foundObject);
+            context.SaveChanges();
 
-                bool deleted = repository.Delete(id);
-                repository.Save();
-
-                if (!deleted)
-                {
-                    return NotFound();
-                }
-
-                return Ok();
-            });
+            return Ok();
         }
     }
 }
