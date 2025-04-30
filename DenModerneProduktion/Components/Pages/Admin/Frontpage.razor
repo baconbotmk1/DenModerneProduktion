@@ -39,7 +39,7 @@
                     </div>
                     <div class="js-alarm-card-global-limit-max">
                         <label for="js-max-humid-limit">Maximum</label>
-                        <InputNumber id="js-max-humid-limit" @bind-Value="MaxTemperatureLimit" />
+                        <InputNumber id="js-max-humid-limit" @bind-Value="MaximumTemperatureLimit" />
                     </div>
                 </div>
             </div>
@@ -54,14 +54,14 @@
             </div>
             <div class="js-alarm-card-global-limit">
                 <h4>Global Limit</h4>
-                <div>
-                    <div class="js-alarm-card-global-limit-min">
-                        <label for="js-min-humid-limit">Minimum</label>
-                        <InputNumber id="js-min-humid-limit" @bind-Value="MinimumHumidityLimit" />
+                <div class="js-data-limit">
+                    <div class="js-data-limit-min">
+                        <label for="js-data-limit-min-value">Minimum</label>
+                        <InputNumber id="js-data-limit-min-value" TValue="double?" Value="@MinimumHumidityLimit" ValueExpression="@(()=>MinimumHumidityLimit)" ValueChanged="@UpdateMinHumidLimitValueAsync" class="js-data-limit-min-input" />
                     </div>
-                    <div class="js-alarm-card-global-limit-max">
-                        <label for="js-max-humid-limit">Maximum</label>
-                        <InputNumber id="js-max-humid-limit" @bind-Value="MaximumHumidityLimit"/>
+                    <div class="js-data-limit-max">
+                        <label for="js-data-limit-max-value">Maximum</label>
+                        <InputNumber id="js-data-limit-max-value" TValue="double?" Value="@MaximumHumidityLimit" ValueExpression="@(()=>MaximumHumidityLimit)" ValueChanged="@UpdateMaxHumidLimitValueAsync" class="js-data-limit-max-input" />
                     </div>
                 </div>
             </div>
@@ -74,11 +74,11 @@
     private List<Data> TemperatureDevices { get; set; } = new();
     private List<Data> HumidityDevices { get; set; } = new();
 
-    public double MinimumTemperatureLimit { get; set; } = 18.2;
-    public double MaxTemperatureLimit { get; set; } = 22.5;
+    public double? MinimumTemperatureLimit { get; set; }
+    public double? MaximumTemperatureLimit { get; set; }
 
-    public double MinimumHumidityLimit { get; set; } = 25;
-    public double MaximumHumidityLimit { get; set; } = 75;
+    public double? MinimumHumidityLimit { get; set; }
+    public double? MaximumHumidityLimit { get; set; }
 
     public List<Shared.Models.Room> AccessibleRooms { get; set; } = new();
     private ClaimsPrincipal user;
@@ -86,11 +86,70 @@
 
     private DeviceData GetRoomData(Shared.Models.Room item, int type) => item.Devices.FirstOrDefault(x => x.Data.Where(y => y.Type.Id == type).Count() > 0)?.Data.FirstOrDefault(x => x.Type.Id == type);
 
+    protected async Task UpdateMinTempLimitValueAsync(double? value) => await UpdateLimitValueAsync(value, 2, true);
+    protected async Task UpdateMaxTempLimitValueAsync(double? value) => await UpdateLimitValueAsync(value, 2, false);
+    protected async Task UpdateMinHumidLimitValueAsync(double? value) => await UpdateLimitValueAsync(value, 3, true);
+    protected async Task UpdateMaxHumidLimitValueAsync(double? value) => await UpdateLimitValueAsync(value, 3, false);
+
+    protected async Task UpdateLimitValueAsync(double? value, int DataTypeId, bool isMin)
+    {
+        switch ($"{DataTypeId}-{isMin}")
+        {
+            case "2-true":
+                MinimumTemperatureLimit = value;
+                break;
+            case "2-false":
+                MaximumTemperatureLimit = value;
+                break;
+            case "3-true":
+                MinimumHumidityLimit= value;
+                break;
+            case "3-false":
+                MaximumHumidityLimit = value;
+                break;
+        }
+        var response = await requester.Put<Cadastre>($"api/cadastres/{1}/limit", new Shared.DTOs.DataLimit.UpdateDataLimit()
+            {
+                MinimumLimit = DataTypeId == 2 ? MinimumTemperatureLimit : MinimumHumidityLimit,
+                MaximumLimit = DataTypeId == 2 ? MaximumTemperatureLimit : MaximumHumidityLimit,
+                DataTypeId = DataTypeId
+            });
+
+    }
+
     protected override async Task OnInitializedAsync()
     {
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         user = authState.User;
         await GetAccessibleRoomsAsync();
+        await GetGlobalLimitValuesAsync();
+    }
+    private async Task GetGlobalLimitValuesAsync()
+    {
+        var response = await requester.Get<Cadastre>("api/cadastres/" + 1);
+        // var response = await requester.Get<Shared.Models.Cadastre>("api/cadastres/1");
+        if (response.StatusCode != 200)
+        {
+            viewHelper.Alert(response.Message);
+            return;
+        }
+
+        var cadastre = ((Shared.Responses.AcceptedResponse<Shared.Models.Cadastre>)response).Data;
+        var limit = cadastre.LimitValues.Where(x => x.CadastreId == 1);
+        if (limit != null)
+        {
+            MaximumHumidityLimit = limit.First(x=>x.TypeId == 3).MaximumLimit;
+            MaximumTemperatureLimit = limit.First(x => x.TypeId == 2).MaximumLimit;
+            MinimumHumidityLimit = limit.First(x => x.TypeId == 3).MinimumLimit;
+            MinimumTemperatureLimit = limit.First(x => x.TypeId == 2).MinimumLimit;
+        }
+        else
+        {
+            MaximumHumidityLimit = null;
+            MaximumTemperatureLimit = null;
+            MinimumHumidityLimit = null;
+            MinimumTemperatureLimit = null;
+        }
     }
     private async Task GetAccessibleRoomsAsync()
     {
@@ -111,26 +170,26 @@
             TemperatureDevices = AccessibleRooms.Select(x => new Data()
                 {
                     RoomName = x.Name,
-                    Info = x.Devices.Where(y=>y.TypeId == 2).SelectMany(y=>y.Infos).ToList()
-                }).ToList();
+                    Info = x.Devices.SelectMany(y => y.Infos.Where(z => z.TypeId == 2)).ToList()
+                }).Where(x => x.Info.Count() > 0).ToList();
 
             HumidityDevices = AccessibleRooms.Select(x => new Data()
                 {
                     RoomName = x.Name,
-                    Info = x.Devices.Where(y => y.TypeId == 3).SelectMany(y => y.Infos).ToList()
-                }).ToList();
+                    Info = x.Devices.SelectMany(y => y.Infos.Where(z => z.TypeId == 3)).ToList()
+                }).Where(x => x.Info.Count() > 0).ToList();
 
             // MotionDevices = AccessibleRooms.Select(x => x.Devices.Where(y => y.TypeId == 4)).ToList();
 
-        IsLoading = false;
+            IsLoading = false;
             StateHasChanged();
         }
     }
     private class Data()
     {
         public string RoomName { get; set; }
+        public string Limit { get; set; }
         public List<DeviceInfo> Info { get; set; }
     }
 }
 
-    

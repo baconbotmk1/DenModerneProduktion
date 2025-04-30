@@ -1,17 +1,17 @@
 #include <Arduino.h>
-#include <WiFiNINA.h>
+#include "WiFiS3.h"
 #include <ArduinoJson.h>
 #include <MFRC522.h>
 #include <ArduinoHttpClient.h>
-
 #include "arduino_secrets.h"
 
 #define SS_PIN 10
 #define RST_PIN 9
 
-char serverAddress[] = "https://jespercal.ngrok.app";
-int port = 443;
-ulong stateChanged = 0;
+char serverAddress[] = "https://10.131.16.63";
+int port = 7064;
+int status = WL_IDLE_STATUS;
+long stateChanged = 0;
 
 char ssid[] = SECRET_SSID;
 char pass[] = SECRET_PASS;
@@ -118,24 +118,34 @@ void requestApi( String rfid )
 
   JsonDocument doc;
 
+  Serial.println("1");
+
   doc["rfid"] = rfid.c_str();
+
+  Serial.println("2");
 
   String output;
   serializeJson(doc, output);
+
+  Serial.println("3");
 
   // POST request
   String contentType = "application/json";
 
   client.beginRequest();
-  client.post("/api/access/card");
-  client.sendHeader("Content-Type", "application/json");
-  client.sendHeader("Content-Length", contentType.length());
-  client.sendHeader("ngrok-skip-browser-warning", "yes");
-  client.beginBody();
-  client.print(contentType);
+  Serial.println("4");
+  client.get("");
+  //client.sendHeader("Content-Type", "application/json");
+  //client.sendHeader("Content-Length", contentType.length());
+  //client.sendHeader("ngrok-skip-browser-warning", "yes");
+  //client.beginBody();
+  //client.print(contentType);
   client.endRequest();
 
+  Serial.println("5");
+
   int statusCode = client.responseStatusCode();
+  Serial.println("6");
   String response = client.responseBody();
 
   Serial.print("Status code: ");
