@@ -22,18 +22,21 @@
     .js-alarm-card h2 {
         margin-bottom: 15px;
     }
+    .js-alarm-card table{
+        width:90%;
+    }
 
-.js-alarm-card-list {
-    border: 1px black solid;
-    width: 300px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    border-radius: 15px;
-    background-color: white;
-    height: 375px;
-    overflow-y: scroll;
-}
+    .js-alarm-card-list {
+        border: 1px black solid;
+        width: 300px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        border-radius: 15px;
+        background-color: white;
+        height: 375px;
+        overflow-y: scroll;
+    }
 
     .js-alarm-card-list p {
         /*margin: 10px 0px;*/
