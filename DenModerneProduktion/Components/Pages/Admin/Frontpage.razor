@@ -1,5 +1,13 @@
-﻿@page "/admin/"
+﻿@using System.Security.Claims
+@using Microsoft.AspNetCore.Components.Authorization
+@using Shared.Models
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject ApiRequester requester
+@inject ViewHelper viewHelper
+@page "/admin/"
 <PageTitle>Admin</PageTitle>
+
+
 <div class="js-admin-index">
     <h1>Admin frontpage</h1>
     <div class="js-alarm-list">
@@ -8,7 +16,7 @@
             <div class="js-alarm-card-list">
                 @foreach (var device in MotionDevices)
                 {
-                    <p>{lokale} - {TimeStamp}</p>
+                    <p>@device.RoomName - @device.TimeStamp</p>
                 }
             </div>
         </div>
@@ -17,7 +25,7 @@
             <div class="js-alarm-card-list">
                 @foreach (var device in TemperatureDevices)
                 {
-                    <p>{lokale} - {value}</p>
+                    <p>@device.RoomName - @($"{device.Value}{device.Suffix}")</p>
                 }
             </div>
             <div class="js-alarm-card-global-limit">
@@ -39,7 +47,7 @@
             <div class="js-alarm-card-list">
                 @foreach (var device in HumidityDevices)
                 {
-                    <p>{lokale} - {value}</p>
+                    <p>@device.RoomName - @($"{device.Value}{device.Suffix}")</p>
                 }
             </div>
             <div class="js-alarm-card-global-limit">
@@ -60,13 +68,56 @@
 </div>
 
 @code {
-    public List<string> MotionDevices { get; set; } = new() { "25", "20", "19", "25", "20", "19", "25", "20", "19", "25", "20", "19" };
-    public List<string> TemperatureDevices { get; set; } = new() { "25", "20", "19", "25", "20", "19", "25", "20", "19", "25", "20", "19" };
-    public List<string> HumidityDevices { get; set; } = new() { "25", "20", "19", "25", "20", "19", "25", "20", "19", "25", "20", "19" };
+    private List<DeviceData> MotionDevices { get; set; } = new();
+    private List<Data> TemperatureDevices { get; set; } = new();
+    private List<Data> HumidityDevices { get; set; } = new();
 
     public double MinimumTemperatureLimit { get; set; } = 18.2;
     public double MaxTemperatureLimit { get; set; } = 22.5;
 
     public double MinimumHumidityLimit { get; set; } = 25;
     public double MaximumHumidityLimit { get; set; } = 75;
+
+    public List<Shared.Models.Room> AccessibleRooms { get; set; } = new();
+    private ClaimsPrincipal user;
+    public bool IsLoading { get; set; } = true;
+
+    private DeviceData GetRoomData(Shared.Models.Room item, int type) => item.Devices.FirstOrDefault(x => x.Data.Where(y => y.Type.Id == type).Count() > 0)?.Data.FirstOrDefault(x => x.Type.Id == type);
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        user = authState.User;
+        await GetAccessibleRoomsAsync();
+    }
+    private async Task GetAccessibleRoomsAsync()
+    {
+        IsLoading = true;
+        StateHasChanged();
+        if (user.Identity.IsAuthenticated)
+        {
+            var userId = user.Claims.First(x => x.Type == ClaimTypes.Sid).Value;
+            var response = await requester.Get<List<Shared.Models.Room>>($"api/users/{userId}/rooms/data");
+            if (response.StatusCode != 200)
+            {
+                viewHelper.Alert(response.Message);
+                return;
+            }
+
+            AccessibleRooms = ((Shared.Responses.AcceptedResponse<List<Shared.Models.Room>>)response).Data;
+
+
+            IsLoading = false;
+            StateHasChanged();
+        }
+    }
+    private class Data()
+    {
+        public string RoomName { get; set; }
+        public string Value { get; set; }
+        public string Suffix { get; set; }
+        public DateTime TimeStamp { get; set; }
+    }
 }
+
+    

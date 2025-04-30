@@ -56,7 +56,8 @@ else
         await GetAccessibleRoomsAsync();
     }
     private DeviceData GetRoomData(Shared.Models.Room item, int type) => item.Devices.FirstOrDefault(x => x.Data.Where(y => y.Type.Id == type).Count() > 0)?.Data.FirstOrDefault(x => x.Type.Id == type);
-    private DeviceData GetRoomTimelimit(Shared.Models.Room item) => item.TimeLimits.Where(x=>x.Weeks);
+    // Time limit preperation
+    // private DeviceData GetRoomTimelimit(Shared.Models.Room item) => item.TimeLimits.Where(x=>x.Weeks);
 
     private async Task GetAccessibleRoomsAsync()
     {
