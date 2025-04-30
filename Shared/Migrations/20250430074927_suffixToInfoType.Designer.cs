@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Shared;
 
@@ -11,9 +12,11 @@ using Shared;
 namespace Shared.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20250430074927_suffixToInfoType")]
+    partial class suffixToInfoType
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -665,9 +668,6 @@ namespace Shared.Migrations
                     b.Property<int?>("SecurityGroupDeviceId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("SecurityGroupId")
-                        .HasColumnType("int");
-
                     b.Property<int?>("SecurityGroupRoomId")
                         .HasColumnType("int");
 
@@ -691,8 +691,6 @@ namespace Shared.Migrations
                     b.HasIndex("RoomId");
 
                     b.HasIndex("SecurityGroupDeviceId");
-
-                    b.HasIndex("SecurityGroupId");
 
                     b.HasIndex("SecurityGroupRoomId");
 
@@ -719,8 +717,8 @@ namespace Shared.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<DateOnly?>("StartDate")
-                        .HasColumnType("date");
+                    b.Property<DateTime?>("StartDate")
+                        .HasColumnType("datetime(6)");
 
                     b.Property<int>("TimeLimitId")
                         .HasColumnType("int");
@@ -743,6 +741,10 @@ namespace Shared.Migrations
                     b.Property<int>("Day")
                         .HasColumnType("int");
 
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
                     b.Property<int>("WeekId")
                         .HasColumnType("int");
 
@@ -761,11 +763,11 @@ namespace Shared.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<TimeOnly>("FromTime")
-                        .HasColumnType("time(6)");
+                    b.Property<DateTime>("FromTime")
+                        .HasColumnType("datetime(6)");
 
-                    b.Property<TimeOnly>("ToTime")
-                        .HasColumnType("time(6)");
+                    b.Property<DateTime>("ToTime")
+                        .HasColumnType("datetime(6)");
 
                     b.Property<int>("WeekDayId")
                         .HasColumnType("int");
@@ -1247,53 +1249,33 @@ namespace Shared.Migrations
 
             modelBuilder.Entity("Shared.Models.TimeLimit", b =>
                 {
-                    b.HasOne("Shared.Models.Room", "Room")
+                    b.HasOne("Shared.Models.Room", null)
                         .WithMany("TimeLimits")
                         .HasForeignKey("RoomId");
 
-                    b.HasOne("Shared.Models.SecurityGroupDevice", "SecurityGroupDevice")
+                    b.HasOne("Shared.Models.SecurityGroupDevice", null)
                         .WithMany("TimeLimits")
                         .HasForeignKey("SecurityGroupDeviceId");
 
-                    b.HasOne("Shared.Models.SecurityGroup", "SecurityGroup")
-                        .WithMany("TimeLimits")
-                        .HasForeignKey("SecurityGroupId");
-
-                    b.HasOne("Shared.Models.SecurityGroupRoom", "SecurityGroupRoom")
+                    b.HasOne("Shared.Models.SecurityGroupRoom", null)
                         .WithMany("TimeLimits")
                         .HasForeignKey("SecurityGroupRoomId");
 
-                    b.HasOne("Shared.Models.SecurityGroupSection", "SecurityGroupSection")
+                    b.HasOne("Shared.Models.SecurityGroupSection", null)
                         .WithMany("TimeLimits")
                         .HasForeignKey("SecurityGroupSectionId");
 
-                    b.HasOne("Shared.Models.UserDevice", "UserDevice")
+                    b.HasOne("Shared.Models.UserDevice", null)
                         .WithMany("TimeLimits")
                         .HasForeignKey("UserDeviceId");
 
-                    b.HasOne("Shared.Models.UserRoom", "UserRoom")
+                    b.HasOne("Shared.Models.UserRoom", null)
                         .WithMany("TimeLimits")
                         .HasForeignKey("UserRoomId");
 
-                    b.HasOne("Shared.Models.UserSection", "UserSection")
+                    b.HasOne("Shared.Models.UserSection", null)
                         .WithMany("TimeLimits")
                         .HasForeignKey("UserSectionId");
-
-                    b.Navigation("Room");
-
-                    b.Navigation("SecurityGroup");
-
-                    b.Navigation("SecurityGroupDevice");
-
-                    b.Navigation("SecurityGroupRoom");
-
-                    b.Navigation("SecurityGroupSection");
-
-                    b.Navigation("UserDevice");
-
-                    b.Navigation("UserRoom");
-
-                    b.Navigation("UserSection");
                 });
 
             modelBuilder.Entity("Shared.Models.TimeLimitWeek", b =>
@@ -1475,8 +1457,6 @@ namespace Shared.Migrations
                     b.Navigation("SecurityGroupPermissions");
 
                     b.Navigation("SecurityGroupRooms");
-
-                    b.Navigation("TimeLimits");
 
                     b.Navigation("UserSecurityGroups");
                 });

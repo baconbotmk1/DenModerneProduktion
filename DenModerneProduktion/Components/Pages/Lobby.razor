@@ -24,8 +24,8 @@ else
                     <div class="js-lobby-list-item-info">
                         <p class="js-lobby-list-item-info-title">@room.Name</p>
                         <div class="js-lobby-list-item-info-data">
-                            <p class="js-lobby-list-item-info-data-temperature">Temperatur: <span>@($"{GetRoomData(room,2).Value}{GetRoomData(room,2).Type.Suffix}" ?? "N/A")</span></p>
-                            <p class="js-lobby-list-item-info-data-humidity">Fugtighed: <span>@($"{GetRoomData(room,3).Value}{GetRoomData(room,3).Type.Suffix}" ?? "N/A")</span></p>
+                            <p class="js-lobby-list-item-info-data-temperature">Temperatur: <span>@($"{GetRoomData(room,2)?.Value ?? "N/A"}{GetRoomData(room,2)?.Type?.Suffix}")</span></p>
+                            <p class="js-lobby-list-item-info-data-humidity">Fugtighed: <span>@($"{GetRoomData(room, 3)?.Value ?? "N/A"}{GetRoomData(room, 3)?.Type?.Suffix}")</span></p>
                         </div>
                     </div>
                     <div class="js-lobby-list-item-icon"><Icon Name="IconList[CustomCount++ % IconList.Count]" Size="IconSize.x4" Style="@($"color:#{GenerateHexColor()}")" /></div>
@@ -55,7 +55,9 @@ else
         viewHelper.NavUpdate += async () => await GetAccessibleRoomsAsync();
         await GetAccessibleRoomsAsync();
     }
-    private DeviceData GetRoomData(Shared.Models.Room item, int type) => item.Devices.FirstOrDefault(x => x.Type.Id == type).Data.FirstOrDefault();
+    private DeviceData GetRoomData(Shared.Models.Room item, int type) => item.Devices.FirstOrDefault(x => x.Data.Where(y => y.Type.Id == type).Count() > 0)?.Data.FirstOrDefault(x => x.Type.Id == type);
+    // Time limit preperation
+    // private DeviceData GetRoomTimelimit(Shared.Models.Room item) => item.TimeLimits.Where(x=>x.Weeks);
 
     private async Task GetAccessibleRoomsAsync()
     {
