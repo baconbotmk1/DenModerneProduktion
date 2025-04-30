@@ -1,4 +1,5 @@
 ﻿@using System.Security.Claims
+@using DenModerneProduktion.Components.Pages.PageModels
 @using DenModerneProduktion.Services
 @using Microsoft.AspNetCore.Components.Authorization
 @using System.Globalization
@@ -107,9 +108,9 @@
 </div>
 
 @code {
-    private List<Data> MotionDevices { get; set; } = new();
-    private List<Data> TemperatureDevices { get; set; } = new();
-    private List<Data> HumidityDevices { get; set; } = new();
+    private List<DeviceDisplayData> MotionDevices { get; set; } = new();
+    private List<DeviceDisplayData> TemperatureDevices { get; set; } = new();
+    private List<DeviceDisplayData> HumidityDevices { get; set; } = new();
 
     public double? MinimumTemperatureLimit { get; set; }
     public double? MaximumTemperatureLimit { get; set; }
@@ -207,12 +208,12 @@
         int tmpTypeId = 2;
         int humidTypeId = 3;
 
-        MotionDevices = AccessibleRooms.Select(x => new Data()
+        MotionDevices = AccessibleRooms.Select(x => new DeviceDisplayData()
             {
                 RoomName = x.Name,
                 _Data = x.Devices.SelectMany(y => y.Data.Where(z => z.TypeId == 6 && bool.Parse(z.Value) == true && z.Timestamp.ToLocalTime() > DateTime.Now.AddDays(-7))).ToList()
             }).ToList(); ;
-        TemperatureDevices = AccessibleRooms.Select(x => new Data()
+        TemperatureDevices = AccessibleRooms.Select(x => new DeviceDisplayData()
             {
                 RoomName = x.Name,
                 MinLimit = x.LimitValues.FirstOrDefault(z => z.TypeId == tmpTypeId)?.MinimumLimit ?? MinimumTemperatureLimit,
@@ -225,7 +226,7 @@
                 )).ToList()
             }).Where(x => x._Info.Count() > 0).ToList();
 
-        HumidityDevices = AccessibleRooms.Select(x => new Data()
+        HumidityDevices = AccessibleRooms.Select(x => new DeviceDisplayData()
             {
                 RoomName = x.Name,
                 MinLimit = x.LimitValues.FirstOrDefault(z => z.TypeId == humidTypeId)?.MinimumLimit ?? MinimumHumidityLimit,
@@ -237,14 +238,6 @@
 
                 )).ToList()
             }).Where(x => x._Info.Count() > 0).ToList();
-    }
-    private class Data()
-    {
-        public string RoomName { get; set; }
-        public double? MaxLimit { get; set; }
-        public double? MinLimit { get; set; }
-        public List<DeviceInfo>? _Info { get; set; }
-        public List<DeviceData>? _Data { get; set; }
     }
 }
 

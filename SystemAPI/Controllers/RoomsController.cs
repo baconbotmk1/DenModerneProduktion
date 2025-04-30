@@ -20,6 +20,25 @@ namespace SystemAPI.Controllers
                 .Include(e => e.Section)
                 .ToList();
         }
+        [HttpGet("/data")]
+        public ActionResult<IEnumerable<Room>> GetAllDeviceData()
+        {
+            List<Room> data = context.Rooms
+                .AsNoTracking()
+                .Include(x => x.Devices)
+                    .ThenInclude(x => x.Type)
+                .Include(x => x.Devices)
+                    .ThenInclude(x => x.Data)
+                        .ThenInclude(x => x.Type)
+                .Include(x => x.Devices)
+                    .ThenInclude(x => x.Infos)
+                        .ThenInclude(x => x.Type)
+                .Include(x => x.LimitValues)
+                .ToList();
+
+            return Ok(data);
+        }
+
 
         /// <summary>
         /// 
