@@ -115,7 +115,7 @@ else
         {
             var fromDateTime = DateTime.Now.AddHours(hoursSpan * (i-1));
             var toDateTime =  DateTime.Now.AddHours(hoursSpan * i);
-            List<double> values = _RoomDeviceData.Where(x => x.Timestamp > fromDateTime && x.Timestamp <= toDateTime).Select(x=>double.Parse(x.Value, NumberStyles.Any, CultureInfo.InvariantCulture)).ToList();
+            List<double> values = _RoomDeviceData.Where(x => x.Timestamp.ToLocalTime() > fromDateTime && x.Timestamp.ToLocalTime() <= toDateTime).Select(x => double.Parse(x.Value, NumberStyles.Any, CultureInfo.InvariantCulture)).ToList();
             if (values.Count != 0)
             {
                 var value = Math.Round(values.Average(), 1);

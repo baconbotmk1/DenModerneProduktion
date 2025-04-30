@@ -1,5 +1,7 @@
 ﻿@using System.Security.Claims
+@using DenModerneProduktion.Services
 @using Microsoft.AspNetCore.Components.Authorization
+@using System.Globalization
 @using Shared.Models
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject ApiRequester requester
@@ -14,10 +16,10 @@
         <div class="js-alarm-card">
             <h2>Nærhedssensor</h2>
             <div class="js-alarm-card-list">
-                @foreach (var device in MotionDevices)
+                @* @foreach (var device in MotionDevices)
                 {
-                    <p>@device.RoomName - @device.TimeStamp</p>
-                }
+                    <p>@(device.Device.Room.Name) - @(device.Timestamp)</p>
+                } *@
             </div>
         </div>
         <div class="js-alarm-card">
@@ -25,7 +27,7 @@
             <div class="js-alarm-card-list">
                 @foreach (var device in TemperatureDevices)
                 {
-                    <p>@device.RoomName - @($"{device.Value}{device.Suffix}")</p>
+                    <p>@device.RoomName - @($"{device.Info.Select(x => double.Parse(x.Value, NumberStyles.Any, CultureInfo.InvariantCulture)).Average()}{device.Info.First().Type.Suffix}")</p>
                 }
             </div>
             <div class="js-alarm-card-global-limit">
@@ -47,7 +49,7 @@
             <div class="js-alarm-card-list">
                 @foreach (var device in HumidityDevices)
                 {
-                    <p>@device.RoomName - @($"{device.Value}{device.Suffix}")</p>
+                    <p>@device.RoomName - @($"{device.Info.Select(x => double.Parse(x.Value, NumberStyles.Any, CultureInfo.InvariantCulture)).Average()}{device.Info.First().Type.Suffix}")</p>
                 }
             </div>
             <div class="js-alarm-card-global-limit">
@@ -106,17 +108,28 @@
 
             AccessibleRooms = ((Shared.Responses.AcceptedResponse<List<Shared.Models.Room>>)response).Data;
 
+            TemperatureDevices = AccessibleRooms.Select(x => new Data()
+                {
+                    RoomName = x.Name,
+                    Info = x.Devices.Where(y=>y.TypeId == 2).SelectMany(y=>y.Infos).ToList()
+                }).ToList();
 
-            IsLoading = false;
+            HumidityDevices = AccessibleRooms.Select(x => new Data()
+                {
+                    RoomName = x.Name,
+                    Info = x.Devices.Where(y => y.TypeId == 3).SelectMany(y => y.Infos).ToList()
+                }).ToList();
+
+            // MotionDevices = AccessibleRooms.Select(x => x.Devices.Where(y => y.TypeId == 4)).ToList();
+
+        IsLoading = false;
             StateHasChanged();
         }
     }
     private class Data()
     {
         public string RoomName { get; set; }
-        public string Value { get; set; }
-        public string Suffix { get; set; }
-        public DateTime TimeStamp { get; set; }
+        public List<DeviceInfo> Info { get; set; }
     }
 }
 
