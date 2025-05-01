@@ -39,6 +39,8 @@ public class Program
 
         builder.Services.AddScoped<MqttRequester>();
 
+        builder.Services.AddSingleton<MailService>();
+
         builder.Services.AddScoped(sp =>
             new HttpClient
             {

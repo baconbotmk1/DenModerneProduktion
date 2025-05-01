@@ -3,9 +3,16 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using MQTTnet;
 using SystemAPI.Helpers;
+using SystemAPI.Services;
 
 namespace SystemAPI.Controllers
 {
+    /// <summary>
+    /// Controller for authentication
+    /// </summary>
+    /// <param name="_context"></param>
+    /// <param name="_configuration"></param>
+    /// <param name="_provider"></param>
     [ApiController]
     [Route("api/auth")]
     public class AuthController(DataContext _context, IConfiguration _configuration, IServiceProvider _provider) : BaseController(_context, _configuration, _provider)
@@ -66,24 +73,12 @@ namespace SystemAPI.Controllers
             }
 
             string token = CryptoHelper.GenerateSaltString();
-            string state = CryptoHelper.GenerateSaltString(); //Delete?
 
             user.ResetToken = token;
 
-            IConfigurationSection hostingSection = configuration.GetSection("Hosting");
-            var url = hostingSection.GetValue<string>("Url");
-            var port = hostingSection.GetValue<int?>("Port");
-            var completeUrl = url + (port != null ? $":{port}" : "") + "/forgotpassword/" + token;
+            MailService mailService = provider.GetRequiredService<MailService>();
 
-
-            IConfigurationSection emailSection = configuration.GetSection("Email");
-            var mail = emailSection.GetValue<string>("Mail");
-            var password = emailSection.GetValue<string>("Password");
-            var smtp = emailSection.GetValue<string>("Smtp");
-            var smtpPort = emailSection.GetValue<int>("Port");
-            var useSSL = emailSection.GetValue<bool>("UseSSL");
-
-            MailHelper.SendResetLink(mail, user.Username, smtp, smtpPort, completeUrl, password, useSSL);
+            mailService.SendResetLink(user.Username, token);
 
             context.Attach(user);
             context.SaveChanges();
@@ -114,18 +109,12 @@ namespace SystemAPI.Controllers
             user.ResetToken = null;
             user.HashedPassword = Convert.ToBase64String(CryptoHelper.HashPassword(data.password, salt));
 
-
             context.Attach(user);
             context.SaveChanges();
 
-            IConfigurationSection emailSection = configuration.GetSection("Email");
-            var mail = emailSection.GetValue<string>("Mail");
-            var password = emailSection.GetValue<string>("Password");
-            var smtp = emailSection.GetValue<string>("Smtp");
-            var smtpPort = emailSection.GetValue<int>("Port");
-            var useSSL = emailSection.GetValue<bool>("UseSSL");
+            MailService mailService = provider.GetRequiredService<MailService>();
 
-            MailHelper.SendConfirmReset(mail, user.Username, smtp, smtpPort, password, useSSL);
+            mailService.SendConfirmReset(user.Username);
 
             return Ok(new object { });
         }
@@ -196,7 +185,7 @@ namespace SystemAPI.Controllers
                 int width = 256;
                 int height = 288;
 
-                var image = CreateImageFromRawRgb(receivedData, 256, 288);
+                var image = CreateImageFromRawRgb(receivedData, width, height);
 
                 using (StreamWriter writer = new StreamWriter(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "DenModerneProduktion", $"UploadedData_{DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss-f")}.bmp")))
                 {

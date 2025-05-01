@@ -1,35 +1,36 @@
 #include <Arduino.h>
-
 #include <ArduinoJson.h>
-
 #include <WiFi.h>
 #include <HTTPClient.h>
 #include <WiFiClientSecure.h>
 #include <ArduinoMqttClient.h>
-
 #include <ESP32Servo.h>
 
 #include "arduino_secrets.h"
 
-static const int servoPin = 13;
+const int   servoPin        = 13;
+const char* ssid            = WIFI_SSID;
+const char* password        = WIFI_PASS;
+const char  broker[]        = MQTT_HOST;
+int         port            = MQTT_PORT;
+const char  mqtt_username[] = MQTT_USERNAME;
+const char  mqtt_password[] = MQTT_PASSWORD;
+const char* listenerTopic   = "zigbee2mqtt/{}/activate";
+String      macAddress      = "";
+bool        isSetup         = false;
 
-Servo servo1;
+Servo             servo1;
+WiFiClientSecure  client;
+MqttClient        mqttClient(client);
+JsonDocument      baseInformation;
+JsonDocument      sendMqttMessagePlaceholder;
 
-const char* ssid = "SibrienAP2";
-const char* password = "Siberia51244";
-const char* serverUrl = "https://jespercal.ngrok.app/api/auth/fingerprint";
+void printHex(int num, int precision);
+bool downloadFingerprintImage();
+void sendBufferToAPI(size_t bufferLen);
+void sendExampleBufferToAPI();
+void onMqttMessage(int messageSize);
 
-const char broker[] = MQTT_HOST;
-int        port     = MQTT_PORT;
-const char mqtt_username[] = MQTT_USERNAME;
-const char mqtt_password[] = MQTT_PASSWORD;
-
-const char* listenerTopic = "zigbee2mqtt/{}/activate";
-
-WiFiClientSecure client;
-MqttClient mqttClient(client);
-
-String macAddress = "";
 String getMacAddressString() {
   if(macAddress == "")
   {
@@ -51,13 +52,19 @@ String getMacAddressString() {
 }
 
 
-bool isSetup = false;
+void sendMqttMessage( char* topic, JsonDocument doc, bool retain = false, int qos = 1 )
+{
+  sendMqttMessagePlaceholder = doc;
 
-void printHex(int num, int precision);
-bool downloadFingerprintImage();
-void sendBufferToAPI(size_t bufferLen);
-void sendExampleBufferToAPI();
-void onMqttMessage(int messageSize);
+  sendMqttMessagePlaceholder["timestamp"] = 
+
+  String message;
+  serializeJson(sendMqttMessagePlaceholder, message);
+
+  mqttClient.beginMessage(topic, false, qos);
+  mqttClient.print(message);
+  mqttClient.endMessage();
+}
 
 void setup() {
   isSetup = false;
@@ -83,6 +90,9 @@ void setup() {
   Serial.print("Address: ");
   Serial.println(getMacAddressString());
 
+  baseInformation["address"] = getMacAddressString();
+  baseInformation["type"] = "smart-lock|esp32";
+
   client.setInsecure();
 
   mqttClient.setUsernamePassword(mqtt_username, mqtt_password);
@@ -104,16 +114,10 @@ void setup() {
 
   mqttClient.subscribe(topic);
 
-  String message = "";
-  JsonDocument doc;
-  doc["type"] = "smart-lock";
-  doc["address"] = macAddress;
-  
-  serializeJson(doc, message);
+  String message = "";  
+  serializeJson(baseInformation, message);
 
-  mqttClient.beginMessage(topic);
-  mqttClient.print(message);
-  mqttClient.endMessage();
+  sendMqttMessage(topic, message, false, 0);
 
   servo1.attach(servoPin);
 
@@ -124,7 +128,6 @@ void setup() {
   isSetup = true;
 }
 
-int duration;
 void onMqttMessage(int messageSize) {
   // we received a message, print out the topic and contents
   Serial.println("Received a message with topic '");
@@ -136,16 +139,17 @@ void onMqttMessage(int messageSize) {
   JsonDocument doc;
   deserializeJson(doc, mqttClient);
 
-  duration = 2000;
+  int relockWaitDuration = 2000;
 
   if(doc["duration"].is<int>())
   {
-    duration = (int)doc["duration"];
+    relockWaitDuration = (int)doc["duration"];
   }
 
   Serial.println("Opening");
+  sendMqttMessage(topic, message, false, 0);
   servo1.write(45);
-  delay(duration);
+  delay(relockWaitDuration);
 
   Serial.println("Closing");
   servo1.write(0);
