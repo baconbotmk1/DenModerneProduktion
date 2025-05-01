@@ -18,7 +18,7 @@
         <div class="js-status-card">
             <div class="js-status-card-header">
                 <h4 class="js-status-card-header-title">Global temperatur</h4>
-                <span class="js-status-card-header-value">@GlobalTemperature&deg;</span>
+                <span class="js-status-card-header-value">@($"{GlobalTemperature.ToString() ?? "N/A"}")&deg;</span>
             </div>
             <AuthorizeView>
                 <div class="js-status-card-info-list">
@@ -33,7 +33,7 @@
         <div class="js-status-card">
             <div class="js-status-card-header">
                 <h4 class="js-status-card-header-title">Global fugtighed</h4>
-                <span class="js-status-card-header-value">@GlobalHumidity%</span>
+                <span class="js-status-card-header-value">@($"{GlobalHumidity.ToString() ?? "N/A"}")%</span>
             </div>
             <AuthorizeView>
                 <div class="js-status-card-info-list">
@@ -89,9 +89,9 @@
 
     public List<Shared.Models.Room> AccessibleRooms { get; set; } = new();
 
-    public double GlobalTemperature { get; set; }
+    public double? GlobalTemperature { get; set; }
 
-    public double GlobalHumidity { get; set; }
+    public double? GlobalHumidity { get; set; }
 
     public int DoorsUnlocked { get; set; }
 

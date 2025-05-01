@@ -1,4 +1,4 @@
-﻿namespace DenModerneProduktion.Components.Helpers
+﻿namespace DenModerneProduktion.Components.Pages.PageModels
 {
     public class ModalInput
     {
@@ -20,7 +20,7 @@
 
         public bool ShouldRender()
         {
-            if(ShouldRenderGeneral != null)
+            if (ShouldRenderGeneral != null)
             {
                 return ShouldRenderGeneral.Invoke();
             }
