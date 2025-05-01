@@ -5,6 +5,8 @@
 @using DenModerneProduktion.Services
 @using Shared.DTOs.SecurityGroup
 @using Shared.Models
+
+@attribute [Authorize]
 @inject ApiRequester requester
 @inject ViewHelper viewHelper
 @inject NavigationManager navigationManager

@@ -4,6 +4,8 @@
 @using Microsoft.AspNetCore.Components.Authorization
 @using System.Globalization
 @using Shared.Models
+
+@attribute [Authorize]
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject ApiRequester requester
 @inject ViewHelper viewHelper

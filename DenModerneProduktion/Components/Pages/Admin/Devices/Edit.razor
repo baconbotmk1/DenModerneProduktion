@@ -7,6 +7,8 @@
 @using Shared.Models
 @using System.Text.Json;
 @using DenModerneProduktion.Components.Pages.PageViews;
+
+@attribute [Authorize]
 @inject ApiRequester requester
 @inject ViewHelper viewHelper
 @inject NavigationManager navigationManager
