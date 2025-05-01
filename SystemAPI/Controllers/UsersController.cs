@@ -265,6 +265,7 @@ namespace SystemAPI.Controllers
                 .ToList();
 
             data = context.Rooms
+                .AsNoTracking()
                 .Include(x => x.Devices)
                     .ThenInclude(x=>x.Type)
                 .Include(x=>x.Devices)
@@ -273,10 +274,7 @@ namespace SystemAPI.Controllers
                 .Include(x => x.Devices)
                     .ThenInclude(x => x.Infos)
                         .ThenInclude(x => x.Type)
-                .Include(x => x.TimeLimits)
-                    .ThenInclude(x => x.Weeks)
-                        .ThenInclude(x => x.Days)
-                            .ThenInclude(x => x.Times)
+                .Include(x => x.LimitValues)
                 .Where(x => hasViewAllPermission ? true : accessibleRoomsData.Contains(x.Id))
                 .ToList();
 

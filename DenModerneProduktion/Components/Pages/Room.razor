@@ -78,7 +78,7 @@ else
     protected async Task UpdateMinLimitValueAsync(double? value)
     {
         _MinValue = value;
-        var response = await requester.Put<Room>($"api/rooms/{_Id}/limit", new Shared.DTOs.Room.UpdateDataLimit()
+        var response = await requester.Put<Room>($"api/rooms/{_Id}/limit", new Shared.DTOs.DataLimit.UpdateDataLimit()
             {
                 MinimumLimit = _MinValue,
                 MaximumLimit = _MaxValue,
@@ -89,7 +89,7 @@ else
     protected async Task UpdateMaxLimitValueAsync(double? value)
     {
         _MaxValue = value;
-        var response = await requester.Put<Room>($"api/rooms/{_Id}/limit", new Shared.DTOs.Room.UpdateDataLimit()
+        var response = await requester.Put<Room>($"api/rooms/{_Id}/limit", new Shared.DTOs.DataLimit.UpdateDataLimit()
             {
                 MinimumLimit = _MinValue,
                 MaximumLimit = _MaxValue,
@@ -187,8 +187,7 @@ else
     }
     private async Task GetRoomDataAsync(string baseApiUri)
     {
-        var response = await requester.Get<List<Shared.Models.DeviceData>>(baseApiUri);
-        response = await requester.Get<Shared.Models.Room>("api/rooms/" + _Id);
+        var response = await requester.Get<Shared.Models.Room>("api/rooms/" + _Id);
         if (response.StatusCode != 200)
         {
             viewHelper.Alert(response.Message);

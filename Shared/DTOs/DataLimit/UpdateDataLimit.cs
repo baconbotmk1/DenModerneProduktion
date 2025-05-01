@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Shared.DTOs.Room
+namespace Shared.DTOs.DataLimit
 {
     public class UpdateDataLimit
     {

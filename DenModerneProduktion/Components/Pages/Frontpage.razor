@@ -1,20 +1,33 @@
-﻿@page "/"
+﻿@using DenModerneProduktion.Components.Pages.PageModels
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+@using Shared.Models
+@using System.Globalization
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject ApiRequester requester
+@inject ViewHelper viewHelper
+
+@page "/"
 <PageTitle>Status</PageTitle>
 
 <div class="js-status-container">
     <h1>Status dashboard</h1>
+
     <div class="js-status-card-list">
         <div class="js-status-card">
             <div class="js-status-card-header">
                 <h4 class="js-status-card-header-title">Global temperatur</h4>
                 <span class="js-status-card-header-value">@GlobalTemperature&deg;</span>
             </div>
-            <div class="js-status-card-info-list">
-                @foreach (var device in TemperatureDevices)
-                {
-                    <p class="js-status-card-info-list-item">{Lokale navn} <span>{tempVærdi}&deg;</span></p>
-                }
-            </div>
+            <AuthorizeView>
+                <div class="js-status-card-info-list">
+                    @foreach (var device in TemperatureDevices)
+                    {
+                        <p class="js-status-card-info-list-item">{Lokale navn} <span>{tempVærdi}&deg;</span></p>
+                    }
+                </div>
+            </AuthorizeView>
         </div>
 
         <div class="js-status-card">
@@ -22,37 +35,40 @@
                 <h4 class="js-status-card-header-title">Global fugtighed</h4>
                 <span class="js-status-card-header-value">@GlobalHumidity%</span>
             </div>
-            <div class="js-status-card-info-list">
-                @foreach (var device in HumidityDevices)
-                {
-                    <p class="js-status-card-info-list-item">{Lokale navn} <span>{fugtVærdi}%</span></p>
-                }
-            </div>
+            <AuthorizeView>
+                <div class="js-status-card-info-list">
+                    @foreach (var device in HumidityDevices)
+                    {
+                        <p class="js-status-card-info-list-item">{Lokale navn} <span>{fugtVærdi}%</span></p>
+                    }
+                </div>
+            </AuthorizeView>
         </div>
+        <AuthorizeView>
+            <div class="js-status-card">
+                <div class="js-status-card-header">
+                    <h4 class="js-status-card-header-title">Åbne døre</h4>
+                </div>
+                <div class="js-status-card-info-list">
+                    @foreach (var device in DoorDevices)
+                    {
+                        <p class="js-status-card-info-list-item">{Lokale navn}</p>
+                    }
+                </div>
+            </div>
 
-        <div class="js-status-card">
-            <div class="js-status-card-header">
-                <h4 class="js-status-card-header-title">Åbne døre</h4>
+            <div class="js-status-card">
+                <div class="js-status-card-header">
+                    <h4 class="js-status-card-header-title">Åbne vinduer</h4>
+                </div>
+                <div class="js-status-card-info-list">
+                    @foreach (var device in WindowDevices)
+                    {
+                        <p class="js-status-card-info-list-item">{Lokale navn}</p>
+                    }
+                </div>
             </div>
-            <div class="js-status-card-info-list">
-                @foreach (var device in DoorDevices)
-                {
-                    <p class="js-status-card-info-list-item">{Lokale navn}</p>
-                }
-            </div>
-        </div>
-
-        <div class="js-status-card">
-            <div class="js-status-card-header">
-                <h4 class="js-status-card-header-title">Åbne vinduer</h4>
-            </div>
-            <div class="js-status-card-info-list">
-                @foreach (var device in WindowDevices)
-                {
-                    <p class="js-status-card-info-list-item">{Lokale navn}</p>
-                }
-            </div>
-        </div>
+        </AuthorizeView>
     </div>
 </div>
 
@@ -60,16 +76,109 @@
 
 @code {
     public List<string> Devices { get; set; }
+    private List<DeviceDisplayData> TemperatureDevices { get; set; } = new();
+    private List<DeviceDisplayData> HumidityDevices { get; set; } = new();
+    private List<DeviceDisplayData> DoorDevices { get; set; } = new();
+    private List<DeviceDisplayData> WindowDevices { get; set; } = new();
+    private ClaimsPrincipal user;
+
+    public double? MinimumTemperatureLimit { get; set; }
+    public double? MaximumTemperatureLimit { get; set; }
+    public double? MinimumHumidityLimit { get; set; }
+    public double? MaximumHumidityLimit { get; set; }
+
+    public List<Shared.Models.Room> AccessibleRooms { get; set; } = new();
 
     public double GlobalTemperature { get; set; }
-    public List<string> TemperatureDevices { get; set; } = new() { "52.200", "52.201" };
 
     public double GlobalHumidity { get; set; }
-    public List<string> HumidityDevices { get; set; } = new() { "52.203" };
 
     public int DoorsUnlocked { get; set; }
-    public List<string> DoorDevices { get; set; } = new() { "52.200", "52.205" };
 
     public int WindowsOpened { get; set; }
-    public List<string> WindowDevices { get; set; } = new() { "52.200", "52.201", "52.201", "52.202", "52.203", "52.203", };
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        user = authState.User;
+        await GetGlobalLimitValuesAsync();
+        await GetAccessibleRoomsAsync();
+    }
+    private async Task GetGlobalLimitValuesAsync()
+    {
+        var response = await requester.Get<Cadastre>("api/cadastres/" + 1);
+        // var response = await requester.Get<Shared.Models.Cadastre>("api/cadastres/1");
+        if (response.StatusCode != 200)
+        {
+            viewHelper.Alert(response.Message);
+            return;
+        }
+
+        var cadastre = ((Shared.Responses.AcceptedResponse<Shared.Models.Cadastre>)response).Data;
+        var limit = cadastre.LimitValues.Where(x => x.CadastreId == 1);
+
+        MaximumHumidityLimit = limit.FirstOrDefault(x => x.TypeId == 3)?.MaximumLimit;
+        MaximumTemperatureLimit = limit.FirstOrDefault(x => x.TypeId == 2)?.MaximumLimit;
+        MinimumHumidityLimit = limit.FirstOrDefault(x => x.TypeId == 3)?.MinimumLimit;
+        MinimumTemperatureLimit = limit.FirstOrDefault(x => x.TypeId == 2)?.MinimumLimit;
+    }
+    private async Task GetAccessibleRoomsAsync()
+    {
+        if (user.Identity.IsAuthenticated)
+        {
+            var userId = user.Claims.First(x => x.Type == ClaimTypes.Sid).Value;
+            var response = await requester.Get<List<Shared.Models.Room>>($"api/users/{userId}/rooms/data");
+            if (response.StatusCode != 200)
+            {
+                viewHelper.Alert(response.Message);
+                return;
+            }
+
+            AccessibleRooms = ((Shared.Responses.AcceptedResponse<List<Shared.Models.Room>>)response).Data;
+        }
+        else
+        {
+            var response = await requester.Get<List<Shared.Models.Room>>($"api/rooms/data");
+            if (response.StatusCode != 200)
+            {
+                viewHelper.Alert(response.Message);
+                return;
+            }
+
+            AccessibleRooms = ((Shared.Responses.AcceptedResponse<List<Shared.Models.Room>>)response).Data;
+        }
+        SetDevices();
+        StateHasChanged();
+    }
+    private void SetDevices()
+    {
+        int tmpTypeId = 2;
+        int humidTypeId = 3;
+
+        TemperatureDevices = AccessibleRooms.Select(x => new DeviceDisplayData()
+            {
+                RoomName = x.Name,
+                MinLimit = x.LimitValues.FirstOrDefault(z => z.TypeId == tmpTypeId)?.MinimumLimit ?? MinimumTemperatureLimit,
+                MaxLimit = x.LimitValues.FirstOrDefault(y => y.TypeId == tmpTypeId)?.MaximumLimit ?? MaximumTemperatureLimit,
+                _Info = x.Devices.SelectMany(y => y.Infos.Where(z => z.TypeId == tmpTypeId
+                                            && z.Timestamp.ToLocalTime() > DateTime.Now.AddDays(-1)
+                                            && ((x.LimitValues.FirstOrDefault(z => z.TypeId == tmpTypeId)?.MaximumLimit ?? MaximumTemperatureLimit) < double.Parse(z.Value, NumberStyles.Any, CultureInfo.InvariantCulture) ||
+                                            (x.LimitValues.FirstOrDefault(z => z.TypeId == tmpTypeId)?.MinimumLimit ?? MinimumTemperatureLimit) > double.Parse(z.Value, NumberStyles.Any, CultureInfo.InvariantCulture))
+
+                )).ToList()
+            }).Where(x => x._Info.Count() > 0).ToList();
+
+        HumidityDevices = AccessibleRooms.Select(x => new DeviceDisplayData()
+            {
+                RoomName = x.Name,
+                MinLimit = x.LimitValues.FirstOrDefault(z => z.TypeId == humidTypeId)?.MinimumLimit ?? MinimumHumidityLimit,
+                MaxLimit = x.LimitValues.FirstOrDefault(y => y.TypeId == humidTypeId)?.MaximumLimit ?? MaximumHumidityLimit,
+                _Info = x.Devices.SelectMany(y => y.Infos.Where(z => z.TypeId == humidTypeId
+                                            && z.Timestamp.ToLocalTime() > DateTime.Now.AddDays(-1)
+                                            && ((x.LimitValues.FirstOrDefault(z => z.TypeId == humidTypeId)?.MaximumLimit ?? MaximumHumidityLimit) < double.Parse(z.Value, NumberStyles.Any, CultureInfo.InvariantCulture) ||
+                                            (x.LimitValues.FirstOrDefault(z => z.TypeId == humidTypeId)?.MinimumLimit ?? MinimumHumidityLimit) > double.Parse(z.Value, NumberStyles.Any, CultureInfo.InvariantCulture))
+
+                )).ToList()
+            }).Where(x => x._Info.Count() > 0).ToList();
+    }
 }

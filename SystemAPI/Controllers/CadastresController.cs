@@ -1,4 +1,5 @@
 ﻿using Shared.DTOs.Cadastre;
+using Shared.DTOs.DataLimit;
 
 namespace SystemAPI.Controllers
 {
@@ -22,6 +23,7 @@ namespace SystemAPI.Controllers
             return context.Cadastres
                 .AsQueryable()
                 .Include(e => e.Buildings)
+                .Include(e => e.LimitValues)
                 .ToList();
         }
 
@@ -49,7 +51,11 @@ namespace SystemAPI.Controllers
         [HttpGet("{id}")]
         public ActionResult<Cadastre> GetCadastreById(int id)
         {
-            Cadastre? Cadastre = context.Cadastres.FirstOrDefault(e => e.Id == id);
+            Cadastre? Cadastre = context.Cadastres
+                .AsQueryable()
+                .Include(e => e.Buildings)
+                .Include(e => e.LimitValues)
+                .FirstOrDefault();
 
             if (Cadastre == null)
             {
@@ -57,6 +63,33 @@ namespace SystemAPI.Controllers
             }
 
             return Ok(Cadastre);
+        }
+        [HttpPut("{id}/limit")]
+        public ActionResult<Cadastre> UpdateOrCreateCadastreLimit(int id, [FromBody] UpdateDataLimit data)
+        {
+            DeviceDataLimitValue? dDLV = context.DeviceDataLimit
+                .AsQueryable()
+                .Where(x => x.TypeId == data.DataTypeId && x.CadastreId == id)
+                .FirstOrDefault();
+
+            if (dDLV == null)
+            {
+                context.DeviceDataLimit.Add(new()
+                {
+                    MaximumLimit = data.MaximumLimit,
+                    MinimumLimit = data.MinimumLimit,
+                    CadastreId = id,
+                    TypeId = data.DataTypeId
+                });
+            }
+            else
+            {
+                data.Adapt(dDLV);
+                context.Attach(dDLV);
+            }
+            context.SaveChanges();
+
+            return Ok(dDLV);
         }
 
         /// <summary>
