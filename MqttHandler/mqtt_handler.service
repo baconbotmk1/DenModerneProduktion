@@ -1,12 +1,12 @@
 ﻿[Unit]
-Description=URL Shortener running on a Raspberry Pi
-After=network.target
+Description=MQTT-Handler running on .NET 8.0 Worker service
 Requires=zigbee2mqtt.service
 After=zigbee2mqtt.service
 
 [Service]
 ExecStart=/home/js/.dotnet/dotnet MqttHandler.dll
 WorkingDirectory=/home/js/mqttreader/MqttHandler/bin/Debug/net8.0/
+Restart=on-failure
 
 [Install]
 WantedBy=multi-user.target

@@ -304,7 +304,7 @@
 
 
     private GenericModal createDataTypeModal = default!;
-    private List<ModalInput>? createDataTypeModalInputs = null;
+    private List<ModalInput>? createDataTypeModalInputs = new List<ModalInput>();
 
     async public Task OpenCreateDataTypeModal()
     {
@@ -357,7 +357,7 @@
 
 
     private GenericModal createInfoTypeModal = default!;
-    private List<ModalInput>? createInfoTypeModalInputs = null;
+    private List<ModalInput>? createInfoTypeModalInputs = new List<ModalInput>();
     async public Task OpenCreateInfoTypeModal()
     {
         if (createInfoTypeModalInputs == null)
