@@ -425,6 +425,82 @@ namespace SystemAPI.Controllers
 
             return Ok();
         }
+
+        /// <summary>
+        /// Import users from an external source
+        /// </summary>
+        /// <param name="source_type"></param>
+        /// <param name="users"></param>
+        /// <returns></returns>
+        [HttpPost("import/{source_type}")]
+        public ActionResult ImportUsers(string source_type, [FromBody] List<ImportedUser> users, [FromQuery] bool overrideExistingEmails = false)
+        {
+            List<User> currentUsers = context.Users
+                .AsQueryable()
+                .ToList();
+
+            List<int> CheckedIDs = new List<int>();
+
+            foreach (ImportedUser importedUser in users)
+            {
+                User? previouslyImported = currentUsers.FirstOrDefault(e => e.ReferenceType != null && e.ReferenceId != null && e.ReferenceType == source_type && e.ReferenceId == importedUser.Uuid);
+                if (previouslyImported != null)
+                {
+                    Debug.WriteLine($"User {importedUser.Uuid} already imported previously");
+
+                    CheckedIDs.Add(previouslyImported.Id);
+
+                    previouslyImported.IsActive = true;
+                    context.Update(previouslyImported);
+                    context.SaveChanges();
+
+                    continue;
+                }
+
+                User? sameEmail = currentUsers.FirstOrDefault(e => ( e.ReferenceType == null || e.ReferenceType != source_type || e.ReferenceId == null) && e.Username.ToLower() == importedUser.Email.ToLower());
+                if (sameEmail != null)
+                {
+                    Debug.WriteLine($"A user with the email {importedUser.Email} already exists");
+
+                    if(overrideExistingEmails)
+                    {
+                        Debug.WriteLine($"Overriding existing user");
+                        CheckedIDs.Add(sameEmail.Id);
+
+                        sameEmail.Name = importedUser.Name;
+                        sameEmail.ReferenceType = source_type;
+                        sameEmail.ReferenceId = importedUser.Uuid;
+                        sameEmail.IsActive = true;
+
+                        context.Update(sameEmail);
+                        context.SaveChanges();
+                    }
+
+                    continue;
+                }
+
+                User newUser = new User()
+                {
+                    Name = importedUser.Name,
+                    Username = importedUser.Email,
+                    ReferenceType = source_type,
+                    ReferenceId = importedUser.Uuid,
+                    IsActive = true,
+                };
+                context.Users.Add(newUser);
+                context.SaveChanges();
+            }
+
+            foreach(User remainingUser in currentUsers.Where(e => e.ReferenceType == source_type))
+            {
+                Debug.WriteLine($"Deactivating user {remainingUser.Username}, because he wasn't on the import list, but is part of the same reference type");
+
+                remainingUser.IsActive = false;
+                context.SaveChanges();
+            }
+
+            return Ok("Users imported & updated");
+        }
     }
 }
 
