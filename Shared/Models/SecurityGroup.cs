@@ -1,20 +1,31 @@
-﻿using System;
+﻿using Shared.Services;
+using System;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace Shared.Models
 {
-	public class SecurityGroup : TimeLimitableModel
+	public class SecurityGroup : BaseModel, ITimeLimitted
     {
-		public string Name { get; set; }
-		public string Desc { get; set; }
+        public string Name { get; set; } = default!;
+        public string? Desc { get; set; } = default;
 
-		[InverseProperty("SecurityGroup")]
-        public ICollection<SecurityGroupPermission> SecurityGroupPermissions { get; } = new List<SecurityGroupPermission>();
+        //[JsonIgnore]
+        [InverseProperty("SecurityGroup")]
+        public virtual ICollection<SecurityGroupPermission> SecurityGroupPermissions { get; set; } = new List<SecurityGroupPermission>();
 
+        //[JsonIgnore]
+        [InverseProperty("SecurityGroup")]
+        public virtual ICollection<UserSecurityGroup> UserSecurityGroups { get; set; } = new List<UserSecurityGroup>();
 
-        public SecurityGroup()
-		{
-		}
-	}
+        //[JsonIgnore]
+        [InverseProperty("SecurityGroup")]
+        public virtual ICollection<SecurityGroupRoom> SecurityGroupRooms { get; set; } = new List<SecurityGroupRoom>();
+
+        //[JsonIgnore]
+        [InverseProperty("SecurityGroup")]
+        public virtual ICollection<TimeLimit> TimeLimits { get; set; } = new List<TimeLimit>();
+    }
 }
 

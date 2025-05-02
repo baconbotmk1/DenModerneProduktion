@@ -1,0 +1,150 @@
+﻿@using Shared.Models
+@using System.Diagnostics
+@inject IJSRuntime JS
+
+<div class="@Class">
+
+    <div class="d-flex flex-row mb-3">
+        <div class="d-flex flex-column w-100 me-4">
+            <label>Fra dato</label>
+            <InputDate class="form-control form-control-sm" @bind-Value="TimeLimit.FromDate" />
+        </div>
+        <div class="d-flex flex-column w-100">
+            <label>Til dato</label>
+            <InputDate class="form-control form-control-sm" @bind-Value="TimeLimit.ToDate" />
+        </div>
+    </div>
+
+    @if(TimeLimit.Weeks.Count > 0)
+    {
+        <div class="d-flex flex-column timelimitinputs">
+            <Accordion>
+                @foreach (TimeLimitWeek week in TimeLimit.Weeks)
+                {
+                    <AccordionItem Title="@("Uge #" + (TimeLimit.Weeks.ToList().IndexOf(week)+1) + (!string.IsNullOrEmpty(week.Name) ? " - " + week.Name : ""))">
+                        <Content>
+                            <label>Titel</label>
+                            <input placeholder="Uge titel" class="form-control form-control-sm mb-2" type="text" @bind-value="week.Name" />
+
+                            <label>Uge</label>
+                            <InputWeek @bind-Value="week.StartDate" />
+
+                            <label class="fw-bold mt-3">Ugedage</label>
+
+                            <div class="d-flex flex-row">
+                                <Accordion Class="w-100">
+                                    @foreach(TimeLimitWeekDay day in week.Days)
+                                    {
+                                        <AccordionItem Class="@(day.Times.Sum(e => (e.FromTime - e.ToTime).TotalSeconds) == 0 ? "no-time" : "")">
+                                            <TitleTemplate>
+                                                <Icon Name="day.Times.Sum(e => (e.FromTime - e.ToTime).TotalSeconds) == 0 ? IconName.DoorClosed : IconName.DoorOpenFill" />
+                                                @(DayNames[day.Day])
+                                            </TitleTemplate>
+                                            <Content>
+                                                <div class="d-flex flex-column">
+                                                    <div class="d-flex flex-column">
+                                                        <table>
+                                                            @foreach (TimeLimitWeekDayTime time in day.Times)
+                                                            {
+                                                                <tr>
+                                                                    <td>
+                                                                        <input class="form-control form-control-sm" @bind-value="time.FromTime" type="time" />
+                                                                    </td>
+                                                                    <td class="text-center">
+                                                                        Til
+                                                                    </td>
+                                                                    <td>
+                                                                        <input class="form-control form-control-sm" @bind-value="time.ToTime" type="time" />
+                                                                    </td>
+                                                                    @if (day.Times.Count > 1)
+                                                                    {
+                                                                        <td class="text-center" style="width: 5%;">
+                                                                            <button @onclick="() => day.Times.Remove(time)" class="btn btn-sm btn-danger ms-1">
+                                                                                <Icon Name="@IconName.Trash" />
+                                                                            </button>
+                                                                        </td>
+                                                                    }
+                                                                </tr>
+                                                            }
+                                                            <tr>
+                                                                <td colspan="3">
+                                                                    <button class="btn btn-sm btn-outline-success mt-2" @onclick="() => day.Times.Add(GetDefaultWeekDayTime())">Tilføj ekstra tid</button>
+                                                                </td>
+                                                            </tr>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            </Content>
+                                        </AccordionItem>
+                                    }
+                                </Accordion>
+                            </div>
+
+                            <div style="margin-left: auto;width: fit-content;">
+                                <button class="btn btn-sm btn-outline-danger mt-2 ms-auto me-0" @onclick="() => TimeLimit.Weeks.Remove(week)">Slet uge</button>
+                            </div>
+                        </Content>
+                    </AccordionItem>
+                }
+            </Accordion>
+        </div>
+    }
+
+    <button class="btn btn-sm btn-outline-primary w-100 mt-2" @onclick="() => TimeLimit.Weeks.Add(GetDefaultWeek())">Tilføj uge</button>
+
+    <style>
+        .timelimitinputs .accordion-button {
+        padding: 8px;
+        }
+    </style>
+
+</div>
+
+@code {
+    [Parameter] public TimeLimit TimeLimit { get; set; } = new TimeLimit();
+    [Parameter] public string Class { get; set; } = "";
+
+    [Parameter] public Action? OnChanged { get; set; }
+
+    public static Dictionary<Days, string> DayNames { get; set; } = new Dictionary<Days, string>()
+    {
+        {Days.MONDAY, "Mandag"},
+        {Days.TUESDAY, "Tirsdag"},
+        {Days.WEDNESDAY, "Onsdag"},
+        {Days.THURSDAY, "Torsdag"},
+        {Days.FRIDAY, "Fredag"},
+        {Days.SATURDAY, "Lørdag"},
+        {Days.SUNDAY, "Søndag"},
+    };
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (OnChanged != null)
+            OnChanged.Invoke();
+
+        base.OnAfterRender(firstRender);
+    }
+
+    public TimeLimitWeekDayTime GetDefaultWeekDayTime() => new TimeLimitWeekDayTime()
+    {
+        FromTime = new TimeOnly(6, 0),
+        ToTime = new TimeOnly(14, 0)
+    };
+
+    public TimeLimitWeek GetDefaultWeek() => new TimeLimitWeek()
+    {
+        Days = Enumerable.Range(0, 7).Select(e => new TimeLimitWeekDay()
+        {
+            Day = (Days)e,
+            Times = new List<TimeLimitWeekDayTime>()
+            {
+                GetDefaultWeekDayTime()
+            }
+        }).ToList()
+    };
+}

@@ -1,0 +1,30 @@
+﻿@page "/admin/users"
+@using DenModerneProduktion.Components.Pages.PageViews
+@using DenModerneProduktion.Services
+@using Shared.Models
+@using System.Diagnostics
+@using Microsoft.AspNetCore.Components.Web
+
+@attribute [Authorize]
+@inject ApiRequester requester
+@inject ViewHelper viewHelper
+<PageTitle>Brugere</PageTitle>
+
+<GenericCRUDListView DeleteMessage="DeleteMessage" Link="admin/users" APIEndpoint="api/users" TType="User" Title="Brugere" Subtitle="Disse er de forskellige brugere i systemet. De omfatter både medarbejdere og kursister.">
+    <Headers>
+        <th>ID</th>
+        <th>Navn</th>
+        <th>Sikkerhedsgrupper</th>
+        <th>Adgang til antal lokaler</th>
+    </Headers>
+    <Rows>
+        <td>@context.Id</td>
+        <td>@context.Name</td>
+        <td class="@(context.UserSecurityGroups.Count() == 0 ? "fst-italic" : "")">@(context.UserSecurityGroups.Count() == 0 ? "Ingen" : string.Join(", ", context.UserSecurityGroups.Select(e => e.SecurityGroup).Select(e => e.Name)))</td>
+        <td class="@(context.UserSecurityGroups.Count() == 0 ? "fst-italic" : "")">@(context.UserSecurityGroups.Count())</td>
+    </Rows>
+</GenericCRUDListView>
+
+@code {
+    public string DeleteMessage(User user) => "Slet brugeren '" + user.Name +"'?";
+}

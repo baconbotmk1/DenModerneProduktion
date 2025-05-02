@@ -1,0 +1,26 @@
+﻿@inherits InputBase
+
+<div class="mb-2">
+    <span class="form-label">Navn</span>
+    <input name="@Name" value="@Value" @oninput="OnInput" class="form-control @(!ShowError ? "is-invalid" : "")" type="@Type" placeholder="@Placeholder" required="@IsRequired" />
+    <span hidden="@ShowError" class="fst-italic text-danger">@ErrorMessage</span>
+</div>
+
+@code {
+    [Parameter]
+    public string Placeholder { get; set; } = "";
+
+    private async Task OnInput(ChangeEventArgs e)
+    {
+        Value = e.Value?.ToString();
+        await ValueChanged.InvokeAsync(Value);
+    }
+
+    protected override void OnInitialized()
+    {
+        ParentList.Add(Name, this);
+
+        base.OnInitialized();
+    }
+}
+

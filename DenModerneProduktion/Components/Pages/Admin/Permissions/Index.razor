@@ -1,0 +1,30 @@
+﻿@page "/admin/permissions"
+@using DenModerneProduktion.Components.Pages.PageViews
+@using DenModerneProduktion.Services
+@using Shared.Models
+@using System.Diagnostics
+
+@attribute [Authorize]
+@inject ApiRequester requester
+@inject ViewHelper viewHelper
+<PageTitle>Rettigheder</PageTitle>
+
+<GenericCRUDListView DeleteMessage="DeleteMessage" Link="admin/permissions" APIEndpoint="api/permissions" TType="Permission" Title="Rettigheder" Subtitle="Disse er de rettigheder som en sikkerhedsgruppe kan få tildelt og som kræves for at kunne få adgang til visse funktioner.">
+    <Headers>
+        <th>ID</th>
+        <th>Slug</th>
+        <th>Navn</th>
+        <th>Beskrivelse</th>
+    </Headers>
+    <Rows>
+        <td>@context.Id</td>
+        <td>@context.Slug</td>
+        <td>@context.Name</td>
+        <td>@context.Desc</td>
+    </Rows>
+</GenericCRUDListView>
+
+
+@code {
+    public string DeleteMessage(Permission perm) => "Slet rettigheden '" + perm.Name + "'?";
+}

@@ -1,0 +1,33 @@
+﻿@page "/admin/devices"
+@using DenModerneProduktion.Components.Pages.PageViews
+@using DenModerneProduktion.Services
+@using Shared.Models
+@using System.Diagnostics
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+@inject ApiRequester requester
+@inject ViewHelper viewHelper
+
+<GenericCRUDListView DeleteMessage="DeleteMessage" Link="admin/devices" APIEndpoint="api/devices" TType="Device" Title="Enheder" Subtitle="Diverse enheder">
+    <Headers>
+        <th>ID</th>
+        <th>Navn</th>
+        <th>Type</th>
+        <th>Antal Info</th>
+        <th>Antal Data</th>
+        <th>Antal Begivenheder</th>
+    </Headers>
+    <Rows>
+        <td>@context.Id</td>
+        <td>@context.Name</td>
+        <td>@context.Type.Name</td>
+        <td>@context.Infos.Count</td>
+        <td>@context.Data.Count</td>
+        <td>@context.Events.Count</td>
+    </Rows>
+</GenericCRUDListView>
+
+@code {
+    public string DeleteMessage(Device device) => "Slet enheden '" + device.Name +"'?";
+}

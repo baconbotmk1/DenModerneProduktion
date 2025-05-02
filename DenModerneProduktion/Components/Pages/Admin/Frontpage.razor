@@ -1,0 +1,245 @@
+﻿@using System.Security.Claims
+@using DenModerneProduktion.Components.Pages.PageModels
+@using DenModerneProduktion.Services
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Globalization
+@using Shared.Models
+
+@attribute [Authorize]
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject ApiRequester requester
+@inject ViewHelper viewHelper
+@page "/admin/"
+<PageTitle>Admin</PageTitle>
+
+
+<div class="js-admin-index">
+    <h1>Admin frontpage</h1>
+    <div class="js-alarm-list">
+        <div class="js-alarm-card">
+            <h2>Nærhedssensor</h2>
+            <div class="js-alarm-card-list">
+                @if (MotionDevices.Where(x=>x._Data.Count>0).Count() > 0)
+                {
+                    @foreach (var device in MotionDevices.Where(x => x._Data.Count > 0))
+                    {
+                        <p>@(device.RoomName) - @(device._Data.Last()?.Timestamp.ToLocalTime())</p>
+                    }
+                }
+            </div>
+        </div>
+        <div class="js-alarm-card">
+            <h2>Temperatur</h2>
+            <div class="js-alarm-card-list">
+                @if (TemperatureDevices.Count() > 0)
+                {
+                    <table>
+                        <tr>
+                            <th>Lokale</th>
+                            <th>Værdi</th>
+                            <th>Min</th>
+                            <th>Max</th>
+                        </tr>
+                        @foreach (var device in TemperatureDevices)
+                        {
+                            <tr>
+                                <td>@device.RoomName</td>
+                                <td>@($"{device._Info.Select(x => double.Parse(x.Value, NumberStyles.Any, CultureInfo.InvariantCulture)).Average()}{device._Info.First().Type.Suffix}")</td>
+                                <td>@device.MinLimit</td>
+                                <td>@device.MaxLimit</td>
+                            </tr>
+                        }
+                    </table>
+                }
+
+            </div>
+            <div class="js-alarm-card-global-limit">
+                <h4>Global Limit</h4>
+                <div class="js-data-limit">
+                    <div class="js-alarm-card-global-limit-min">
+                        <label for="js-min-temp-limit">Minimum</label>
+                        <InputNumber id="js-min-temp-limit" TValue="double?" Value="@MinimumTemperatureLimit" ValueExpression="@(()=>MinimumTemperatureLimit)" ValueChanged="@UpdateMinTempLimitValueAsync" class="js-data-limit-min-input" />
+                    </div>
+                    <div class="js-alarm-card-global-limit-max">
+                        <label for="js-max-temp-limit">Maximum</label>
+                        <InputNumber id="js-max-temp-limit" TValue="double?" Value="@MaximumTemperatureLimit" ValueExpression="@(()=>MaximumTemperatureLimit)" ValueChanged="@UpdateMaxTempLimitValueAsync" class="js-data-limit-max-input" />
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="js-alarm-card">
+            <h2>Fugtighed</h2>
+            <div class="js-alarm-card-list">
+                @if (HumidityDevices.Count() > 0)
+                {
+                    <table>
+                        <tr>
+                            <th>Lokale</th>
+                            <th>Værdi</th>
+                            <th>Min</th>
+                            <th>Max</th>
+                        </tr>
+                        @foreach (var device in HumidityDevices)
+                        {
+                            <tr>
+                                <td>@device.RoomName</td>
+                                <td>@($"{device._Info.Select(x => double.Parse(x.Value, NumberStyles.Any, CultureInfo.InvariantCulture)).Average()}{device._Info.First().Type.Suffix}")</td>
+                                <td>@device.MinLimit</td>
+                                <td>@device.MaxLimit</td>
+                            </tr>
+                        }
+                    </table>
+                }
+
+            </div>
+            <div class="js-alarm-card-global-limit">
+                <h4>Global Limit</h4>
+                <div class="js-data-limit">
+                    <div class="js-alarm-card-global-limit-min">
+                        <label for="js-min-humid-limit">Minimum</label>
+                        <InputNumber id="js-min-humid-limit" TValue="double?" Value="@MinimumHumidityLimit" ValueExpression="@(()=>MinimumHumidityLimit)" ValueChanged="@UpdateMinHumidLimitValueAsync" class="js-data-limit-min-input" />
+                    </div>
+                    <div class="js-alarm-card-global-limit-max">
+                        <label for="js-max-humid-limit">Maximum</label>
+                        <InputNumber id="js-max-humid-limit" TValue="double?" Value="@MaximumHumidityLimit" ValueExpression="@(()=>MaximumHumidityLimit)" ValueChanged="@UpdateMaxHumidLimitValueAsync" class="js-data-limit-max-input" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<DeviceDisplayData> MotionDevices { get; set; } = new();
+    private List<DeviceDisplayData> TemperatureDevices { get; set; } = new();
+    private List<DeviceDisplayData> HumidityDevices { get; set; } = new();
+
+    public double? MinimumTemperatureLimit { get; set; }
+    public double? MaximumTemperatureLimit { get; set; }
+
+    public double? MinimumHumidityLimit { get; set; }
+    public double? MaximumHumidityLimit { get; set; }
+
+    public List<Shared.Models.Room> AccessibleRooms { get; set; } = new();
+    private ClaimsPrincipal user;
+    public bool IsLoading { get; set; } = true;
+
+    private DeviceData GetRoomData(Shared.Models.Room item, int type) => item.Devices.FirstOrDefault(x => x.Data.Where(y => y.Type.Id == type).Count() > 0)?.Data.FirstOrDefault(x => x.Type.Id == type);
+
+    protected async Task UpdateMinTempLimitValueAsync(double? value) => await UpdateLimitValueAsync(value, 2, true);
+    protected async Task UpdateMaxTempLimitValueAsync(double? value) => await UpdateLimitValueAsync(value, 2, false);
+    protected async Task UpdateMinHumidLimitValueAsync(double? value) => await UpdateLimitValueAsync(value, 3, true);
+    protected async Task UpdateMaxHumidLimitValueAsync(double? value) => await UpdateLimitValueAsync(value, 3, false);
+
+    protected async Task UpdateLimitValueAsync(double? value, int DataTypeId, bool isMin)
+    {
+        switch ($"{DataTypeId}-{isMin}".ToLower())
+        {
+            case "2-true":
+                MinimumTemperatureLimit = value;
+                break;
+            case "2-false":
+                MaximumTemperatureLimit = value;
+                break;
+            case "3-true":
+                MinimumHumidityLimit = value;
+                break;
+            case "3-false":
+                MaximumHumidityLimit = value;
+                break;
+            default:
+                break;
+        }
+        var response = await requester.Put<Cadastre>($"api/cadastres/{1}/limit", new Shared.DTOs.DataLimit.UpdateDataLimit()
+            {
+                MinimumLimit = DataTypeId == 2 ? MinimumTemperatureLimit : MinimumHumidityLimit,
+                MaximumLimit = DataTypeId == 2 ? MaximumTemperatureLimit : MaximumHumidityLimit,
+                DataTypeId = DataTypeId
+            });
+        SetDevices();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        user = authState.User;
+        await GetGlobalLimitValuesAsync();
+        await GetAccessibleRoomsAsync();
+    }
+    private async Task GetGlobalLimitValuesAsync()
+    {
+        var response = await requester.Get<Cadastre>("api/cadastres/" + 1);
+        // var response = await requester.Get<Shared.Models.Cadastre>("api/cadastres/1");
+        if (response.StatusCode != 200)
+        {
+            viewHelper.Alert(response.Message);
+            return;
+        }
+
+        var cadastre = ((Shared.Responses.AcceptedResponse<Shared.Models.Cadastre>)response).Data;
+        var limit = cadastre.LimitValues.Where(x => x.CadastreId == 1);
+
+        MaximumHumidityLimit = limit.FirstOrDefault(x => x.TypeId == 3)?.MaximumLimit;
+        MaximumTemperatureLimit = limit.FirstOrDefault(x => x.TypeId == 2)?.MaximumLimit;
+        MinimumHumidityLimit = limit.FirstOrDefault(x => x.TypeId == 3)?.MinimumLimit;
+        MinimumTemperatureLimit = limit.FirstOrDefault(x => x.TypeId == 2)?.MinimumLimit;
+    }
+    private async Task GetAccessibleRoomsAsync()
+    {
+        IsLoading = true;
+        StateHasChanged();
+        if (user.Identity.IsAuthenticated)
+        {
+            var userId = user.Claims.First(x => x.Type == ClaimTypes.Sid).Value;
+            var response = await requester.Get<List<Shared.Models.Room>>($"api/users/{userId}/rooms/data");
+            if (response.StatusCode != 200)
+            {
+                viewHelper.Alert(response.Message);
+                return;
+            }
+
+            AccessibleRooms = ((Shared.Responses.AcceptedResponse<List<Shared.Models.Room>>)response).Data;
+            SetDevices();
+
+            IsLoading = false;
+            StateHasChanged();
+        }
+    }
+    private void SetDevices()
+    {
+        int tmpTypeId = 2;
+        int humidTypeId = 3;
+
+        MotionDevices = AccessibleRooms.Select(x => new DeviceDisplayData()
+            {
+                RoomName = x.Name,
+                _Data = x.Devices.SelectMany(y => y.Data.Where(z => z.TypeId == 6 && bool.Parse(z.Value) == true && z.Timestamp.ToLocalTime() > DateTime.Now.AddDays(-7))).ToList()
+            }).ToList(); ;
+        TemperatureDevices = AccessibleRooms.Select(x => new DeviceDisplayData()
+            {
+                RoomName = x.Name,
+                MinLimit = x.LimitValues.FirstOrDefault(z => z.TypeId == tmpTypeId)?.MinimumLimit ?? MinimumTemperatureLimit,
+                MaxLimit = x.LimitValues.FirstOrDefault(y => y.TypeId == tmpTypeId)?.MaximumLimit ?? MaximumTemperatureLimit,
+                _Info = x.Devices.SelectMany(y => y.Infos.Where(z => z.TypeId == tmpTypeId
+                                            && z.Timestamp.ToLocalTime() > DateTime.Now.AddDays(-1)
+                                            && ((x.LimitValues.FirstOrDefault(z => z.TypeId == tmpTypeId)?.MaximumLimit ?? MaximumTemperatureLimit) < double.Parse(z.Value, NumberStyles.Any, CultureInfo.InvariantCulture) ||
+                                            (x.LimitValues.FirstOrDefault(z => z.TypeId == tmpTypeId)?.MinimumLimit ?? MinimumTemperatureLimit) > double.Parse(z.Value, NumberStyles.Any, CultureInfo.InvariantCulture))
+
+                )).ToList()
+            }).Where(x => x._Info.Count() > 0).ToList();
+
+        HumidityDevices = AccessibleRooms.Select(x => new DeviceDisplayData()
+            {
+                RoomName = x.Name,
+                MinLimit = x.LimitValues.FirstOrDefault(z => z.TypeId == humidTypeId)?.MinimumLimit ?? MinimumHumidityLimit,
+                MaxLimit = x.LimitValues.FirstOrDefault(y => y.TypeId == humidTypeId)?.MaximumLimit ?? MaximumHumidityLimit,
+                _Info = x.Devices.SelectMany(y => y.Infos.Where(z => z.TypeId == humidTypeId
+                                            && z.Timestamp.ToLocalTime() > DateTime.Now.AddDays(-1)
+                                            && ((x.LimitValues.FirstOrDefault(z => z.TypeId == humidTypeId)?.MaximumLimit ?? MaximumHumidityLimit) < double.Parse(z.Value, NumberStyles.Any, CultureInfo.InvariantCulture) ||
+                                            (x.LimitValues.FirstOrDefault(z => z.TypeId == humidTypeId)?.MinimumLimit ?? MinimumHumidityLimit) > double.Parse(z.Value, NumberStyles.Any, CultureInfo.InvariantCulture))
+
+                )).ToList()
+            }).Where(x => x._Info.Count() > 0).ToList();
+    }
+}
+

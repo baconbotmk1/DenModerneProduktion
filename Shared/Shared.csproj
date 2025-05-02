@@ -4,30 +4,53 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <Configurations>Debug;Release;MultipleStartup</Configurations>
   </PropertyGroup>
 
   <ItemGroup>
     <None Remove="Models\" />
     <None Remove="Services\" />
     <None Remove="Migrations\" />
+    <None Remove="Models\Assignables\" />
+    <None Remove="DTOs\" />
+    <None Remove="MappingProfiles\" />
+    <None Remove="DTOs\SecurityGroup\" />
+    <None Remove="DTOs\Section\" />
+    <None Remove="DTOs\Building\" />
+    <None Remove="DTOs\Cadastre\" />
+    <None Remove="DTOs\Permission\" />
+    <None Remove="Responses\" />
+    <None Remove="DTOs\DeviceDataType\" />
+    <None Remove="DTOs\DeviceSharedCategory\" />
+    <None Remove="DTOs\DeviceInfoType\" />
+    <None Remove="DTOs\DeviceEventType\" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Models\" />
-    <Folder Include="Services\" />
     <Folder Include="Migrations\" />
+    <Folder Include="DTOs\SecurityGroup\" />
+    <Folder Include="DTOs\Section\" />
+    <Folder Include="DTOs\Building\" />
+    <Folder Include="DTOs\Cadastre\" />
+    <Folder Include="DTOs\Permission\" />
+    <Folder Include="Responses\" />
+    <Folder Include="DTOs\DeviceDataType\" />
+    <Folder Include="DTOs\DeviceSharedCategory\" />
+    <Folder Include="DTOs\DeviceInfoType\" />
+    <Folder Include="DTOs\DeviceEventType\" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.4" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="9.0.4" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.4">
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.15" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.15" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.15">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.4">
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.15">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational.Design" Version="1.1.6" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.4" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.15" />
+    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="8.0.3" />
   </ItemGroup>
 </Project>

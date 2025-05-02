@@ -1,0 +1,213 @@
+﻿@using DenModerneProduktion.Services
+@using DenModerneProduktion.Components.Pages.PageViews
+@using System.Globalization
+@inject ApiRequester requester
+@inject ViewHelper viewHelper
+@inject NavigationManager Navigation
+
+@page "/rooms/{_Id}"
+<PageTitle>Lokale</PageTitle>
+@if (_IsLoading)
+{
+    <Spinner Class="js-spinner" Size="SpinnerSize.ExtraLarge" />
+}
+else
+{
+    <div class="js-room-container">
+        <h1>@_Room.Name</h1>
+        <div class="js-room-header">
+            <div class="js-room-header-selectors">
+                <div class="js-room-header-type-selector">
+                    <h4 @onclick="()=>ChangeTypeAsync(2)" class="@(CurrentDataType == 2 ? "js-active" : "") js-selector-btn"><Icon Name="IconName.ThermometerHigh" Size="IconSize.x4" /></h4>
+                    <h4 @onclick="()=>ChangeTypeAsync(3)" class="@(CurrentDataType == 3 ? "js-active" : "") js-selector-btn"><Icon Name="IconName.DropletFill" Size="IconSize.x4" /></h4>
+                    <h4 @onclick="()=>ChangeTypeAsync(4)" class="@(CurrentDataType == 4 ? "js-active" : "") js-selector-btn"><Icon Name="IconName.LightningFill" Size="IconSize.x4" /></h4>
+                </div>
+                <div class="js-room-header-period-selector">
+                    <h4 @onclick="()=>ChangePeriodAsync(0)" class="@(CurrentDataPeriod == 0 ? "js-active" : "") js-selector-btn">D</h4>
+                    <h4 @onclick="()=>ChangePeriodAsync(1)" class="@(CurrentDataPeriod == 1 ? "js-active" : "") js-selector-btn">W</h4>
+                    <h4 @onclick="()=>ChangePeriodAsync(2)" class="@(CurrentDataPeriod == 2 ? "js-active" : "") js-selector-btn">M</h4>
+                </div>
+            </div>
+            @if (_UserIsAdmin)
+            {
+                <div class="js-room-header-admin">
+                    <a href="@($"/admin/rooms/{_Id}")"><Icon Name="IconName.Gear" Size="IconSize.x2" Color="IconColor.Primary" /></a>
+                </div>
+            }
+        </div>
+        <div class="js-room-data">
+            <div class="js-room-data-header">
+                <h4 class="js-room-data-current">@($"{CurrentValue}{Suffix}")</h4>
+                <div class="js-room-data-limit">
+                    <div class="js-room-data-limit-min">
+                        <label for="js-room-data-limit-min-value">Minimum</label>
+                        <InputNumber id="js-room-data-limit-min-value" TValue="double?" Value="@_MinValue" ValueExpression="@(()=>_MinValue)" ValueChanged="@UpdateMinLimitValueAsync" class="js-room-data-limit-min-input" />
+                    </div>
+                    <div class="js-room-data-limit-max">
+                        <label for="js-room-data-limit-max-value">Maximum</label>
+                        <InputNumber id="js-room-data-limit-max-value" TValue="double?" Value="@_MaxValue" ValueExpression="@(()=>_MaxValue)" ValueChanged="@UpdateMaxLimitValueAsync" class="js-room-data-limit-max-input" />
+                    </div>
+                </div>
+            </div>
+            <div class="js-room-data-graph">
+                <Graph GraphDatas="@GraphData"/>
+            </div>
+        </div>
+    </div>
+}
+
+
+
+@code {
+
+    [Parameter]
+    public string _Id { get; set; }
+    public bool _IsLoading { get; set; } = true;
+    public int CurrentDataType { get; set; } = 2;
+    public int CurrentDataPeriod { get; set; } = 0;
+    public string Suffix { get; set; } = "";
+
+    public List<Shared.Models.DeviceData> _RoomDeviceData { get; set; }
+    public List<PageModels.GraphData> GraphData { get; set; } = new();
+    public Shared.Models.Room _Room { get; set; } = new();
+    public string? CurrentValue { get; set; }
+    public double? _MinValue { get; set; }
+    public double? _MaxValue { get; set; }
+    public bool _UserIsAdmin { get; set; } = true;
+    #region Updaters
+    protected async Task UpdateMinLimitValueAsync(double? value)
+    {
+        _MinValue = value;
+        var response = await requester.Put<Room>($"api/rooms/{_Id}/limit", new Shared.DTOs.DataLimit.UpdateDataLimit()
+            {
+                MinimumLimit = _MinValue,
+                MaximumLimit = _MaxValue,
+                DataTypeId = CurrentDataType
+            });
+        await GetData();
+    }
+    protected async Task UpdateMaxLimitValueAsync(double? value)
+    {
+        _MaxValue = value;
+        var response = await requester.Put<Room>($"api/rooms/{_Id}/limit", new Shared.DTOs.DataLimit.UpdateDataLimit()
+            {
+                MinimumLimit = _MinValue,
+                MaximumLimit = _MaxValue,
+                DataTypeId = CurrentDataType
+            });
+        await GetData();
+    }
+    public async Task ChangePeriodAsync(int index)
+    {
+        CurrentDataPeriod = index;
+        await GetData();
+    }
+    public async Task ChangeTypeAsync(int index)
+    {
+        CurrentDataType = index;
+        await GetData();
+    }
+    public void HandleDataProccessing()
+    {
+        int[] entryCount = new int[] { 24, 28, 30 };
+        int hoursSpan = CurrentDataPeriod == 0 ? 1 : CurrentDataPeriod == 1 ? 6 : 24;
+        for (int i = 0; i > entryCount[CurrentDataPeriod]*-1; i--)
+        {
+            var fromDateTime = DateTime.Now.AddHours(hoursSpan * (i-1));
+            var toDateTime =  DateTime.Now.AddHours(hoursSpan * i);
+            List<double> values = _RoomDeviceData.Where(x => x.Timestamp.ToLocalTime() > fromDateTime && x.Timestamp.ToLocalTime() <= toDateTime).Select(x => double.Parse(x.Value, NumberStyles.Any, CultureInfo.InvariantCulture)).ToList();
+            if (values.Count != 0)
+            {
+                var value = Math.Round(values.Average(), 1);
+                var pattern = CurrentDataPeriod == 0 ? "dd/MM HH:mm" : CurrentDataPeriod == 1 ? "dd/MM HH:mm" : "dd/MM";
+
+                GraphData.Add(new()
+                    {
+                        Value = value,
+                        Timestamp = toDateTime.ToString(pattern, CultureInfo.InvariantCulture),
+                        Color = (value < _MinValue || value > _MaxValue) ? "rgba(220, 53, 69, 1)" : "rgba(100, 100, 100, 1)"
+                    });
+            }
+        }
+        GraphData.Reverse();
+    }
+    #endregion
+    #region Events
+    protected override async Task OnInitializedAsync()
+    {
+        await OnLocationChangedAsync();
+        Navigation.LocationChanged += async (object? sender, LocationChangedEventArgs e) => await OnLocationChangedAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _IsLoading = false;
+        }
+    }
+    private async Task OnLocationChangedAsync() => await GetData();
+    #endregion
+    #region Data grabbers
+    private async Task GetData()
+    {
+        _IsLoading = true;
+        StateHasChanged();
+        string baseApiUri = "api/rooms/" + _Id + "/data?";
+        baseApiUri += $"deviceDataType={CurrentDataType}&";
+        baseApiUri += $"periodType={CurrentDataPeriod}";
+        await GetRoomDataAsync(baseApiUri);
+        await GetDeviceDataAsync(baseApiUri);
+        _IsLoading = false;
+        StateHasChanged();
+    }
+    private async Task GetDeviceDataAsync(string baseApiUri)
+    {
+        var response = await requester.Get<List<Shared.Models.DeviceData>>(baseApiUri);
+        if (response.StatusCode != 200)
+        {
+            viewHelper.Alert(response.Message);
+            return;
+        }
+
+        _RoomDeviceData = ((Shared.Responses.AcceptedResponse<List<Shared.Models.DeviceData>>)response).Data;
+
+        GraphData = new();
+        if (_RoomDeviceData.Count > 0)
+        {
+            Suffix = _RoomDeviceData.FirstOrDefault().Type.Suffix;
+            CurrentValue = _RoomDeviceData.First().Value;
+            HandleDataProccessing();
+        }
+        else
+        {
+            Suffix = "";
+            CurrentValue = "N/A";
+        }
+    }
+    private async Task GetRoomDataAsync(string baseApiUri)
+    {
+        var response = await requester.Get<Shared.Models.Room>("api/rooms/" + _Id);
+        if (response.StatusCode != 200)
+        {
+            viewHelper.Alert(response.Message);
+            return;
+        }
+
+        _Room = ((Shared.Responses.AcceptedResponse<Shared.Models.Room>)response).Data;
+        var limit = _Room.LimitValues.Where(x => x.TypeId == CurrentDataType).FirstOrDefault();
+        if (limit != null)
+        {
+            _MaxValue = limit.MaximumLimit;
+            _MinValue = limit.MinimumLimit;
+        }
+        else
+        {
+            _MaxValue = null;
+            _MinValue = null;
+        }
+    }
+    #endregion
+
+
+}

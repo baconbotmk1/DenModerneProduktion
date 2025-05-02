@@ -1,0 +1,51 @@
+﻿@inherits InputBase
+
+
+<div class="mb-2">
+    <span class="form-label">@Title</span>
+    <select name="@Name" @bind="@Value" class="form-select @(!ShowError ? "is-invalid" : "")" placeholder="@Placeholder" required="@IsRequired">
+        @foreach(SelectWithValidation.Option option in Options)
+        {
+            <option value="@option.Value">@option.Text</option>
+        }
+    </select>
+    <span hidden="@ShowError" class="fst-italic text-danger">@ErrorMessage</span>
+</div>
+
+@code {
+    [Parameter]
+    public string Placeholder { get; set; } = "";
+
+    [Parameter]
+    public IEnumerable<Option> Options { get; set; } = new List<Option>();
+
+    private async Task OnInput(ChangeEventArgs e)
+    {
+        Value = e.Value?.ToString();
+        await ValueChanged.InvokeAsync(Value);
+    }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if(firstRender && ParentList != null)
+        {
+            ParentList.Add(Name, this);
+        }
+
+        base.OnAfterRender(firstRender);
+    }
+
+    public class Option
+    {
+        public string Text { get; set; }
+        public string Value { get; set; }
+
+        public static Option None => new Option() { Value = "", Text = "(Ingen)" };
+    }
+}
+

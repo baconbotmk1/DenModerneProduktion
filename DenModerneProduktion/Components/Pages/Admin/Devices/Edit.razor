@@ -1,0 +1,415 @@
+﻿@page "/admin/devices/{id}"
+@using System.Diagnostics
+@using DenModerneProduktion.Components.Pages.PageModels
+@using DenModerneProduktion.Services
+@using Shared.DTOs.Device
+@using Shared.DTOs.User
+@using Shared.Models
+@using System.Text.Json;
+@using DenModerneProduktion.Components.Pages.PageViews;
+
+@attribute [Authorize]
+@inject ApiRequester requester
+@inject ViewHelper viewHelper
+@inject NavigationManager navigationManager
+@inject IJSRuntime js
+
+<div class="d-flex flex-row">
+    <div class="card w-50 me-5">
+        <div class="card-header">
+            <h3>@(DeviceID == 0 ? "Ny Enhed" : "Enhed #" + DeviceID)</h3>
+
+        </div>
+        <div class="card-body">
+            <InputWithValidation Title="Navn" @ref="NameField" ParentList="@Inputs" IsRequired="true" Type="text" Name="name" @bind-value="@Name" />
+            <InputWithValidation Title="Identifier" @ref="IdentifierField" ParentList="@Inputs" IsRequired="false" Type="text" Name="identifier" @bind-value="@Identifier" />
+            <SelectWithValidation Options="Types.Select(e => new SelectWithValidation.Option() {Text = e.Name, Value = e.Id.ToString()})" Title="Type" @ref="TypeIdField" ParentList="@Inputs" @bind-Value="@TypeId" Name="typeId" IsRequired="true" />
+            <SelectWithValidation Options="Rooms.Select(e => new SelectWithValidation.Option() {Text = e.Name, Value = e.Id.ToString()}).Prepend(SelectWithValidation.Option.None)" Title="Lokale" @ref="RoomIdField" ParentList="@Inputs" @bind-Value="@RoomId" Name="roomId" IsRequired="false" />
+            <SelectWithValidation Options="Sections.Select(e => new SelectWithValidation.Option() {Text = e.Name, Value = e.Id.ToString()}).Prepend(SelectWithValidation.Option.None)" Title="Sektion" @ref="SectionIdField" ParentList="@Inputs" @bind-Value="@SectionId" Name="sectionId" IsRequired="false" />
+        </div>
+        <div class="card-footer">
+            <button @onclick="() => Create()" class="@(DeviceID == 0 ? "" : "d-none") float-end btn btn-sm btn-success">Opret</button>
+            <button @onclick="() => Update()" class="@(DeviceID != 0 ? "" : "d-none") float-end btn btn-sm btn-primary">Gem</button>
+        </div>
+    </div>
+    @if (Item != null && Item.Id != 0 && Item.Type.Name == "Kamera")
+    {
+        <div class="card w-50 me-5">
+            <div class="card-header">
+                <h3>Video</h3>
+
+            </div>
+            <div class="card-body">
+                @if(InfoList.Any(e => e.Type.Name == "RTSP Link"))
+                {
+                    <video data-state="paused" id="video" width="800"></video>
+                }
+                else
+                {
+                    <span class="fst-italic">Ingen feed</span>
+                }
+            </div>
+            <div class="card-footer">
+                <button @onclick="() => Create()" class="@(DeviceID == 0 ? "" : "d-none") float-end btn btn-sm btn-success">Opret</button>
+                <button @onclick="() => Update()" class="@(DeviceID != 0 ? "" : "d-none") float-end btn btn-sm btn-primary">Gem</button>
+            </div>
+        </div>
+    }
+</div>
+
+@if(DeviceID != 0)
+{    
+    <div class="d-flex flex-row mt-4">
+        <div class="card w-50 me-5">
+            <div class="card-header">
+                <h3>Informationer</h3>
+
+            </div>
+            <div class="card-body">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>Værdi</th>
+                            <th>Tidspunkt</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach(DeviceInfo info in InfoList)
+                        {
+                            <tr>
+                                <td>@info.Type.GetSlug()</td>
+                                <td>@info.Value</td>
+                                <td>@info.Timestamp</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <div class="card-footer">
+            </div>
+        </div>
+        <div class="card w-50 me-5">
+            <div class="card-header">
+                <h3>Data</h3>
+
+            </div>
+            <div class="card-body">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Type</th>
+                            <th>Værdi</th>
+                            <th>Tidspunkt</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach(DeviceData data in DataList)
+                        {
+                            <tr>
+                                <td>@data.Id</td>
+                                <td>@data.Type.GetSlug()</td>
+                                <td>@data.Value</td>
+                                <td>@data.Timestamp</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <div class="card-footer">
+            </div>
+        </div>
+    </div>
+    <div class="d-flex flex-row mt-4">
+        <div class="card w-100">
+            <div class="card-header">
+                <h3>Hændelser</h3>
+
+            </div>
+            <div class="card-body">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Navn</th>
+                            <th>Type</th>
+                            <th>Tidspunkt</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach(DeviceEvent deviceEvent in EventList)
+                        {
+                            <tr>
+                                <td>@deviceEvent.Id</td>
+                                <td>@deviceEvent.Type.GetSlug()</td>
+                                <td>@deviceEvent.Timestamp</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <div class="card-footer">
+            </div>
+        </div>
+    </div>
+}
+
+
+@code {
+    [Parameter]
+    public string id { get; set; }
+    public Device? Item { get; set; }
+
+    public static int? _linkTypeId;
+
+    public string Name { get; set; } = "";
+    public InputWithValidation NameField { get; set; }
+
+    public string Identifier { get; set; } = "";
+    public InputWithValidation IdentifierField { get; set; }
+
+    public string TypeId { get; set; } = "";
+    public SelectWithValidation TypeIdField { get; set; }
+
+    public string? RoomId { get; set; } = "";
+    public SelectWithValidation RoomIdField { get; set; }
+
+    public string? SectionId { get; set; } = "";
+    public SelectWithValidation SectionIdField { get; set; }
+
+    public int DeviceID => Int32.TryParse(id, out int res) ? res : 0;
+
+    public List<DeviceType> Types { get; set; } = new List<DeviceType>();
+
+    public List<Room> Rooms { get; set; } = new List<Room>();
+    public List<Section> Sections { get; set; } = new List<Section>();
+
+    public Dictionary<string, InputBase> Inputs { get; set; } = new Dictionary<string, InputBase>();
+
+    public List<DeviceInfo> InfoList { get; set; } = new List<DeviceInfo>();
+    public List<DeviceData> DataList { get; set; } = new List<DeviceData>();
+    public List<DeviceEvent> EventList { get; set; } = new List<DeviceEvent>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        Item = new Device();
+
+        Debug.WriteLine("Starting");
+
+        var typesResponse = await requester.Get<List<DeviceType>>("api/device_types");
+        if (typesResponse.IsSuccessResponse)
+        {
+            Types = typesResponse.TryGetData<List<DeviceType>>() ?? new List<DeviceType>();
+        }
+
+        var roonsResponse = await requester.Get<List<Room>>("api/rooms");
+        if (roonsResponse.IsSuccessResponse)
+        {
+            Rooms = roonsResponse.TryGetData<List<Room>>() ?? new List<Room>();
+        }
+
+        var sectionsResponse = await requester.Get<List<Section>>("api/sections");
+        if (sectionsResponse.IsSuccessResponse)
+        {
+            Sections = sectionsResponse.TryGetData<List<Section>>() ?? new List<Section>();
+        }
+
+        if (DeviceID != 0)
+        {
+            viewHelper.ShowLoader("Henter enhed...");
+
+            var response = await requester.Get<Device>("api/devices/" + DeviceID);
+
+            if(response.Status >= 4000)
+            {
+                viewHelper.Alert("Noget gik galt, genindlæs siden og prøv igen...");
+                return;
+            }
+
+            viewHelper.HideLoader();
+
+            Device? device = response.TryGetData<Device>();
+
+            if (device != null)
+            {
+                Item = device;
+                Name = device.Name;
+                Identifier = device.Identifier ?? "";
+                TypeId = device.TypeId.ToString();
+                RoomId = device.RoomId.ToString();
+                SectionId = device.SectionId.ToString();
+
+                int id = Item.Id;
+
+                InfoList = (await requester.Get<List<DeviceInfo>>("api/device_info/" + id + "/info?limit=10")).TryGetData<List<DeviceInfo>>() ?? new();
+                DataList = (await requester.Get<List<DeviceData>>("api/device_info/" + id + "/data?limit=10")).TryGetData<List<DeviceData>>() ?? new();
+                EventList = (await requester.Get<List<DeviceEvent>>("api/device_info/" + id + "/events?limit=10")).TryGetData<List<DeviceEvent>>() ?? new();
+
+                StateHasChanged();
+            }
+            else
+            {
+                navigationManager.NavigateTo("admin/devices");
+            }
+        }
+    }
+
+    protected override void OnAfterRender(bool first)
+    {
+        if(first)
+        {
+            js.InvokeVoidAsync("loadFeed", new object[] { (InfoList.FirstOrDefault(e => e.Type.Name == "")?.Value ?? "RTSP Link") });
+        }
+    }
+
+
+    async public Task Create()
+    {
+        // Reset all error messages on fields.
+        Inputs.ToList().ForEach(i => i.Value.SetError(""));
+
+        viewHelper.ShowLoader("Opretter enhed...");
+
+        var response = await requester.Post<Device>("api/devices", new CreateDevice()
+        {
+            Name = Inputs["name"].Value,
+            Identifier = string.IsNullOrEmpty(Inputs["identifier"].Value) ? null : (string)Inputs["identifier"].Value,
+            TypeId = int.Parse(Inputs["typeId"].Value),
+            RoomId = string.IsNullOrEmpty(Inputs["roomId"].Value) ? null : int.Parse(Inputs["roomId"].Value),
+            SectionId = string.IsNullOrEmpty(Inputs["sectionId"].Value) ? null : int.Parse(Inputs["sectionId"].Value),
+        });
+
+        viewHelper.HideLoader();
+
+        if (!response.IsSuccessResponse)
+        {
+            var errorContent = ((ErrorResponse)response).Title;
+            var validationError = JsonSerializer.Deserialize<Shared.Responses.ApiValidationError>(errorContent, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+            // Now you can access validationError.Errors["Name"], etc.
+            foreach (var error in validationError.Errors)
+            {
+
+                string loweredKey = error.Key.ToLower();
+                if (Inputs.ContainsKey(loweredKey))
+                {
+                    Inputs[loweredKey].SetError(string.Join(", ", error.Value));
+                }
+            }
+
+            return;
+        }
+
+        Device? newDevice = response is AcceptedResponse<Device> ? ((AcceptedResponse<Device>)response).Data : null;
+
+        if (response.StatusCode > 200 || response.StatusCode < 200)
+        {
+            viewHelper.Alert(response.Message);
+
+            return;
+        }
+
+        if (newDevice != null && newDevice.Id != null)
+        {
+            navigationManager.NavigateTo($"/admin/devices/{newDevice.Id}", forceLoad: true);
+
+            return;
+        }
+    }
+
+    async public Task Update()
+    {
+        // Reset all error messages on fields.
+        Inputs.ToList().ForEach(i => i.Value.SetError(""));
+
+        if (string.IsNullOrEmpty(Inputs["roomId"].Value) && string.IsNullOrEmpty(Inputs["sectionId"].Value))
+        {
+            Inputs["roomId"].SetError("Der skal mindst være sat et lokale eller en sektion");
+            Inputs["sectionId"].SetError("Der skal mindst være sat et lokale eller en sektion");
+
+            return;
+        }
+
+        if (!string.IsNullOrEmpty(Inputs["roomId"].Value) && !string.IsNullOrEmpty(Inputs["sectionId"].Value))
+        {
+            Inputs["sectionId"].SetError("Hvis lokale er sat, må en sektion ikke være sat");
+
+            return;
+        }
+
+        viewHelper.ShowLoader("Opdatere enhed...");
+
+        var response = await requester.Put<Device>("api/devices/" + DeviceID, new CreateDevice()
+        {
+            Name = Inputs["name"].Value,
+            Identifier = string.IsNullOrEmpty(Inputs["identifier"].Value) ? null : (string)Inputs["identifier"].Value,
+            TypeId = int.Parse(Inputs["typeId"].Value),
+            RoomId = string.IsNullOrEmpty(Inputs["roomId"].Value) ? null : int.Parse(Inputs["roomId"].Value),
+            SectionId = string.IsNullOrEmpty(Inputs["sectionId"].Value) ? null : int.Parse(Inputs["sectionId"].Value),
+        });
+
+        viewHelper.HideLoader();
+
+        if (!response.IsSuccessResponse)
+        {
+            var errorContent = ((ErrorResponse)response).Title;
+            var validationError = JsonSerializer.Deserialize<Shared.Responses.ApiValidationError>(errorContent, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+            // Now you can access validationError.Errors["Name"], etc.
+            foreach (var error in validationError.Errors)
+            {
+
+                string loweredKey = error.Key.ToLower();
+                if (Inputs.ContainsKey(loweredKey))
+                {
+                    Inputs[loweredKey].SetError(string.Join(", ", error.Value));
+                }
+            }
+
+            return;
+        }
+
+        Device? updatedDevice = ((Shared.Responses.AcceptedResponse<Device>)response).Data;
+
+        if (updatedDevice != null)
+        {
+            Name = updatedDevice.Name;
+            Identifier = updatedDevice.Identifier ?? "";
+            TypeId = updatedDevice.TypeId.ToString();
+            RoomId = updatedDevice.RoomId.ToString();
+            SectionId = updatedDevice.SectionId.ToString();
+        }
+    }
+
+    public List<Device>? AllDevices { get; set; }
+
+    private GenericModal AddModal;
+    private List<ModalInput> addInputs { get; set; } = new List<ModalInput>();
+
+    private async Task BeginAddingUser()
+    {
+        if(AllDevices == null)
+        {
+            var response = await requester.Get<List<Device>>("api/devices");
+            AllDevices = response.TryGetData<List<Device>>() ?? new List<Device>();
+        }
+
+
+        addInputs = new List<ModalInput>()
+        {
+            new ModalInput
+            {
+                Name = "¨device", Label = "Enhed", DType = InputType.Select,
+                Options = AllDevices.Where(e => e.RoomId == null || e.RoomId.Value != DeviceID).OrderByDescending(e => e.Name).Select(e => new Option(e.Name, e.Id.ToString())).ToList()
+            }
+        };
+
+        await AddModal.Show();
+    }
+}

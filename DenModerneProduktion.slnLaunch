@@ -1,0 +1,15 @@
+[
+  {
+    "Name": "Both",
+    "Projects": [
+      {
+        "Path": "DenModerneProduktion\\DenModerneProduktion.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "SystemAPI\\SystemAPI.csproj",
+        "Action": "Start"
+      }
+    ]
+  }
+]

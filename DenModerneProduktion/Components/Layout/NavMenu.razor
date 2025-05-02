@@ -1,30 +1,176 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="">DenModerneProduktion</a>
+﻿@using System.Diagnostics
+@using DenModerneProduktion.Services
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+@inject NavigationManager Navigation
+@inject IHttpContextAccessor httpContextAccessor
+@inject ApiRequester requester
+@inject ViewHelper viewHelper
+@inject UserSession userSession
+
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<div class="top-row ps-3 navbar navbar-dark">
+    <div class="">
+        <AuthorizeView>
+            <Authorized>
+                <NavLink class="js-login-btn" href="@($"logout")" Match="NavLinkMatch.All">
+                    Logout
+                </NavLink>
+            </Authorized>
+            <NotAuthorized>
+                <NavLink class="js-login-btn" href="@($"login")" Match="NavLinkMatch.All">
+                    Login
+                </NavLink>
+            </NotAuthorized>
+        </AuthorizeView>
     </div>
 </div>
 
 <input type="checkbox" title="Navigation menu" class="navbar-toggler" />
 
-<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
+<div class="nav-scrollable js-nav" onclick="document.querySelector('.navbar-toggler').click()">
     <nav class="flex-column">
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
+                <Icon Name="IconName.HouseFill" Size="IconSize.x4" class="js-nav-icon" /> Forside
             </NavLink>
         </div>
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="counter">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Counter
-            </NavLink>
-        </div>
+        <AuthorizeView>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="Lobby">
+                    <Icon Name="IconName.LaptopFill" Size="IconSize.x4" class="js-nav-icon" /> Lobby
+                </NavLink>
+            </div>
+        </AuthorizeView>
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="weather">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Weather
-            </NavLink>
-        </div>
+        <AuthorizeView Policy="@Permissions.ViewAdminPanel">
+            @if (_ShowAdminMenu)
+            {
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="admin">
+                        <Icon Name="IconName.PersonFillGear" Size="IconSize.x4" class="js-nav-icon" /> Admin
+                    </NavLink>
+                    @if (_ShowSubMenu)
+                    {
+                        <nav class="flex-column">
+                            <div class="nav-item px-3">
+                                <NavLink class="nav-link" href="admin/sections">
+                                    <Icon Name="IconName.MapFill" Size="IconSize.x4" class="js-nav-icon" /> Sektion
+                                </NavLink>
+                            </div>
+                            <div class="nav-item px-3">
+                                <NavLink class="nav-link" href="admin/rooms">
+                                    <Icon Name="IconName.PinMapFill" Size="IconSize.x4" class="js-nav-icon" /> Lokale
+                                </NavLink>
+                            </div>
+                            <div class="nav-item px-3">
+                                <NavLink class="nav-link" href="admin/users">
+                                    <Icon Name="IconName.PersonFill" Size="IconSize.x4" class="js-nav-icon" /> Brugere
+                                </NavLink>
+                            </div>
+                            <div class="nav-item px-3">
+                                <NavLink class="nav-link" href="admin/security_groups">
+                                    <Icon Name="IconName.PeopleFill" Size="IconSize.x4" class="js-nav-icon" /> Sikkerhedsgrupper
+                                </NavLink>
+                            </div>
+                            <div class="nav-item px-3">
+                                <NavLink class="nav-link" href="admin/permissions">
+                                    <Icon Name="IconName.ShieldFill" Size="IconSize.x4" class="js-nav-icon" /> Rettigheder
+                                </NavLink>
+                            </div>
+                            <div class="nav-item px-3">
+                                <NavLink class="nav-link" href="admin/device_types">
+                                    <Icon Name="IconName.ShieldFill" Size="IconSize.x4" class="js-nav-icon" /> Enhedstyper
+                                </NavLink>
+                            </div>
+                            <div class="nav-item px-3">
+                                <NavLink class="nav-link" href="admin/devices">
+                                    <Icon Name="IconName.ShieldFill" Size="IconSize.x4" class="js-nav-icon" /> Enheder
+                                </NavLink>
+                            </div>
+                        </nav>
+                    }
+                </div>
+            }
+        </AuthorizeView>
     </nav>
+    <AuthorizeView>
+        <div class="js-nav-rooms">
+            <h3>Lokaler</h3>
+            <div class="nav-scrollable">
+                <nav class="flex-column">
+                    @foreach (var room in AccessibleRooms)
+                    {
+                        <div class="nav-item px-3">
+                            <NavLink class="nav-link" href="@($"rooms/{room.Id}")" Match="NavLinkMatch.All">
+                                <Icon Name="IconName.DoorClosedFill" Size="IconSize.x4" class="js-nav-icon" /> @room.Name
+                            </NavLink>
+                        </div>
+                    }
+                </nav>
+            </div>
+        </div>
+    </AuthorizeView>
 </div>
 
+@code {
+    private ClaimsPrincipal user;
+
+    public HttpContext? httpContext => httpContextAccessor.HttpContext;
+
+    public List<Shared.Models.Room> AccessibleRooms { get; set; } = new();
+
+    private bool _ShowSubMenu { get; set; }
+    private bool _ShowAdminMenu { get; set; } = true;
+
+    private void ShowAdminMenu() => _ShowAdminMenu = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        user = authState.User;
+
+        if (user.Identity.IsAuthenticated)
+        {
+            var username = user.Identity.Name;
+            Console.WriteLine($"Logged in as: {username}");
+        }
+        else
+        {
+            Console.WriteLine("User not logged in.");
+        }
+
+        OnLocationChanged();
+        Navigation.LocationChanged += (object? sender, LocationChangedEventArgs e) => OnLocationChanged();
+        viewHelper.NavUpdate += async () => await GetAccessibleRoomsAsync();
+        await GetAccessibleRoomsAsync();
+    }
+
+    private void OnLocationChanged()
+    {
+        if (httpContext is not null)
+        {
+            _ShowSubMenu = Navigation.ToAbsoluteUri(Navigation.Uri).AbsolutePath.Split("/").Contains("admin");
+            StateHasChanged();
+        }
+    }
+    private async Task GetAccessibleRoomsAsync()
+    {
+
+        if (user.Identity.IsAuthenticated)
+        {
+            var userId = user.Claims.First(x => x.Type == ClaimTypes.Sid).Value;
+            var response = await requester.Get<List<Shared.Models.Room>>($"api/users/{userId}/rooms");
+            if (response.StatusCode != 200)
+            {
+                viewHelper.Alert(response.Message);
+                return;
+            }
+
+            AccessibleRooms = ((Shared.Responses.AcceptedResponse<List<Shared.Models.Room>>)response).Data;
+            StateHasChanged();
+        }
+    }
+}

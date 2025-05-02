@@ -1,0 +1,56 @@
+﻿.js-lobby-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.js-lobby-map {
+    height: 50vh;
+    width: 60%;
+    border: 1px solid black;
+}
+
+.js-lobby-map {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.js-lobby-list {
+    width: 60%;
+}
+
+.js-lobby-list-item {
+    border: 1px solid black;
+    display: flex;
+    align-items: center;
+    margin: 20px 0px;
+}
+
+.js-lobby-list-item-info {
+    display: flex;
+    flex-direction: column;
+    width: 60%;
+}
+
+.js-lobby-list-item-info-data {
+    display: flex;
+    flex-direction: row;
+}
+
+    .js-lobby-list-item-info-data p {
+        margin: 0px 5px 10px 10px;
+    }
+
+.js-lobby-list-item-icon {
+    width: 20%;
+}
+
+.js-lobby-list-item-accessible-timespan {
+    width: 20%;
+}
+
+.js-lobby-list-item-info-title {
+    margin: 10px 20px 10px 10px;
+}

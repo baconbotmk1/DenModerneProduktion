@@ -1,0 +1,27 @@
+﻿@page "/admin/rooms"
+@using DenModerneProduktion.Components.Pages.PageViews
+@using DenModerneProduktion.Services
+@using Shared.Models
+@using System.Diagnostics
+
+@attribute [Authorize]
+@inject ApiRequester requester
+@inject ViewHelper viewHelper
+<PageTitle>Lokaler</PageTitle>
+
+<GenericCRUDListView DeleteMessage="DeleteMessage" Link="admin/rooms" APIEndpoint="api/rooms" TType="Room" Title="Lokaler" Subtitle="">
+    <Headers>
+        <th>ID</th>
+        <th>Navn</th>
+        <th>Sektion</th>
+    </Headers>
+    <Rows>
+        <td>@context.Id</td>
+        <td>@context.Name</td>
+        <td>@context.Section.Name</td>
+    </Rows>
+</GenericCRUDListView>
+
+@code {
+    public string DeleteMessage(Room secGrp) => "Slet lokale '" + secGrp.Name + "'?";
+}

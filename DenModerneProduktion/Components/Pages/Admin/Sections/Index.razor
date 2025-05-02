@@ -1,0 +1,27 @@
+﻿@page "/admin/sections"
+@using DenModerneProduktion.Components.Pages.PageViews
+@using DenModerneProduktion.Services
+@using Shared.Models
+@using System.Diagnostics
+
+@attribute [Authorize]
+@inject ApiRequester requester
+@inject ViewHelper viewHelper
+<PageTitle>Sektioner</PageTitle>
+
+<GenericCRUDListView DeleteMessage="DeleteMessage" Link="admin/sections" APIEndpoint="api/sections" TType="Section" Title="Sektioner" Subtitle="">
+    <Headers>
+        <th>ID</th>
+        <th>Navn</th>
+        <th>Sektion</th>
+    </Headers>
+    <Rows>
+        <td>@context.Id</td>
+        <td>@context.Name</td>
+        <td>@context.Building.Name</td>
+    </Rows>
+</GenericCRUDListView>
+
+@code {
+    public string DeleteMessage(Section secGrp) => "Slet sektion '" + secGrp.Name + "'?";
+}

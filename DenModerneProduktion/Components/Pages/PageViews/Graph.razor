@@ -1,0 +1,69 @@
+﻿<div class="js-graph">
+    <LineChart Height="500" @ref="lineChart" />
+</div>
+@code {
+    [Parameter]
+    public List<PageModels.GraphData> GraphDatas { get; set; }
+    public LineChart lineChart { get; set; } = default!;
+    public LineChartOptions lineChartOptions { get; set; } = default!;
+    public ChartData chartData { get; set; } = default!;
+    public bool _IsLoading { get; set; } = true;
+    public double? MaxY { get; set; }
+    public double? MinY { get; set; }
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _IsLoading = false;
+            UpdateGraph();
+            await lineChart.InitializeAsync(chartData, lineChartOptions);
+        }
+    }
+    private void UpdateGraph()
+    {
+
+        chartData = new ChartData { Labels = GetDataLabels(), Datasets = GetDataSets() };
+        lineChartOptions = new()
+            {
+                IndexAxis = "x",
+                Interaction = new Interaction { Mode = InteractionMode.Index, Intersect = false },
+                Responsive = true,
+                MaintainAspectRatio = false,
+            };
+
+        lineChartOptions.Scales.Y!.Max = MaxY != null ? Math.Ceiling((double)MaxY) : 1;
+        lineChartOptions.Scales.Y!.Min = MinY != null ? Math.Floor((double)MinY) : 0;
+
+        StateHasChanged();
+    }
+    private List<IChartDataset> GetDataSets()
+    {
+        var datasets = new List<IChartDataset>();
+        datasets.Add(GetDataset());
+        return datasets;
+    }
+    private LineChartDataset GetDataset()
+    {
+        var data = GraphDatas.Select(x => (double?)x.Value).ToList();
+        List<string> dataColor = GraphDatas.Select(x => x.Color).ToList();
+        MaxY = data.Max()+1;
+        MinY = data.Min()-1;
+        LineChartDataset lineChartDataset = new()
+            {
+                Data = data,
+                PointRadius = new List<double> { 5 },
+                PointHoverRadius = new List<double> { 8 },
+                PointBackgroundColor = dataColor
+            };
+        return lineChartDataset;
+    }
+    private List<string> GetDataLabels()
+    {
+        var labels = GraphDatas.Select(x => x.Timestamp).ToList();
+
+        return labels;
+    }
+
+}

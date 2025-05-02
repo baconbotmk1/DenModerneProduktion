@@ -1,0 +1,105 @@
+﻿@page "/admin/sections/{id}"
+@using System.Diagnostics
+@using DenModerneProduktion.Services
+@using Shared.DTOs.Section
+@using Shared.Models
+
+@attribute [Authorize]
+@inject ApiRequester requester
+@inject ViewHelper viewHelper
+@inject NavigationManager navigationManager
+<PageTitle>Sektioner</PageTitle>
+
+<div class="card w-50">
+    <div class="card-header">
+        <h3>@(SectionID == 0 ? "Ny sektion" : "Sektion #" + SectionID)</h3>
+
+    </div>
+    <div class="card-body">
+        <div class="mb-2">
+            <span class="form-label">Navn</span>
+            <input @bind-value="Name" required name="name" placeholder="Navn" type="text" class="form-control" />
+        </div>
+        <div class="mb-2">
+            <span class="form-label">Bygning</span>
+            <input @bind-value="BygningsID" name="building" placeholder="Building" type="text" class="form-control" />
+        </div>
+    </div>
+    <div class="card-footer">
+        <button @onclick="() => Create()" class="@(SectionID == 0 ? "" : "d-none") float-end btn btn-sm btn-success">Opret</button>
+        <button @onclick="() => Update()" class="@(SectionID != 0 ? "" : "d-none") float-end btn btn-sm btn-primary">Gem</button>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string ID { get; set; }
+
+    public string Name { get; set; } = "";
+    public string BygningsID { get; set; } = "";
+
+    public int SectionID => Int32.TryParse(ID, out int res) ? res : 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (SectionID != 0)
+        {
+            var response = await requester.Get<Section>("api/sections/" + SectionID);
+
+            Section? section = response.TryGetData<Section>();
+
+            if (section != null)
+            {
+                Name = section.Name;
+                BygningsID = section.BuildingId.ToString();
+            }
+            else
+            {
+                navigationManager.NavigateTo("admin/sections");
+            }
+        }
+    }
+
+
+    async public Task Create()
+    {
+        viewHelper.ShowLoader("Opretter sektion...");
+
+        var response = await requester.Post<Section>("api/sections", new CreateSection()
+        {
+            Name = Name,
+            BuildingId = int.Parse(BygningsID)
+        });
+
+        Section? newSection = response.TryGetData<Section>();
+
+        viewHelper.HideLoader();
+
+        if (newSection != null && newSection.Id != null)
+        {
+            navigationManager.NavigateTo($"/admin/sections/{newSection.Id}");
+            return;
+        }
+    }
+
+    async public Task Update()
+    {
+        viewHelper.ShowLoader("Opdatere lokale...");
+
+        var response = await requester.Put<Section>("api/sections/" + SectionID, new CreateSection()
+        {
+            Name = Name,
+            BuildingId = int.Parse(BygningsID)
+        });
+
+        Section? updatedSection = response.TryGetData<Section>();
+
+        viewHelper.HideLoader();
+
+        if (updatedSection != null)
+        {
+            Name = updatedSection.Name;
+            BygningsID = updatedSection.BuildingId.ToString();
+        }
+    }
+}

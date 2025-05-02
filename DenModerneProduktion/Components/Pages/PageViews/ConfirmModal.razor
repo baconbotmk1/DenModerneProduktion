@@ -1,0 +1,64 @@
+﻿@inject IJSRuntime JS
+<Modal @ref="Modal">
+    <HeaderTemplate>
+        <h5 class="modal-title">@Text</h5>
+    </HeaderTemplate>
+    <FooterTemplate>
+        <Button Color="ButtonColor.Primary" @onclick="Confirm">@AcceptText</Button>
+        <Button Color="ButtonColor.Secondary" @onclick="Reject">@RejectText</Button>
+    </FooterTemplate>
+</Modal>
+
+@code {
+    [Parameter] public string Text { get; set; } = "Modal Titel";
+    [Parameter] public string AcceptText { get; set; } = "Ja";
+    [Parameter] public string RejectText { get; set; } = "Nej";
+
+    [Parameter] public EventCallback<MouseEventArgs> OnReject { get; set; } = new EventCallback<MouseEventArgs>();
+    [Parameter] public EventCallback<MouseEventArgs> OnConfirm { get; set; } = new EventCallback<MouseEventArgs>();
+    [Parameter] public Action OnConfirmAction { get; set; }
+
+    [Parameter] public Modal Modal { get; set; } = default!;
+
+    public ConfirmModal SetTitle(string title)
+    {
+        Text = title;
+
+        return this;
+    }
+
+    public async Task Show()
+    {
+        await Modal.ShowAsync();
+    }
+    protected void Confirm()
+    {
+        OnConfirm.InvokeAsync();
+
+        if(OnConfirmAction != null)
+        {
+            OnConfirmAction.Invoke();
+        }
+
+        Modal.HideAsync();
+    }
+
+    protected void Reject()
+    {
+        OnReject.InvokeAsync();
+        Modal.HideAsync();
+    }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+    }
+
+
+    public ConfirmModal SetConfirmAction( Action act )
+    {
+        OnConfirmAction = act;
+
+        return this;
+    }
+}

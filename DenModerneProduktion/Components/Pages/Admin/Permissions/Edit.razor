@@ -1,0 +1,119 @@
+﻿@page "/admin/permissions/{id}"
+@using System.Diagnostics
+@using DenModerneProduktion.Services
+@using Shared.DTOs.Permission
+@using Shared.Models
+
+@attribute [Authorize]
+@inject ApiRequester requester
+@inject ViewHelper viewHelper
+@inject NavigationManager navigationManager
+<PageTitle>Rettighed</PageTitle>
+
+<div class="card w-50">
+    <div class="card-header">
+        <h3>@(PermissionID == 0 ? "Ny Rettighed" : "Rettighed #" + PermissionID)</h3>
+
+    </div>
+    <div class="card-body">
+        <div class="mb-2">
+            <span class="form-label">Slug</span>
+            <input @bind-value="Slug" required name="slug" placeholder="Slug" type="text" class="form-control" />
+        </div>
+        <div class="mb-2">
+            <span class="form-label">Navn</span>
+            <input @bind-value="Name" required name="name" placeholder="Navn" type="text" class="form-control" />
+        </div>
+        <div class="mb-2">
+            <span class="form-label">Beskrivelse</span>
+            <input @bind-value="Desc" name="desc" placeholder="Beskrivelse" type="text" class="form-control" />
+        </div>
+    </div>
+    <div class="card-footer">
+        <button @onclick="() => Create()" class="@(PermissionID == 0 ? "" : "d-none") float-end btn btn-sm btn-success">Opret</button>
+        <button @onclick="() => Update()" class="@(PermissionID != 0 ? "" : "d-none") float-end btn btn-sm btn-primary">Gem</button>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string ID { get; set; }
+
+    public string Slug { get; set; } = "";
+    public string Name { get; set; } = "";
+    public string Desc { get; set; } = "";
+
+    public int PermissionID => Int32.TryParse(ID, out int res) ? res : 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if(PermissionID != 0)
+        {
+            var response = await requester.Get<Permission>("api/permissions/" + PermissionID);
+
+            Permission? permission = response is Shared.Responses.AcceptedResponse<Permission> ? ((Shared.Responses.AcceptedResponse<Permission>)response).Data : null;
+
+            if (permission != null)
+            {
+                Name = permission.Name;
+                Slug = permission.Slug;
+                Desc = permission.Desc;
+            }
+            else
+            {
+                navigationManager.NavigateTo("admin/permissions");
+            }
+        }
+    }
+
+
+    async public Task Create()
+    {
+        viewHelper.ShowLoader("Opretter rettighed...");
+
+
+        var response = await requester.Post<Permission>("api/permissions", new CreatePermissionDTO()
+        {
+            Name = Name,
+            Slug = Slug,
+            Desc = Desc
+        });
+
+        Permission? newPermission = response is AcceptedResponse<Permission> ? ((AcceptedResponse<Permission>)response).Data : null;
+
+        Debug.WriteLine($"Creating permission with name {Name} and desc {Desc}");
+
+        viewHelper.HideLoader();
+
+        if (newPermission != null && newPermission.Id != null)
+        {
+            navigationManager.NavigateTo($"/admin/permissions/{newPermission.Id}");
+            return;
+        }
+    }
+
+    async public Task Update()
+    {
+        viewHelper.ShowLoader("Opdatere rettighed...");
+
+        Debug.WriteLine($"Updating permission {Name} with id {PermissionID} and desc {Desc}");
+
+        var response = await requester.Put<Permission>("api/permissions/" + PermissionID, new CreatePermissionDTO()
+        {
+            Name = Name,
+            Slug = Slug,
+            Desc = Desc
+        });
+
+        Permission? updatedPermission = response is AcceptedResponse<Permission> ? ((AcceptedResponse<Permission>)response).Data : null;
+
+        viewHelper.HideLoader();
+
+        if (updatedPermission != null)
+        {
+            Name = updatedPermission.Name;
+            Slug = updatedPermission.Slug;
+            Desc = updatedPermission.Desc;
+        }
+    }
+}

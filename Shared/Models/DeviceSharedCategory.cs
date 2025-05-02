@@ -1,12 +1,18 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 namespace Shared.Models
 {
 	public class DeviceSharedCategory : BaseModel
     {
-		public string Name { get; set; }
-		public string Desc { get; set; }
+        [Required]
+        public string Name { get; set; }
+		public string? Desc { get; set; }
 
-		public DeviceSharedCategory()
+        public ICollection<DeviceInfoType> InfoTypes { get; set; } = new List<DeviceInfoType>();
+        public ICollection<DeviceDataType> DataTypes { get; set; } = new List<DeviceDataType>();
+        public ICollection<DeviceEventType> EventTypes { get; set; } = new List<DeviceEventType>();
+
+        public DeviceSharedCategory()
 		{
 		}
 	}

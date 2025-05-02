@@ -1,0 +1,118 @@
+﻿@using DenModerneProduktion.Services
+@using System.Diagnostics
+@inject ApiRequester apiRequester;
+@inject NavigationManager navigationManager;
+
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Authentication.Cookies
+@using Microsoft.AspNetCore.Components.Authorization
+@inject NavigationManager Navigation
+@inject IHttpContextAccessor HttpContextAccessor
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Identity
+@using Shared.Models
+
+@inject UserSession userSession
+
+<PageTitle>Login</PageTitle>
+@page "/login"
+
+@layout DenModerneProduktion.Components.Layout.StaticSsrLayout
+
+@if (IsLoading)
+{
+    <Spinner />
+}
+else
+{
+    <h3>Login</h3>
+    <EditForm Model="@loginModel" FormName="Login" OnValidSubmit="HandleLogin">
+        <DataAnnotationsValidator />
+        <div class="form-group">
+            <label>Username</label>
+            <InputText @bind-Value="loginModel.Username" class="form-control" />
+            <ValidationMessage For="@(() => loginModel.Username)" />
+        </div>
+        <div class="form-group">
+            <label>Password</label>
+            <InputText @bind-Value="loginModel.Pwd" type="password" class="form-control" />
+            <ValidationMessage For="@(() => loginModel.Pwd)" />
+        </div>
+        @if (ErrorMessage != "")
+        {
+            <Alert Class="mt-3" Color="AlertColor.Danger"> <Icon Name="IconName.ExclamationTriangleFill" class="me-2"></Icon>@ErrorMessage</Alert>
+        }
+        <button disabled="@thinking" class="btn btn-primary">
+            Login
+        </button>
+        <a class="js-forgot-pwd" href="/forgotpassword">Glemt adgangskode?</a>
+    </EditForm>
+}
+@code {
+    public bool IsLoading = false;
+    private bool thinking = false;
+
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    private string ErrorMessage = "";
+
+    [SupplyParameterFromForm]
+    public UserInfo loginModel { get; set; } = new();
+
+    public bool _UserCreated { get; set; }
+    public bool _credentialsCorrect { get; set; }
+
+    protected override async Task OnInitializedAsync() //REMOVE!!
+    {
+        loginModel.Username = "sebastian257@hotmail.dk";
+        loginModel.Pwd = "P@ssw0rd";
+        await HandleLogin();
+    }
+
+    public async Task HandleLogin()
+    {
+        ErrorMessage = "";
+
+        thinking = true;
+        try
+        {
+            bool loggedIn = await userSession.Login(loginModel.Username, loginModel.Pwd);
+
+            if (loggedIn)
+            {
+                navigationManager.NavigateTo("/");
+            }
+
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+        ErrorMessage = "Brugeren findes ikke eller adgangskoden er forkert";
+
+        Console.WriteLine(loginModel);
+
+        thinking = false;
+        StateHasChanged();
+    }
+    public class UserInfo
+    {
+        [Required(AllowEmptyStrings = false)]
+        public string Username { get; set; }
+        [Required(AllowEmptyStrings = false)]
+        public string Pwd { get; set; }
+    }
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            IsLoading = false;
+            StateHasChanged();
+        }
+    }
+}

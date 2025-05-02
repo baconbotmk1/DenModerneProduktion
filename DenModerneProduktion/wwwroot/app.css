@@ -1,3 +1,15 @@
+:root {
+    --js-nav-height: 4rem;
+    --js-color-primary: #F2EFE7;
+    --js-color-secondary: #9ACBD0;
+    --js-color-accent-1: #48A6A7;
+    --js-color-accent-2: #006A71;
+    --js-color-hover: #86B8BD;
+    --js-color-active: #6FA1A7;
+    --js-color-white-font: #F2F2F2;
+    --js-color-list-bg-even: #efefef;
+}
+
 html, body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
@@ -49,3 +61,76 @@ h1:focus {
 .darker-border-checkbox.form-check-input {
     border-color: #929292;
 }
+
+
+/*#region Own Code*/
+main {
+    background-color: var(--js-color-primary);
+}
+.js-nav-icon {
+    color: var(--js-color-secondary);
+}
+
+.js-alarm-card-global-limit-max input, .js-alarm-card-global-limit-min input, .js-room-data-limit-min-input, .js-room-data-limit-max-input {
+    text-align: center;
+    width: 75px;
+    border-radius: 10px;
+    border: 1px solid black;
+}
+.js-spinner{
+    position:absolute;
+    top:50%;
+    left:50%;
+}
+.js-login-btn {
+    background-color: var(--js-color-secondary);
+    border: 1px solid black;
+    color: var(--js-color-white-font);
+    text-align:center;
+    font-weight:700;
+    text-decoration: none;
+    padding: 5px 22px;
+    font-size: 22px;
+    border-radius: 15px;
+}
+.js-login-btn:hover {
+    background-color: var(--js-color-hover);
+}
+.navbar {
+    height: var(--js-nav-height) !important;
+    display: flex;
+    align-items: center;
+    justify-content: center !important;
+    flex-direction: column
+}
+.js-graph canvas {
+    height: 100% !important; 
+}
+.js-list {
+    display: flex;
+    flex-direction: column;
+}
+.js-list span{
+    padding: 5px 10px;
+    display:flex;
+    flex-direction:row;
+    justify-content:space-between;
+}
+    .js-list span:nth-child(even) {
+        background-color: var(--js-color-list-bg-even);
+    }
+    .js-list span i:hover {
+        cursor:pointer;
+    }
+/*#region From https://www.w3schools.com/howto/howto_css_hide_arrow_number.asp*/
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input[type=number] {
+    -moz-appearance: textfield;
+}
+/*#endregion*/
+/*#endregion*/

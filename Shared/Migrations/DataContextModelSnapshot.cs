@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Shared;
 
@@ -15,24 +16,30 @@ namespace Shared.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "9.0.4");
+            modelBuilder
+                .HasAnnotation("ProductVersion", "8.0.15")
+                .HasAnnotation("Relational:MaxIdentifierLength", 64);
+
+            MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
 
             modelBuilder.Entity("Shared.Models.AccessCard", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("longtext");
 
                     b.Property<string>("UniqueCode")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("longtext");
 
                     b.Property<int?>("UserId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -45,10 +52,16 @@ namespace Shared.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("CadastreId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("longtext");
 
                     b.HasKey("Id");
 
@@ -61,7 +74,13 @@ namespace Shared.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("longtext");
 
                     b.HasKey("Id");
 
@@ -72,16 +91,31 @@ namespace Shared.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Identifier")
+                        .HasColumnType("longtext");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("longtext");
+
+                    b.Property<int?>("RoomId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("SectionId")
+                        .HasColumnType("int");
 
                     b.Property<int>("TypeId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("RoomId");
+
+                    b.HasIndex("SectionId");
 
                     b.HasIndex("TypeId");
 
@@ -92,17 +126,22 @@ namespace Shared.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("DeviceId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("datetime(6)");
 
                     b.Property<int>("TypeId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.Property<string>("Value")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("longtext");
 
                     b.HasKey("Id");
 
@@ -113,22 +152,74 @@ namespace Shared.Migrations
                     b.ToTable("DeviceDatas");
                 });
 
+            modelBuilder.Entity("Shared.Models.DeviceDataLimitValue", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("BuildingId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("CadastreId")
+                        .HasColumnType("int");
+
+                    b.Property<double?>("MaximumLimit")
+                        .HasColumnType("double");
+
+                    b.Property<double?>("MinimumLimit")
+                        .HasColumnType("double");
+
+                    b.Property<int?>("RoomId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("SectionId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TypeId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BuildingId");
+
+                    b.HasIndex("CadastreId");
+
+                    b.HasIndex("RoomId");
+
+                    b.HasIndex("SectionId");
+
+                    b.HasIndex("TypeId");
+
+                    b.ToTable("DeviceDataLimit");
+                });
+
             modelBuilder.Entity("Shared.Models.DeviceDataType", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("CategoryId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.Property<string>("DataType")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("longtext");
 
-                    b.Property<string>("Type")
+                    b.Property<string>("Desc")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Suffix")
+                        .HasColumnType("longtext");
 
                     b.HasKey("Id");
 
@@ -141,21 +232,28 @@ namespace Shared.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Desc")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("longtext");
+
+                    b.Property<int?>("DeviceDataId")
+                        .HasColumnType("int");
 
                     b.Property<int>("DeviceId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("Timestamp")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<int>("TypeId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("DeviceDataId");
 
                     b.HasIndex("DeviceId");
 
@@ -168,18 +266,19 @@ namespace Shared.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("CategoryId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.Property<string>("Desc")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("longtext");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("longtext");
 
                     b.HasKey("Id");
 
@@ -192,17 +291,22 @@ namespace Shared.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("DeviceId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("datetime(6)");
 
                     b.Property<int>("TypeId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.Property<string>("Value")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("longtext");
 
                     b.HasKey("Id");
 
@@ -217,14 +321,26 @@ namespace Shared.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("CategoryId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
-                    b.Property<string>("Type")
+                    b.Property<string>("DataType")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Desc")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Suffix")
+                        .HasColumnType("longtext");
 
                     b.HasKey("Id");
 
@@ -233,33 +349,67 @@ namespace Shared.Migrations
                     b.ToTable("DeviceInfoTypes");
                 });
 
+            modelBuilder.Entity("Shared.Models.DeviceMqttMap", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("DataTypeId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("DeviceTypeId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("FieldName")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<int?>("InfoTypeId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DataTypeId");
+
+                    b.HasIndex("DeviceTypeId");
+
+                    b.HasIndex("InfoTypeId");
+
+                    b.ToTable("DeviceMqttMaps");
+                });
+
             modelBuilder.Entity("Shared.Models.DeviceRecording", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<bool>("Converted")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("tinyint(1)");
 
                     b.Property<DateOnly>("Date")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("date");
 
                     b.Property<int>("DeviceId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.Property<float?>("Duration")
-                        .HasColumnType("REAL");
+                        .HasColumnType("float");
 
                     b.Property<string>("Filepath")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("longtext");
 
                     b.Property<bool>("Finished")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("tinyint(1)");
 
                     b.Property<DateTime>("Started")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("datetime(6)");
 
                     b.HasKey("Id");
 
@@ -272,15 +422,16 @@ namespace Shared.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Desc")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("longtext");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("longtext");
 
                     b.HasKey("Id");
 
@@ -291,15 +442,16 @@ namespace Shared.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Desc")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("longtext");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("longtext");
 
                     b.HasKey("Id");
 
@@ -310,15 +462,21 @@ namespace Shared.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Desc")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("longtext");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasColumnType("longtext");
 
                     b.HasKey("Id");
 
@@ -329,16 +487,23 @@ namespace Shared.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("BuildingId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("longtext");
 
                     b.Property<int>("SectionId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BuildingId");
 
                     b.HasIndex("SectionId");
 
@@ -349,14 +514,16 @@ namespace Shared.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("BuildingId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("longtext");
 
                     b.HasKey("Id");
 
@@ -369,22 +536,18 @@ namespace Shared.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Desc")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("longtext");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<int?>("TimeLimitId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("longtext");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("TimeLimitId");
 
                     b.ToTable("SecurityGroups");
                 });
@@ -393,24 +556,21 @@ namespace Shared.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("DeviceId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.Property<int>("SecurityGroupId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int?>("TimeLimitId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
                     b.HasIndex("DeviceId");
 
                     b.HasIndex("SecurityGroupId");
-
-                    b.HasIndex("TimeLimitId");
 
                     b.ToTable("SecurityGroupDevices");
                 });
@@ -419,13 +579,15 @@ namespace Shared.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("PermissionId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.Property<int>("SecurityGroupId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -440,24 +602,21 @@ namespace Shared.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("RoomId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.Property<int>("SecurityGroupId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int?>("TimeLimitId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
                     b.HasIndex("RoomId");
 
                     b.HasIndex("SecurityGroupId");
-
-                    b.HasIndex("TimeLimitId");
 
                     b.ToTable("SecurityGroupRooms");
                 });
@@ -466,24 +625,21 @@ namespace Shared.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("SectionId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.Property<int>("SecurityGroupId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int?>("TimeLimitId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
                     b.HasIndex("SectionId");
 
                     b.HasIndex("SecurityGroupId");
-
-                    b.HasIndex("TimeLimitId");
 
                     b.ToTable("SecurityGroupSections");
                 });
@@ -492,19 +648,61 @@ namespace Shared.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime?>("FromDate")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("longtext");
+
+                    b.Property<int?>("RoomId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("SecurityGroupDeviceId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("SecurityGroupId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("SecurityGroupRoomId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("SecurityGroupSectionId")
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ToDate")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<int?>("UserDeviceId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("UserRoomId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("UserSectionId")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("RoomId");
+
+                    b.HasIndex("SecurityGroupDeviceId");
+
+                    b.HasIndex("SecurityGroupId");
+
+                    b.HasIndex("SecurityGroupRoomId");
+
+                    b.HasIndex("SecurityGroupSectionId");
+
+                    b.HasIndex("UserDeviceId");
+
+                    b.HasIndex("UserRoomId");
+
+                    b.HasIndex("UserSectionId");
 
                     b.ToTable("TimeLimits");
                 });
@@ -513,17 +711,19 @@ namespace Shared.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("longtext");
 
-                    b.Property<DateTime?>("StartDate")
-                        .HasColumnType("TEXT");
+                    b.Property<DateOnly?>("StartDate")
+                        .HasColumnType("date");
 
                     b.Property<int>("TimeLimitId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -536,17 +736,15 @@ namespace Shared.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("Day")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("int");
 
                     b.Property<int>("WeekId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -559,16 +757,18 @@ namespace Shared.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
-                    b.Property<DateTime>("FromTime")
-                        .HasColumnType("TEXT");
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("ToTime")
-                        .HasColumnType("TEXT");
+                    b.Property<TimeOnly>("FromTime")
+                        .HasColumnType("time(6)");
+
+                    b.Property<TimeOnly>("ToTime")
+                        .HasColumnType("time(6)");
 
                     b.Property<int>("WeekDayId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -577,28 +777,68 @@ namespace Shared.Migrations
                     b.ToTable("TimeLimitWeekDayTimes");
                 });
 
+            modelBuilder.Entity("Shared.Models.UnknownMqttDevices", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("FirstFoundAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Identifier")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime>("LastFoundAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("LastPayload")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("UnknownMqttDevices");
+                });
+
             modelBuilder.Entity("Shared.Models.User", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("HashedPassword")
+                        .HasColumnType("longtext");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("tinyint(1)");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("longtext");
 
                     b.Property<string>("ReferenceId")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("longtext");
 
                     b.Property<string>("ReferenceType")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("longtext");
 
-                    b.Property<int?>("TimeLimitId")
-                        .HasColumnType("INTEGER");
+                    b.Property<string>("ResetToken")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Salt")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasColumnType("longtext");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("TimeLimitId");
 
                     b.ToTable("Users");
                 });
@@ -607,22 +847,19 @@ namespace Shared.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("DeviceId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int?>("TimeLimitId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.Property<int>("UserId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
                     b.HasIndex("DeviceId");
-
-                    b.HasIndex("TimeLimitId");
 
                     b.HasIndex("UserId");
 
@@ -633,22 +870,19 @@ namespace Shared.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("RoomId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int?>("TimeLimitId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.Property<int>("UserId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
                     b.HasIndex("RoomId");
-
-                    b.HasIndex("TimeLimitId");
 
                     b.HasIndex("UserId");
 
@@ -659,22 +893,19 @@ namespace Shared.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("SectionId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int?>("TimeLimitId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.Property<int>("UserId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
                     b.HasIndex("SectionId");
-
-                    b.HasIndex("TimeLimitId");
 
                     b.HasIndex("UserId");
 
@@ -685,13 +916,15 @@ namespace Shared.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("SecurityGroupId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.Property<int>("UserId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -705,7 +938,7 @@ namespace Shared.Migrations
             modelBuilder.Entity("Shared.Models.AccessCard", b =>
                 {
                     b.HasOne("Shared.Models.User", "User")
-                        .WithMany()
+                        .WithMany("AccessCards")
                         .HasForeignKey("UserId");
 
                     b.Navigation("User");
@@ -714,7 +947,7 @@ namespace Shared.Migrations
             modelBuilder.Entity("Shared.Models.Building", b =>
                 {
                     b.HasOne("Shared.Models.Cadastre", "Cadastre")
-                        .WithMany()
+                        .WithMany("Buildings")
                         .HasForeignKey("CadastreId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -724,11 +957,23 @@ namespace Shared.Migrations
 
             modelBuilder.Entity("Shared.Models.Device", b =>
                 {
+                    b.HasOne("Shared.Models.Room", "Room")
+                        .WithMany("Devices")
+                        .HasForeignKey("RoomId");
+
+                    b.HasOne("Shared.Models.Section", "Section")
+                        .WithMany()
+                        .HasForeignKey("SectionId");
+
                     b.HasOne("Shared.Models.DeviceType", "Type")
                         .WithMany()
                         .HasForeignKey("TypeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Room");
+
+                    b.Navigation("Section");
 
                     b.Navigation("Type");
                 });
@@ -752,10 +997,45 @@ namespace Shared.Migrations
                     b.Navigation("Type");
                 });
 
+            modelBuilder.Entity("Shared.Models.DeviceDataLimitValue", b =>
+                {
+                    b.HasOne("Shared.Models.Building", "Building")
+                        .WithMany("LimitValues")
+                        .HasForeignKey("BuildingId");
+
+                    b.HasOne("Shared.Models.Cadastre", "Cadastre")
+                        .WithMany("LimitValues")
+                        .HasForeignKey("CadastreId");
+
+                    b.HasOne("Shared.Models.Room", "Room")
+                        .WithMany("LimitValues")
+                        .HasForeignKey("RoomId");
+
+                    b.HasOne("Shared.Models.Section", "Section")
+                        .WithMany("LimitValues")
+                        .HasForeignKey("SectionId");
+
+                    b.HasOne("Shared.Models.DeviceDataType", "Type")
+                        .WithMany("LimitValues")
+                        .HasForeignKey("TypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Building");
+
+                    b.Navigation("Cadastre");
+
+                    b.Navigation("Room");
+
+                    b.Navigation("Section");
+
+                    b.Navigation("Type");
+                });
+
             modelBuilder.Entity("Shared.Models.DeviceDataType", b =>
                 {
                     b.HasOne("Shared.Models.DeviceSharedCategory", "Category")
-                        .WithMany()
+                        .WithMany("DataTypes")
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -765,6 +1045,10 @@ namespace Shared.Migrations
 
             modelBuilder.Entity("Shared.Models.DeviceEvent", b =>
                 {
+                    b.HasOne("Shared.Models.DeviceData", "DeviceData")
+                        .WithMany("Events")
+                        .HasForeignKey("DeviceDataId");
+
                     b.HasOne("Shared.Models.Device", "Device")
                         .WithMany("Events")
                         .HasForeignKey("DeviceId")
@@ -779,13 +1063,15 @@ namespace Shared.Migrations
 
                     b.Navigation("Device");
 
+                    b.Navigation("DeviceData");
+
                     b.Navigation("Type");
                 });
 
             modelBuilder.Entity("Shared.Models.DeviceEventType", b =>
                 {
                     b.HasOne("Shared.Models.DeviceSharedCategory", "Category")
-                        .WithMany()
+                        .WithMany("EventTypes")
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -815,12 +1101,35 @@ namespace Shared.Migrations
             modelBuilder.Entity("Shared.Models.DeviceInfoType", b =>
                 {
                     b.HasOne("Shared.Models.DeviceSharedCategory", "Category")
-                        .WithMany()
+                        .WithMany("InfoTypes")
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Category");
+                });
+
+            modelBuilder.Entity("Shared.Models.DeviceMqttMap", b =>
+                {
+                    b.HasOne("Shared.Models.DeviceDataType", "DataType")
+                        .WithMany()
+                        .HasForeignKey("DataTypeId");
+
+                    b.HasOne("Shared.Models.DeviceType", "DeviceType")
+                        .WithMany()
+                        .HasForeignKey("DeviceTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Shared.Models.DeviceInfoType", "InfoType")
+                        .WithMany()
+                        .HasForeignKey("InfoTypeId");
+
+                    b.Navigation("DataType");
+
+                    b.Navigation("DeviceType");
+
+                    b.Navigation("InfoType");
                 });
 
             modelBuilder.Entity("Shared.Models.DeviceRecording", b =>
@@ -836,6 +1145,10 @@ namespace Shared.Migrations
 
             modelBuilder.Entity("Shared.Models.Room", b =>
                 {
+                    b.HasOne("Shared.Models.Building", null)
+                        .WithMany("Rooms")
+                        .HasForeignKey("BuildingId");
+
                     b.HasOne("Shared.Models.Section", "Section")
                         .WithMany("Rooms")
                         .HasForeignKey("SectionId")
@@ -848,21 +1161,12 @@ namespace Shared.Migrations
             modelBuilder.Entity("Shared.Models.Section", b =>
                 {
                     b.HasOne("Shared.Models.Building", "Building")
-                        .WithMany()
+                        .WithMany("Sections")
                         .HasForeignKey("BuildingId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Building");
-                });
-
-            modelBuilder.Entity("Shared.Models.SecurityGroup", b =>
-                {
-                    b.HasOne("Shared.Models.TimeLimit", "TimeLimit")
-                        .WithMany()
-                        .HasForeignKey("TimeLimitId");
-
-                    b.Navigation("TimeLimit");
                 });
 
             modelBuilder.Entity("Shared.Models.SecurityGroupDevice", b =>
@@ -879,15 +1183,9 @@ namespace Shared.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Shared.Models.TimeLimit", "TimeLimit")
-                        .WithMany()
-                        .HasForeignKey("TimeLimitId");
-
                     b.Navigation("Device");
 
                     b.Navigation("SecurityGroup");
-
-                    b.Navigation("TimeLimit");
                 });
 
             modelBuilder.Entity("Shared.Models.SecurityGroupPermission", b =>
@@ -918,20 +1216,14 @@ namespace Shared.Migrations
                         .IsRequired();
 
                     b.HasOne("Shared.Models.SecurityGroup", "SecurityGroup")
-                        .WithMany()
+                        .WithMany("SecurityGroupRooms")
                         .HasForeignKey("SecurityGroupId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Shared.Models.TimeLimit", "TimeLimit")
-                        .WithMany()
-                        .HasForeignKey("TimeLimitId");
-
                     b.Navigation("Room");
 
                     b.Navigation("SecurityGroup");
-
-                    b.Navigation("TimeLimit");
                 });
 
             modelBuilder.Entity("Shared.Models.SecurityGroupSection", b =>
@@ -948,15 +1240,60 @@ namespace Shared.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Shared.Models.TimeLimit", "TimeLimit")
-                        .WithMany()
-                        .HasForeignKey("TimeLimitId");
-
                     b.Navigation("Section");
 
                     b.Navigation("SecurityGroup");
+                });
 
-                    b.Navigation("TimeLimit");
+            modelBuilder.Entity("Shared.Models.TimeLimit", b =>
+                {
+                    b.HasOne("Shared.Models.Room", "Room")
+                        .WithMany("TimeLimits")
+                        .HasForeignKey("RoomId");
+
+                    b.HasOne("Shared.Models.SecurityGroupDevice", "SecurityGroupDevice")
+                        .WithMany("TimeLimits")
+                        .HasForeignKey("SecurityGroupDeviceId");
+
+                    b.HasOne("Shared.Models.SecurityGroup", "SecurityGroup")
+                        .WithMany("TimeLimits")
+                        .HasForeignKey("SecurityGroupId");
+
+                    b.HasOne("Shared.Models.SecurityGroupRoom", "SecurityGroupRoom")
+                        .WithMany("TimeLimits")
+                        .HasForeignKey("SecurityGroupRoomId");
+
+                    b.HasOne("Shared.Models.SecurityGroupSection", "SecurityGroupSection")
+                        .WithMany("TimeLimits")
+                        .HasForeignKey("SecurityGroupSectionId");
+
+                    b.HasOne("Shared.Models.UserDevice", "UserDevice")
+                        .WithMany("TimeLimits")
+                        .HasForeignKey("UserDeviceId");
+
+                    b.HasOne("Shared.Models.UserRoom", "UserRoom")
+                        .WithMany("TimeLimits")
+                        .HasForeignKey("UserRoomId");
+
+                    b.HasOne("Shared.Models.UserSection", "UserSection")
+                        .WithMany("TimeLimits")
+                        .HasForeignKey("UserSectionId");
+
+                    b.Navigation("Room");
+
+                    b.Navigation("SecurityGroup");
+
+                    b.Navigation("SecurityGroupDevice");
+
+                    b.Navigation("SecurityGroupRoom");
+
+                    b.Navigation("SecurityGroupSection");
+
+                    b.Navigation("UserDevice");
+
+                    b.Navigation("UserRoom");
+
+                    b.Navigation("UserSection");
                 });
 
             modelBuilder.Entity("Shared.Models.TimeLimitWeek", b =>
@@ -992,15 +1329,6 @@ namespace Shared.Migrations
                     b.Navigation("WeekDay");
                 });
 
-            modelBuilder.Entity("Shared.Models.User", b =>
-                {
-                    b.HasOne("Shared.Models.TimeLimit", "TimeLimit")
-                        .WithMany()
-                        .HasForeignKey("TimeLimitId");
-
-                    b.Navigation("TimeLimit");
-                });
-
             modelBuilder.Entity("Shared.Models.UserDevice", b =>
                 {
                     b.HasOne("Shared.Models.Device", "Device")
@@ -1009,10 +1337,6 @@ namespace Shared.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Shared.Models.TimeLimit", "TimeLimit")
-                        .WithMany()
-                        .HasForeignKey("TimeLimitId");
-
                     b.HasOne("Shared.Models.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
@@ -1020,8 +1344,6 @@ namespace Shared.Migrations
                         .IsRequired();
 
                     b.Navigation("Device");
-
-                    b.Navigation("TimeLimit");
 
                     b.Navigation("User");
                 });
@@ -1034,19 +1356,13 @@ namespace Shared.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Shared.Models.TimeLimit", "TimeLimit")
-                        .WithMany()
-                        .HasForeignKey("TimeLimitId");
-
                     b.HasOne("Shared.Models.User", "User")
-                        .WithMany()
+                        .WithMany("UserRooms")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Room");
-
-                    b.Navigation("TimeLimit");
 
                     b.Navigation("User");
                 });
@@ -1059,10 +1375,6 @@ namespace Shared.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Shared.Models.TimeLimit", "TimeLimit")
-                        .WithMany()
-                        .HasForeignKey("TimeLimitId");
-
                     b.HasOne("Shared.Models.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
@@ -1071,15 +1383,13 @@ namespace Shared.Migrations
 
                     b.Navigation("Section");
 
-                    b.Navigation("TimeLimit");
-
                     b.Navigation("User");
                 });
 
             modelBuilder.Entity("Shared.Models.UserSecurityGroup", b =>
                 {
                     b.HasOne("Shared.Models.SecurityGroup", "SecurityGroup")
-                        .WithMany()
+                        .WithMany("UserSecurityGroups")
                         .HasForeignKey("SecurityGroupId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1095,6 +1405,22 @@ namespace Shared.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Shared.Models.Building", b =>
+                {
+                    b.Navigation("LimitValues");
+
+                    b.Navigation("Rooms");
+
+                    b.Navigation("Sections");
+                });
+
+            modelBuilder.Entity("Shared.Models.Cadastre", b =>
+                {
+                    b.Navigation("Buildings");
+
+                    b.Navigation("LimitValues");
+                });
+
             modelBuilder.Entity("Shared.Models.Device", b =>
                 {
                     b.Navigation("Data");
@@ -1104,19 +1430,70 @@ namespace Shared.Migrations
                     b.Navigation("Infos");
                 });
 
+            modelBuilder.Entity("Shared.Models.DeviceData", b =>
+                {
+                    b.Navigation("Events");
+                });
+
+            modelBuilder.Entity("Shared.Models.DeviceDataType", b =>
+                {
+                    b.Navigation("LimitValues");
+                });
+
+            modelBuilder.Entity("Shared.Models.DeviceSharedCategory", b =>
+                {
+                    b.Navigation("DataTypes");
+
+                    b.Navigation("EventTypes");
+
+                    b.Navigation("InfoTypes");
+                });
+
             modelBuilder.Entity("Shared.Models.Permission", b =>
                 {
                     b.Navigation("SecurityGroupPermissions");
                 });
 
+            modelBuilder.Entity("Shared.Models.Room", b =>
+                {
+                    b.Navigation("Devices");
+
+                    b.Navigation("LimitValues");
+
+                    b.Navigation("TimeLimits");
+                });
+
             modelBuilder.Entity("Shared.Models.Section", b =>
                 {
+                    b.Navigation("LimitValues");
+
                     b.Navigation("Rooms");
                 });
 
             modelBuilder.Entity("Shared.Models.SecurityGroup", b =>
                 {
                     b.Navigation("SecurityGroupPermissions");
+
+                    b.Navigation("SecurityGroupRooms");
+
+                    b.Navigation("TimeLimits");
+
+                    b.Navigation("UserSecurityGroups");
+                });
+
+            modelBuilder.Entity("Shared.Models.SecurityGroupDevice", b =>
+                {
+                    b.Navigation("TimeLimits");
+                });
+
+            modelBuilder.Entity("Shared.Models.SecurityGroupRoom", b =>
+                {
+                    b.Navigation("TimeLimits");
+                });
+
+            modelBuilder.Entity("Shared.Models.SecurityGroupSection", b =>
+                {
+                    b.Navigation("TimeLimits");
                 });
 
             modelBuilder.Entity("Shared.Models.TimeLimit", b =>
@@ -1136,7 +1513,26 @@ namespace Shared.Migrations
 
             modelBuilder.Entity("Shared.Models.User", b =>
                 {
+                    b.Navigation("AccessCards");
+
+                    b.Navigation("UserRooms");
+
                     b.Navigation("UserSecurityGroups");
+                });
+
+            modelBuilder.Entity("Shared.Models.UserDevice", b =>
+                {
+                    b.Navigation("TimeLimits");
+                });
+
+            modelBuilder.Entity("Shared.Models.UserRoom", b =>
+                {
+                    b.Navigation("TimeLimits");
+                });
+
+            modelBuilder.Entity("Shared.Models.UserSection", b =>
+                {
+                    b.Navigation("TimeLimits");
                 });
 #pragma warning restore 612, 618
         }

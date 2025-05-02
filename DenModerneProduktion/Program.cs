@@ -1,4 +1,9 @@
 using DenModerneProduktion.Components;
+using DenModerneProduktion.Services;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
+using Shared.Models;
+using System.Net.Http;
 
 namespace DenModerneProduktion
 {
@@ -12,13 +17,52 @@ namespace DenModerneProduktion
             builder.Services.AddRazorComponents()
                 .AddInteractiveServerComponents();
 
+            builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+                .AddCookie(options =>
+                {
+                    options.LoginPath = "/login";
+                });
+            builder.Services.AddAuthorization();
+            builder.Services.AddCascadingAuthenticationState();
+
+            builder.Services.AddAuthorization(options =>
+            {
+                var allPermissions = new List<string>
+                {
+                    Permissions.ViewAdminPanel,
+                    Permissions.ViewUsers,
+                    Permissions.EditUsers,
+                };
+
+                foreach (var permission in allPermissions)
+                {
+                    options.AddPolicy(permission, policy =>
+                        policy.Requirements.Add(new PermissionRequirement(permission)));
+                }
+            });
+
+            builder.Services.AddSingleton<IAuthorizationHandler, PermissionHandler>();
+
+            builder.Services.AddHttpContextAccessor();
+
+            builder.Services.AddBlazorBootstrap();
+
+            builder.Services.AddHttpClient("api", sp =>
+            {
+                sp.BaseAddress = new Uri(builder.Configuration.GetSection("API").GetValue<string>("Host") ?? "");
+            });
+
+            builder.Services.AddScoped<ViewHelper>();
+
+            builder.Services.AddScoped<ApiRequester>();
+            builder.Services.AddScoped<UserSession>();
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
             {
                 app.UseExceptionHandler("/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
 
@@ -26,6 +70,11 @@ namespace DenModerneProduktion
 
             app.UseStaticFiles();
             app.UseAntiforgery();
+
+            app.UseAuthentication();
+            app.UseAuthorization();
+            
+            app.UseStatusCodePagesWithRedirects("/NotFound");
 
             app.MapRazorComponents<App>()
                 .AddInteractiveServerRenderMode();

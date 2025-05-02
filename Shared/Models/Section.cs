@@ -1,21 +1,22 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Shared.Models
 {
 	public class Section : BaseModel
     {
-        public string Name { get; set; }
+        [Required]
+        public string Name { get; set; } = default!;
 
-		[InverseProperty("Section")]
+        [InverseProperty("Section")]
 		public ICollection<Room> Rooms { get; } = new List<Room>();
 
-		public int BuildingId { get; set; }
-		public Building Building { get; set; }
+        [Required]
+        public int BuildingId { get; set; } = default!;
+        public Building Building { get; set; } = default!;        
+        public ICollection<DeviceDataLimitValue> LimitValues { get; set; } = new List<DeviceDataLimitValue>();
 
-		public Section()
-		{
-		}
-	}
+    }
 }
 

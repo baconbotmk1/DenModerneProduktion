@@ -6,12 +6,23 @@ namespace Shared.Models
 {
 	public abstract class BaseModel
 	{
-		[Key]
+        [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
 		public int Id { get; set; }
 
 		public BaseModel()
 		{
 		}
-	}
+
+		public virtual void LoadReferences() { }
+
+
+		public BaseModel AddReferences()
+		{
+			LoadReferences();
+
+            return this;
+		}
+
+    }
 }
 
