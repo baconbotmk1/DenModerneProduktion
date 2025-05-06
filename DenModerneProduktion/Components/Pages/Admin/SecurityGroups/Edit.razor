@@ -1,9 +1,12 @@
 ﻿@page "/admin/security_groups/{id}"
 @using System.Diagnostics
-@using DenModerneProduktion.Components.Helpers
+@using DenModerneProduktion.Components.Pages.PageViews
+@using DenModerneProduktion.Components.Pages.PageModels
 @using DenModerneProduktion.Services
 @using Shared.DTOs.SecurityGroup
 @using Shared.Models
+
+@attribute [Authorize]
 @inject ApiRequester requester
 @inject ViewHelper viewHelper
 @inject NavigationManager navigationManager
@@ -24,6 +27,10 @@
                 <div class="mb-2">
                     <span class="form-label">Beskrivelse</span>
                     <input @bind-value="desc" name="desc" placeholder="Beskrivelse" type="text" class="form-control" />
+                </div>
+                <div class="mb-2">
+                    <span class="form-label">Tidsbegrænsning</span>
+                    <button class="btn btn-sm btn-primary" @onclick="async () => await OpenTimeLimitEdit()">Rediger</button>
                 </div>
             </div>
             <div class="card-footer">
@@ -167,6 +174,28 @@
     </FooterTemplate>
 </Modal>
 
+
+<Modal @ref="SecurityGroupModal" Title="Indstil tidbegrænsning">
+    <BodyTemplate>
+        @if (SecurityGroupModalError != "")
+        {
+            <Alert Color="AlertColor.Danger">@SecurityGroupModalError</Alert>
+        }
+        <div class="user-select-none">
+            <CheckboxInput Label="Tilføj adgangsbegrænsning?" @bind-Value="securityGroupUseRestriction" />
+        </div>
+        @if (securityGroupUseRestriction)
+        {
+            <MultipleTimeLimitInputs Class="mt-2" TimeLimits="Item.TimeLimits" />
+        }
+    </BodyTemplate>
+    <FooterTemplate>
+        <Button Color="ButtonColor.Secondary" @onclick="async () => await SecurityGroupModal.HideAsync()">Annuller</Button>
+        <Button Color="ButtonColor.Primary" @onclick="async () => await EditSecurityGroupTL(timeLimits)">Opdater lokale</Button>
+
+    </FooterTemplate>
+</Modal>
+
 <style>
     select:has(> option:checked:disabled) {
         font-style: italic;
@@ -183,6 +212,11 @@
     public string RoomModalError { get; set; } = "";
     public List<TimeLimit> timeLimits { get; set; } = new List<TimeLimit>() { new TimeLimit() };
     private Modal RoomModal = default!;
+
+
+    public bool securityGroupUseRestriction { get; set; } = false;
+    public string SecurityGroupModalError { get; set; } = "";
+    private Modal SecurityGroupModal = default!;
 
     [Parameter]
     public string id { get; set; }
@@ -204,6 +238,23 @@
 
     private GenericModal AddNewModal;
     private List<ModalInput> AddNewModalInputs { get; set; } = new List<ModalInput>();
+
+    public async Task EditSecurityGroupTL(List<TimeLimit> _timeLimits)
+    {
+        var response = await requester.Put($"api/security_groups/{SecurityGroupID}/timelimits", securityGroupUseRestriction ? Item.TimeLimits : null);
+        if (response.IsSuccessResponse)
+        {
+            await LoadPage();
+        }
+        else if (response.GetType() == typeof(ErrorResponse))
+        {
+            string message = ((ErrorResponse)response).Title;
+            SecurityGroupModalError = "Fejl: " + (message != "" ? message : "Igen besked");
+            return;
+        }
+
+        await SecurityGroupModal.HideAsync();
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -370,6 +421,13 @@
                 await ConfirmModalRef.Show();
                 break;
         }
+    }
+
+    public async Task OpenTimeLimitEdit()
+    {
+        securityGroupUseRestriction = Item.TimeLimits.Count > 0;
+
+        await SecurityGroupModal.ShowAsync();
     }
 
 

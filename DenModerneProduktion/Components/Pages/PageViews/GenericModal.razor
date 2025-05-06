@@ -1,0 +1,84 @@
+﻿@using BlazorBootstrap
+@using System.Diagnostics
+@using DenModerneProduktion.Components.Pages.PageViews
+@using DenModerneProduktion.Components.Pages.PageModels
+
+<Modal @ref="ModalRef">
+    <HeaderTemplate>
+        <h5 class="modal-title">@Title</h5>
+    </HeaderTemplate>
+    <BodyTemplate>
+        @foreach (var input in Inputs.Where(e => e.ShouldRender(Inputs.ToDictionary(e => e.Name))))
+        {
+            <DynamicInput Input="input" />
+        }
+    </BodyTemplate>
+    <FooterTemplate>
+        <Button Color="ButtonColor.Primary" @onclick="HandleSubmit">@SubmitText</Button>
+        <Button Color="ButtonColor.Secondary" @onclick="Hide">@CancelText</Button>
+    </FooterTemplate>
+</Modal>
+
+@code {
+    private Modal ModalRef;
+
+    [Parameter] public string Title { get; set; } = "Title Missing";
+
+    [Parameter] public string SubmitText { get; set; } = "Submit";
+    [Parameter] public string CancelText { get; set; } = "Cancel";
+
+    [Parameter] public List<ModalInput> Inputs { get; set; } = new List<ModalInput>();
+
+    //[Parameter] public EventCallback<List<ModalInput>> OnSubmit { get; set; }
+    //[Parameter] public Func<List<ModalInput>,bool> OnSubmit { get; set; }
+    [Parameter] public Func<Dictionary<string,ModalInput>,bool> OnSubmit { get; set; }
+    [Parameter] public Func<Dictionary<string,ModalInput>,Task<bool>> OnSubmitAsync { get; set; }
+
+    public override Task SetParametersAsync(ParameterView parameters)
+    {
+        foreach(ModalInput input in Inputs)
+        {
+            input.OnChanged = Update;
+        }
+
+        return base.SetParametersAsync(parameters);
+    }
+
+    public async Task Show()
+    {
+        await ModalRef.ShowAsync();
+    }
+
+    public async Task Hide()
+    {
+        await ModalRef.HideAsync();
+    }
+
+    private async Task HandleSubmit()
+    {
+        if (OnSubmit != null)
+        {
+            bool shouldClose = OnSubmit.Invoke(Inputs.ToDictionary(e => e.Name));
+
+            if (shouldClose)
+            {
+                await ModalRef.HideAsync();
+            }
+        }
+
+        if (OnSubmitAsync != null)
+        {
+            bool shouldClose = await OnSubmitAsync.Invoke(Inputs.ToDictionary(e => e.Name));
+
+            if (shouldClose)
+            {
+                await ModalRef.HideAsync();
+            }
+        }
+    }
+
+    public void Update()
+    {
+        StateHasChanged();
+    }
+}

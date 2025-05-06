@@ -4,12 +4,16 @@ namespace SystemAPI.Controllers
 {
     public abstract class BaseController : Controller
     {
-        public BaseController( DataContext Context)
-        {
-            context = Context;
-        }
+        protected readonly IConfiguration configuration;
+        protected readonly IServiceProvider provider;
+        protected readonly DataContext context;
 
-        protected DataContext context;
+        public BaseController(DataContext _context, IConfiguration _configuration, IServiceProvider _provider)
+        {
+            context = _context;
+            configuration = _configuration;
+            provider = _provider;
+        }
 
         protected override void Dispose(bool disposing)
         {

@@ -1,0 +1,87 @@
+﻿@using System.Diagnostics
+@inject IJSRuntime JS
+@using DenModerneProduktion.Components.Pages.PageModels
+
+
+@foreach (InputBase input in Inputs)
+{
+    <DynamicComponent Type="@input.GetType()" Parameters="@(input.GetParameters().AddOrReplace("OnValueChanged", (string value) => {Debug.WriteLine("Value changed to: " + value);Values[input.Name] = value;}))" />
+}
+
+<hr/>
+
+<div class="d-flex flex-row justify-content-end">
+    <button class="mt-3 w-25 btn-sm" Color="ButtonColor.Success" type="button" @onclick="() => Confirm()">
+        @AcceptText
+    </button>
+</div>
+
+@code {
+    [Parameter] public string Text { get; set; } = "Modal Titel";
+
+    [Parameter] public string AcceptText { get; set; } = "Bekræft";
+
+    [Parameter] public Func<SubmitModal, bool> OnSubmit { get; set; } = new Func<SubmitModal, bool>((SubmitModal eh) => true);
+
+    public Dictionary<string, InputBase> RealInputs { get; set; } = new Dictionary<string, InputBase>();
+
+    public Dictionary<string, string> Values { get; set; } = new Dictionary<string, string>();
+
+    [Parameter]
+    public IEnumerable<InputBase> Inputs { get; set; } = new List<InputBase>();
+
+    [Parameter] public Modal Modal { get; set; } = default!;
+
+    protected void Confirm()
+    {
+        foreach (KeyValuePair<string, string> kvpair in Values)
+        {
+            Debug.WriteLine(kvpair.Key + ": " + kvpair.Value);
+        }
+        /*bool shouldClose = OnSubmit.Invoke(this);
+
+        if (shouldClose)
+        {
+            Modal.HideAsync();
+            }*/
+    }
+
+    protected override void OnInitialized()
+    {
+        Debug.WriteLine("Started");
+        base.OnInitialized();
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        Debug.WriteLine("Rendering: " + (firstRender ? "Yes" : "No"));
+        foreach (KeyValuePair<string,string> kvpair in Values)
+        {
+            Debug.WriteLine(kvpair.Key + ": " + kvpair.Value);
+        }
+        base.OnAfterRender(firstRender);
+    }
+
+
+    public object? GetInput(string key)
+    {
+        if(RealInputs.ContainsKey(key))
+        {
+            if(RealInputs[key].GetType() == typeof(SelectWithValidation))
+            {
+                SelectWithValidation input = (SelectWithValidation)RealInputs[key];
+                return RealInputs[key].Value;
+            }
+
+            if(RealInputs[key].GetType() == typeof(InputWithValidation))
+            {
+                InputWithValidation input = (InputWithValidation)RealInputs[key];
+                return RealInputs[key].Value;
+            }
+
+            return RealInputs[key].Value;
+        }
+
+        return null;
+    }
+}

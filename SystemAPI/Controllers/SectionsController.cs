@@ -1,17 +1,21 @@
 ﻿using Shared.DTOs.Section;
-using Swashbuckle.AspNetCore.Filters;
-using SystemAPI.SwaggerExamples;
 
 namespace SystemAPI.Controllers
 {
+    /// <summary>
+    /// Controller for managing sections
+    /// </summary>
+    /// <param name="_context"></param>
+    /// <param name="_configuration"></param>
+    /// <param name="_provider"></param>
     [ApiController]
     [Route("api/sections")]
-    public class SectionsController : BaseCRUDController<Section>
+    public class SectionsController(DataContext _context, IConfiguration _configuration, IServiceProvider _provider) : BaseController(_context, _configuration, _provider)
     {
-        public SectionsController(DataContext Context, IRepository<Section> DIrepository) : base(Context, DIrepository)
-        {
-        }
-
+        /// <summary>
+        /// Get all sections
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
         public IEnumerable<Section> Get()
         {
@@ -22,23 +26,31 @@ namespace SystemAPI.Controllers
                 .ToList();
         }
 
+        /// <summary>
+        /// Create a new section
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
         [HttpPost]
-        [SwaggerRequestExample(typeof(CreateSection), typeof(CreateSectionExample))]
         public ActionResult<Section> Post([FromBody] CreateSection data)
         {
             Section item = data.Adapt<Section>();
 
-            repository.Insert(item);
-            repository.Save();
+            context.Sections.Add(item);
+            context.SaveChanges();
 
             return Ok(item);
         }
 
-
+        /// <summary>
+        /// Get a section by ID
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpGet("{id}")]
         public ActionResult<Section> GetSectionById(int id)
         {
-            Section? section = repository.GetById(id);
+            Section? section = context.Sections.FirstOrDefault(e => e.Id == id);
 
             if (section == null)
             {
@@ -48,11 +60,16 @@ namespace SystemAPI.Controllers
             return Ok(section);
         }
 
-
+        /// <summary>
+        /// Update a section
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="data"></param>
+        /// <returns></returns>
         [HttpPut("{id}")]
         public ActionResult<Section> Put(int id, [FromBody] CreateSection data)
         {
-            Section? item = repository.GetById(id);
+            Section? item = context.Sections.FirstOrDefault(e => e.Id == id);
 
             if (item == null)
             {
@@ -61,29 +78,29 @@ namespace SystemAPI.Controllers
 
             data.Adapt(item);
 
-            repository.Update(item);
-            repository.Save();
+            context.Sections.Update(item);
+            context.SaveChanges();
 
             return Ok(item);
         }
 
+        /// <summary>
+        /// Delete a section
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpDelete("{id}")]
         public ActionResult Delete(int id)
         {
-            Section? foundObject = repository.GetById(id);
+            Section? foundObject = context.Sections.FirstOrDefault(e => e.Id == id);
 
             if (foundObject == null)
             {
                 return NotFound();
             }
 
-            bool deleted = repository.Delete(id);
-            repository.Save();
-
-            if (!deleted)
-            {
-                return NotFound();
-            }
+            context.Sections.Remove(foundObject);
+            context.SaveChanges();
 
             return Ok();
         }

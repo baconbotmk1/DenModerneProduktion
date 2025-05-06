@@ -12,6 +12,17 @@ namespace Shared.Models
 		public TimeLimitWeekDayTime()
 		{
 		}
-	}
+
+        public bool IsActive( DateTime time )
+        {
+            TimeOnly now = TimeOnly.FromDateTime(time);
+            if (now < FromTime)
+                return false;
+            if (now > ToTime)
+                return false;
+
+            return true;
+        }
+    }
 }
 

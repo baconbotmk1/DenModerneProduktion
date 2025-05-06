@@ -1,8 +1,10 @@
 ﻿@page "/admin/rooms"
-@using DenModerneProduktion.Components.Helpers
+@using DenModerneProduktion.Components.Pages.PageViews
 @using DenModerneProduktion.Services
 @using Shared.Models
 @using System.Diagnostics
+
+@attribute [Authorize]
 @inject ApiRequester requester
 @inject ViewHelper viewHelper
 <PageTitle>Lokaler</PageTitle>

@@ -1,36 +1,27 @@
-﻿using Microsoft.AspNetCore.Identity.Data;
-using Shared.DTOs.AccessCard;
-using Shared.DTOs.Auth;
-using Shared.Migrations;
-using Shared.Models;
-using System;
-using System.Collections;
-using System.Security.Cryptography;
-using System.Text;
-using SystemAPI.Helpers;
-using static System.Net.Mime.MediaTypeNames;
-
+﻿using Shared.DTOs.Auth;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp.Processing;
 using MQTTnet;
-using Microsoft.Extensions.Configuration;
+using SystemAPI.Helpers;
+using SystemAPI.Services;
 
 namespace SystemAPI.Controllers
 {
+    /// <summary>
+    /// Controller for authentication
+    /// </summary>
+    /// <param name="_context"></param>
+    /// <param name="_configuration"></param>
+    /// <param name="_provider"></param>
     [ApiController]
     [Route("api/auth")]
-    public class AuthController : BaseController
+    public class AuthController(DataContext _context, IConfiguration _configuration, IServiceProvider _provider) : BaseController(_context, _configuration, _provider)
     {
-        private readonly IConfiguration _configuration;
-        private readonly IServiceProvider _provider;
-        public AuthController(DataContext Context, IConfiguration configuration, IServiceProvider provider) : base(Context)
-        {
-            _configuration = configuration;
-            _provider = provider;
-        }
-
-
+        /// <summary>
+        /// Try to login with username and password
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
         [HttpPost("login")]
         public ActionResult<LoginResult> TryLogin([FromBody] LoginPost data)
         {
@@ -67,7 +58,11 @@ namespace SystemAPI.Controllers
             return Ok(new LoginResult(user, permissions));
         }
 
-
+        /// <summary>
+        /// Request a password reset
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
         [HttpPost("reset_password")]
         public ActionResult Post([FromBody] StartPasswordResetPost data)
         {
@@ -78,24 +73,12 @@ namespace SystemAPI.Controllers
             }
 
             string token = CryptoHelper.GenerateSaltString();
-            string state = CryptoHelper.GenerateSaltString(); //Delete?
 
             user.ResetToken = token;
 
-            IConfigurationSection hostingSection = _configuration.GetSection("Hosting");
-            var url = hostingSection.GetValue<string>("Url");
-            var port = hostingSection.GetValue<int?>("Port");
-            var completeUrl = url + (port != null ? $":{port}" : "") + "/forgotpassword/" + token;
+            MailService mailService = provider.GetRequiredService<MailService>();
 
-
-            IConfigurationSection emailSection = _configuration.GetSection("Email");
-            var mail = emailSection.GetValue<string>("Mail");
-            var password = emailSection.GetValue<string>("Password");
-            var smtp = emailSection.GetValue<string>("Smtp");
-            var smtpPort = emailSection.GetValue<int>("Port");
-            var useSSL = emailSection.GetValue<bool>("UseSSL");
-
-            MailHelper.SendResetLink(mail, user.Username, smtp, smtpPort, completeUrl, password, useSSL);
+            mailService.SendResetLink(user.Username, token);
 
             context.Attach(user);
             context.SaveChanges();
@@ -103,7 +86,12 @@ namespace SystemAPI.Controllers
             return Ok(new object { });
         }
 
-
+        /// <summary>
+        /// Confirm the password reset
+        /// </summary>
+        /// <param name="token"></param>
+        /// <param name="data"></param>
+        /// <returns></returns>
         [HttpPost("reset_password/{token}")]
         public ActionResult Post(string token, [FromBody] ConfirmPasswordResetPost data)
         {
@@ -121,24 +109,21 @@ namespace SystemAPI.Controllers
             user.ResetToken = null;
             user.HashedPassword = Convert.ToBase64String(CryptoHelper.HashPassword(data.password, salt));
 
-
             context.Attach(user);
             context.SaveChanges();
 
-            IConfigurationSection emailSection = _configuration.GetSection("Email");
-            var mail = emailSection.GetValue<string>("Mail");
-            var password = emailSection.GetValue<string>("Password");
-            var smtp = emailSection.GetValue<string>("Smtp");
-            var smtpPort = emailSection.GetValue<int>("Port");
-            var useSSL = emailSection.GetValue<bool>("UseSSL");
+            MailService mailService = provider.GetRequiredService<MailService>();
 
-            MailHelper.SendConfirmReset(mail, user.Username, smtp, smtpPort, password, useSSL);
+            mailService.SendConfirmReset(user.Username);
 
             return Ok(new object { });
         }
 
-        public static int counter = 0;
-
+        /// <summary>
+        /// Request the fingerprint scanner to start scanning
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
         [HttpPost("fingerprint/start")]
         public async Task<IActionResult> StartFingerprint( [FromBody] StartFingerprint request )
         {
@@ -155,7 +140,7 @@ namespace SystemAPI.Controllers
 
             using (var _mqttClient = factory.CreateMqttClient())
             {
-                var config = _provider.GetService<IConfiguration>()!;
+                var config = provider.GetService<IConfiguration>()!;
 
                 IConfigurationSection mqttSection = config.GetSection("Mqtt");
 
@@ -185,6 +170,10 @@ namespace SystemAPI.Controllers
             return Ok();
         }
 
+        /// <summary>
+        /// Receive image data from the fingerprint scanner
+        /// </summary>
+        /// <returns></returns>
         [HttpPost("fingerprint")]
         public async Task<IActionResult> ReceiveData()
         {
@@ -196,9 +185,9 @@ namespace SystemAPI.Controllers
                 int width = 256;
                 int height = 288;
 
-                var image = CreateImageFromRawRgb(receivedData, 256, 288);
+                var image = CreateImageFromRawRgb(receivedData, width, height);
 
-                using (StreamWriter writer = new StreamWriter(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "DenModerneProduktion", $"UploadedData_{counter++}.bmp")))
+                using (StreamWriter writer = new StreamWriter(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "DenModerneProduktion", $"UploadedData_{DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss-f")}.bmp")))
                 {
                     image.Save(writer.BaseStream,new SixLabors.ImageSharp.Formats.Bmp.BmpEncoder());
                 }

@@ -1,0 +1,36 @@
+﻿@using System.Globalization
+<input type="week" placeholder="Uge" class="form-control" value="@WeekString" @onchange="OnChange" />
+
+@code {
+    [Parameter]
+    public DateOnly? Value { get; set; }
+
+    [Parameter]
+    public EventCallback<DateOnly?> ValueChanged { get; set; }
+
+    private string WeekString
+    {
+        get => Value != null ? $"{Value.Value.Year}-W{ISOWeek.GetWeekOfYear(Value.Value.ToDateTime(TimeOnly.MinValue)):D2}" : "";
+    }
+
+    private async Task OnChange(ChangeEventArgs e)
+    {
+        if (e.Value is string newWeek)
+        {
+            var newDate = GetDateFromWeekString(newWeek);
+            await ValueChanged.InvokeAsync(newDate);
+        }
+    }
+
+    private DateOnly? GetDateFromWeekString(string week)
+    {
+        if (week == "")
+            return null;
+
+        var parts = week.Split("-W");
+        int year = int.Parse(parts[0]);
+        int weekNum = int.Parse(parts[1]);
+        var dt = ISOWeek.ToDateTime(year, weekNum, DayOfWeek.Monday);
+        return DateOnly.FromDateTime(dt);
+    }
+}

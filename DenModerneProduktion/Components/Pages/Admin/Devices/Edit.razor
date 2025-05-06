@@ -1,11 +1,14 @@
 ﻿@page "/admin/devices/{id}"
 @using System.Diagnostics
+@using DenModerneProduktion.Components.Pages.PageModels
 @using DenModerneProduktion.Services
 @using Shared.DTOs.Device
 @using Shared.DTOs.User
 @using Shared.Models
 @using System.Text.Json;
-@using DenModerneProduktion.Components.Helpers;
+@using DenModerneProduktion.Components.Pages.PageViews;
+
+@attribute [Authorize]
 @inject ApiRequester requester
 @inject ViewHelper viewHelper
 @inject NavigationManager navigationManager
@@ -251,7 +254,7 @@
         }
     }
 
-   protected override void OnAfterRender(bool first)
+    protected override void OnAfterRender(bool first)
     {
         if(first)
         {
@@ -382,5 +385,31 @@
             RoomId = updatedDevice.RoomId.ToString();
             SectionId = updatedDevice.SectionId.ToString();
         }
+    }
+
+    public List<Device>? AllDevices { get; set; }
+
+    private GenericModal AddModal;
+    private List<ModalInput> addInputs { get; set; } = new List<ModalInput>();
+
+    private async Task BeginAddingUser()
+    {
+        if(AllDevices == null)
+        {
+            var response = await requester.Get<List<Device>>("api/devices");
+            AllDevices = response.TryGetData<List<Device>>() ?? new List<Device>();
+        }
+
+
+        addInputs = new List<ModalInput>()
+        {
+            new ModalInput
+            {
+                Name = "¨device", Label = "Enhed", DType = InputType.Select,
+                Options = AllDevices.Where(e => e.RoomId == null || e.RoomId.Value != DeviceID).OrderByDescending(e => e.Name).Select(e => new Option(e.Name, e.Id.ToString())).ToList()
+            }
+        };
+
+        await AddModal.Show();
     }
 }

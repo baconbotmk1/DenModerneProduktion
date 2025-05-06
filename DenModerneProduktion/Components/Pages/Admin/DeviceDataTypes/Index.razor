@@ -1,5 +1,6 @@
 ﻿@page "/admin/device_types"
-@using DenModerneProduktion.Components.Helpers
+@using DenModerneProduktion.Components.Pages.PageViews
+@using DenModerneProduktion.Components.Pages.PageModels
 @using DenModerneProduktion.Services
 @using Shared.DTOs.DeviceDataType
 @using Shared.DTOs.DeviceEventType
@@ -9,6 +10,7 @@
 @using Shared.Models
 @using System.Diagnostics
 @using Microsoft.AspNetCore.Components.Web
+@attribute [Authorize]
 @inject ApiRequester requester
 @inject ViewHelper viewHelper
 

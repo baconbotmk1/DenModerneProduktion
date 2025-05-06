@@ -8,6 +8,10 @@
     <Configurations>Debug;Release;MultipleStartup</Configurations>
   </PropertyGroup>
 
+    <PropertyGroup>
+	    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    </PropertyGroup>
+
   <PropertyGroup Condition=" '$(RunConfiguration)' == 'https' " />
   <PropertyGroup Condition=" '$(RunConfiguration)' == 'http' " />
   <ItemGroup>
@@ -33,8 +37,5 @@
   </ItemGroup>
   <ItemGroup>
     <None Remove="SwaggerExamples\" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="SwaggerExamples\" />
   </ItemGroup>
 </Project>
