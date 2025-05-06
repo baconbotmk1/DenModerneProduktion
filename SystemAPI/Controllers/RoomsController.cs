@@ -25,7 +25,7 @@ namespace SystemAPI.Controllers
                 .Include(e => e.Section)
                 .ToList();
         }
-        [HttpGet("/data")]
+        [HttpGet("data")]
         public ActionResult<IEnumerable<Room>> GetAllDeviceData()
         {
             List<Room> data = context.Rooms
