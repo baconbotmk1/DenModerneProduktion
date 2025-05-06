@@ -66,13 +66,6 @@ else
     public bool _UserCreated { get; set; }
     public bool _credentialsCorrect { get; set; }
 
-    protected override async Task OnInitializedAsync() //REMOVE!!
-    {
-        loginModel.Username = "sebastian257@hotmail.dk";
-        loginModel.Pwd = "P@ssw0rd";
-        await HandleLogin();
-    }
-
     public async Task HandleLogin()
     {
         ErrorMessage = "";
